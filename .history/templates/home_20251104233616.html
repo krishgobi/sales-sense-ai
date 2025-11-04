@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <h1 class="text-center mb-5">Welcome to SalesSense</h1>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Admin</h3>
+                    <p class="card-text">Manage system settings and users</p>
+                    <a href="/admin" class="btn btn-primary">Access Admin Panel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Worker</h3>
+                    <p class="card-text">Manage daily operations</p>
+                    <a href="/worker" class="btn btn-primary">Access Worker Panel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Labor</h3>
+                    <p class="card-text">Track labor activities</p>
+                    <a href="/labor" class="btn btn-primary">Access Labor Panel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Products</h3>
+                    <p class="card-text">View and manage products</p>
+                    <a href="/products" class="btn btn-primary">View Products</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

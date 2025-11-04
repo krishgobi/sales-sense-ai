@@ -1,0 +1,87 @@
+.home-container {
+    padding: 2rem 0;
+}
+
+.card {
+    transition: transform 0.3s ease;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.products-container {
+    padding: 2rem 0;
+}
+
+.filters {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 2rem;
+}
+
+.product-card .card {
+    height: 100%;
+}
+
+.product-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.navbar {
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Labor page styles */
+.card {
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.alert {
+    margin-bottom: 1rem;
+}
+
+/* User products page styles */
+.product-card .card {
+    transition: transform 0.3s ease;
+}
+
+.product-card .card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card .card-footer {
+    background-color: transparent;
+    border-top: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.buy-now-btn {
+    width: 100%;
+}
+
+/* Search and filter styles */
+.input-group {
+    margin-bottom: 2rem;
+}
+
+#categoryFilter {
+    border-left: 0;
+}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Shopping Cart</h2>
+
+    {% if not cart %}
+    <div class="alert alert-info">
+        Your cart is empty. <a href="{{ url_for('user_products') }}">Continue shopping</a>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cart_key, item in cart.items() %}
+                                <tr>
+                                    <td>{{ item.product_name }} ({{ item.variant_quantity }})</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.price }}</td>
+                                    <td>${{ item.price * item.quantity }}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm remove-item"
+                                                data-cart-key="{{ cart_key }}">
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4>Order Summary</h4>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Total:</span>
+                        <span>${{ cart_total }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="payment_method" class="form-label">Payment Method</label>
+                        <select class="form-select" id="payment_method">
+                            <option value="credit_card">Credit Card</option>
+                            <option value="debit_card">Debit Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="net_banking">Net Banking</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" id="checkout-btn">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove item from cart
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', async function() {
+            const cartKey = this.dataset.cartKey;
+            try {
+                const response = await fetch('/cart/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cart_key: cartKey })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing item: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error);
+            }
+        });
+    });
+
+    // Checkout process
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', async function() {
+            const paymentMethod = document.getElementById('payment_method').value;
+            
+            if (confirm('Confirm purchase?')) {
+                try {
+                    const response = await fetch('/user/purchase', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            payment_method: paymentMethod
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        window.location.href = '{{ url_for("user_products") }}';
+                    } else {
+                        alert('Error: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Error processing purchase: ' + error);
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
