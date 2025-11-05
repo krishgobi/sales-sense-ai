@@ -11,6 +11,12 @@ from email.mime.multipart import MIMEMultipart
 import re
 import datetime
 from decimal import Decimal
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+import io
+import threading
+import time
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +24,26 @@ load_dotenv()
 app = Flask(__name__)
 # Use environment variable for SECRET_KEY, fallback to random for development
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
+
+# Custom Jinja2 filters
+@app.template_filter('strftime')
+def datetime_filter(date, format='%Y-%m-%d'):
+    """Custom datetime filter for Jinja2 templates"""
+    if date is None:
+        return ''
+    if isinstance(date, str):
+        try:
+            # Try to parse string as datetime
+            date = datetime.datetime.fromisoformat(date.replace('Z', '+00:00'))
+        except:
+            return date  # Return original string if parsing fails
+    elif isinstance(date, datetime.date) and not isinstance(date, datetime.datetime):
+        # Convert date to datetime
+        date = datetime.datetime.combine(date, datetime.time())
+    
+    if isinstance(date, datetime.datetime):
+        return date.strftime(format)
+    return str(date)
 
 # MongoDB connection setup with error handling
 def get_database_connection():
@@ -124,6 +150,34 @@ def extract_numeric_value(value):
         print(f"Error extracting numeric value from {value}: {e}")
         return 0.0
 
+def send_email(to_email, subject, html_body):
+    """Send email using SMTP"""
+    try:
+        smtp_server = os.getenv('SMTP_SERVER')
+        smtp_port = int(os.getenv('SMTP_PORT', 587))
+        smtp_username = os.getenv('SMTP_USERNAME')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+        sender_email = os.getenv('SENDER_EMAIL')
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        
+        html_part = MIMEText(html_body, 'html')
+        msg.attach(html_part)
+        
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
+
 def safe_float(value, default=0.0):
     """Safely convert a value to float"""
     try:
@@ -161,7 +215,8 @@ def calculate_sale_amount(sale):
 # Collections
 products_update = db.products_update
 workers_update = db.workers_update  # Changed from workers to workers_update
-worker_specific_added = db.worker_specific_added  # New collection for worker actions
+worker_specific_added = db.worker_specific_added
+chat_history = db.chat_history  # New collection for worker actions
 labors = db.labors
 admins = db.admins
 users = db.users_update
@@ -312,7 +367,7 @@ def admin_route():
         if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
             session.clear()
             flash('Session expired. Please login again.', 'error')
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_login'))
     
     # Update last activity and proceed to admin panel
     session['last_activity'] = datetime.datetime.utcnow().timestamp()
@@ -322,15 +377,18 @@ def admin_route():
 @admin_required
 def admin_dashboard():
     try:
+        # Get current date for calculations
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        
         # Get statistics
         stats = {
             'total_users': users.count_documents({}),
             'new_users_today': users.count_documents({
-                'created_at': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
+                'created_at': {'$gte': today}
             }),
             'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
             'sales_today': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
-                'date': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
+                'date': {'$gte': today}
             }))),
             'total_products': products_update.count_documents({}),
             'low_stock_products': sum(1 for product in products_update.find() 
@@ -342,77 +400,99 @@ def admin_dashboard():
             })
         }
 
-        # Get user data
-        users_data = list(users.find().sort('join_date', -1).limit(10))
-        for user in users_data:
-            # Convert ObjectId to string for JSON serialization
+        # Get recent users (for reports, not full listing)
+        recent_users = list(users.find().sort('join_date', -1).limit(5))
+        for user in recent_users:
             user['_id'] = str(user['_id'])
-            user_orders = list(products_sold.find({'user_id': ObjectId(user['_id'])}))
-            # Convert ObjectIds in orders as well
-            for order in user_orders:
-                order['_id'] = str(order['_id'])
-                order['user_id'] = str(order['user_id'])
-                order['product_id'] = str(order['product_id'])
-            user['orders'] = user_orders
-            user['total_spent'] = float(sum(float(calculate_sale_amount(order)) for order in user_orders))
 
-        # Get product data
-        products_data = list(products_update.find())
-        for product in products_data:
-            product['_id'] = str(product['_id'])
-            if 'added_by' in product:
-                product['added_by'] = str(product['added_by'])
-
-        # Get worker data
-        workers_data = list(workers_update.find())
-        for worker in workers_data:
+        # Get worker summary (not full listing)
+        workers_summary = list(workers_update.find().limit(5))
+        for worker in workers_summary:
             worker['_id'] = str(worker['_id'])
-            worker_products = list(worker_specific_added.find({'worker_id': ObjectId(worker['_id'])}))
-            # Convert ObjectIds in worker products
-            for wp in worker_products:
-                wp['_id'] = str(wp['_id'])
-                wp['worker_id'] = str(wp['worker_id'])
-                wp['product_id'] = str(wp['product_id'])
-            worker['products_added'] = worker_products
 
-        # Get sales data for chart - simplified approach
+        # Get sales data for charts
         sales_data = {
-            'dates': ['2025-11-01', '2025-11-02', '2025-11-03', '2025-11-04', '2025-11-05'],
-            'values': [100.0, 150.0, 200.0, 175.0, 225.0]
+            'dates': [],
+            'values': []
         }
+        
+        # Last 7 days sales
+        for i in range(6, -1, -1):
+            date = datetime.datetime.now() - datetime.timedelta(days=i)
+            start_date = date.replace(hour=0, minute=0, second=0)
+            end_date = date.replace(hour=23, minute=59, second=59)
+            
+            daily_sales = sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
+                'date': {'$gte': start_date, '$lte': end_date}
+            }))
+            
+            sales_data['dates'].append(date.strftime('%m/%d'))
+            sales_data['values'].append(daily_sales)
 
-        # Get category data for chart - simplified approach  
+        # Category data for pie chart
+        category_sales = {}
+        for sale in products_sold.find():
+            try:
+                product = products_update.find_one({'_id': ObjectId(sale['product_id'])})
+                if product:
+                    category = product.get('category', 'Other')
+                    if category not in category_sales:
+                        category_sales[category] = 0
+                    category_sales[category] += float(calculate_sale_amount(sale))
+            except Exception as e:
+                print(f"Error processing sale {sale.get('_id')}: {str(e)}")
+                continue
+
         category_data = {
-            'labels': ['Electronics', 'Clothing', 'Books', 'Home'],
-            'values': [300.0, 200.0, 150.0, 100.0]
+            'labels': list(category_sales.keys()) if category_sales else ['No Data'],
+            'values': list(category_sales.values()) if category_sales else [0]
         }
 
-        # Get top selling products
-        top_products = []
+        # Top products (for reports)
         product_sales = {}
-        try:
-            for sale in products_sold.find():
-                if sale['product_id'] not in product_sales:
-                    product_sales[sale['product_id']] = {
-                        'name': sale.get('product_name', 'Unknown Product'),
-                        'units_sold': 0,
-                        'revenue': 0.0
-                    }
-                try:
-                    # Convert quantity to integer, defaulting to 0 if invalid
-                    quantity = int(float(str(sale.get('quantity', '0')).replace(',', '')))
-                    product_sales[sale['product_id']]['units_sold'] += quantity
+        for sale in products_sold.find():
+            try:
+                product_id = sale['product_id']
+                if product_id not in product_sales:
+                    product = products_update.find_one({'_id': ObjectId(product_id)})
+                    if product:
+                        product_sales[product_id] = {
+                            'name': product['name'],
+                            'units_sold': 0,
+                            'revenue': 0.0
+                        }
+
+                if product_id in product_sales:
+                    quantity = int(extract_numeric_value(sale.get('quantity', 0)))
+                    product_sales[product_id]['units_sold'] += quantity
                     
-                    # Calculate sale amount using our helper function
-                    sale_amount = calculate_sale_amount(sale)  # Already returns float
-                    product_sales[sale['product_id']]['revenue'] += sale_amount
-                except (ValueError, TypeError) as e:
-                    print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-                    continue
-        except Exception as e:
-            print(f"Error processing top products: {e}")
+                    sale_amount = calculate_sale_amount(sale)
+                    product_sales[product_id]['revenue'] += sale_amount
+            except (ValueError, TypeError) as e:
+                print(f"Error processing sale {sale.get('_id')}: {str(e)}")
+                continue
 
         top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
+
+        # Product summary for reports
+        total_products = products_update.count_documents({})
+        total_stock_value = 0
+        total_stock_quantity = 0
+        
+        for product in products_update.find():
+            for variant in product.get('variants', []):
+                if isinstance(variant, dict):
+                    stock = int(variant.get('stock', 0))
+                    price = float(variant.get('price', 0))
+                    total_stock_quantity += stock
+                    total_stock_value += stock * price
+
+        product_summary = {
+            'total_products': total_products,
+            'total_stock_value': total_stock_value,
+            'total_stock_quantity': total_stock_quantity,
+            'low_stock_count': stats['low_stock_products']
+        }
 
         # Ensure all numeric values in stats are proper types
         stats = {
@@ -426,81 +506,581 @@ def admin_dashboard():
             'active_workers': int(stats['active_workers'])
         }
 
-        # Convert any numeric values in top_products to appropriate types
-        for product in top_products:
-            product['units_sold'] = int(product['units_sold'])
-            product['revenue'] = float(product['revenue'])
-
         return render_template('admin_dashboard.html',
                              stats=stats,
-                             users=users_data,
-                             products=products_data,
-                             workers=workers_data,
+                             recent_users=recent_users,
+                             workers_summary=workers_summary,
                              sales_data=sales_data,
                              category_data=category_data,
-                             top_products=top_products)
-    
+                             top_products=top_products,
+                             product_summary=product_summary)
+
     except Exception as e:
         print(f"Error in admin dashboard: {e}")
-        # Return a safe fallback response
         return render_template('admin_dashboard.html',
-                             stats={'total_users': 0, 'new_users_today': 0, 'total_sales': 0.0, 'sales_today': 0.0, 'total_products': 0, 'low_stock_products': 0, 'total_workers': 0, 'active_workers': 0},
-                             users=[],
-                             products=[],
-                             workers=[],
+                             stats={'total_users': 0, 'new_users_today': 0, 'total_sales': 0.0, 
+                                   'sales_today': 0.0, 'total_products': 0, 'low_stock_products': 0,
+                                   'total_workers': 0, 'active_workers': 0},
+                             recent_users=[],
+                             workers_summary=[],
                              sales_data={'dates': [], 'values': []},
-                             category_data={'labels': [], 'values': []},
-                             top_products=[])
+                             category_data={'labels': ['No Data'], 'values': [0]},
+                             top_products=[],
+                             product_summary={'total_products': 0, 'total_stock_value': 0.0, 
+                                            'total_stock_quantity': 0, 'low_stock_count': 0})
 
-    # Get top selling products
-    top_products = []
-    product_sales = {}
-    for sale in products_sold.find():
-        if sale['product_id'] not in product_sales:
-            product_sales[sale['product_id']] = {
-                'name': sale.get('product_name', 'Unknown Product'),
-                'units_sold': 0,
-                'revenue': 0
-            }
-        try:
-            # Convert quantity safely using extract_numeric_value
-            quantity = int(extract_numeric_value(sale.get('quantity', '0')))
-            product_sales[sale['product_id']]['units_sold'] += quantity
+# User Details View Route
+@app.route('/admin/user-details/<user_id>')
+@admin_required
+def user_details(user_id):
+    try:
+        # Get user information
+        user = users.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            flash('User not found', 'error')
+            return redirect(url_for('admin_dashboard'))
+        
+        user['_id'] = str(user['_id'])
+        
+        # Get user's purchase history
+        user_orders = list(products_sold.find({'user_id': ObjectId(user_id)}))
+        total_spent = 0
+        total_orders = len(user_orders)
+        
+        # Process orders and calculate statistics
+        product_purchases = {}
+        monthly_spending = {}
+        
+        for order in user_orders:
+            order['_id'] = str(order['_id'])
+            order['user_id'] = str(order['user_id'])
+            order['product_id'] = str(order['product_id'])
             
-            # Calculate sale amount using our helper function
-            sale_amount = calculate_sale_amount(sale)  # Already returns float
-            product_sales[sale['product_id']]['revenue'] += sale_amount
-        except (ValueError, TypeError) as e:
-            print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-            continue
+            # Calculate order total
+            order_total = float(calculate_sale_amount(order))
+            total_spent += order_total
+            order['total'] = order_total
+            
+            # Track product purchases
+            product_id = order['product_id']
+            if product_id not in product_purchases:
+                product = products_update.find_one({'_id': ObjectId(product_id)})
+                if product:
+                    product_purchases[product_id] = {
+                        'name': product['name'],
+                        'quantity': 0,
+                        'total_spent': 0
+                    }
+            
+            if product_id in product_purchases:
+                quantity = int(extract_numeric_value(order.get('quantity', 0)))
+                product_purchases[product_id]['quantity'] += quantity
+                product_purchases[product_id]['total_spent'] += order_total
+            
+            # Track monthly spending
+            order_date = order.get('date', datetime.datetime.now())
+            if isinstance(order_date, str):
+                order_date = datetime.datetime.fromisoformat(order_date.replace('Z', '+00:00'))
+            month_key = order_date.strftime('%Y-%m')
+            
+            if month_key not in monthly_spending:
+                monthly_spending[month_key] = 0
+            monthly_spending[month_key] += order_total
+        
+        # Get top purchased products
+        top_products = sorted(product_purchases.values(), key=lambda x: x['total_spent'], reverse=True)[:5]
+        
+        # Calculate user statistics
+        user_stats = {
+            'total_spent': total_spent,
+            'total_orders': total_orders,
+            'average_order_value': total_spent / total_orders if total_orders > 0 else 0,
+            'favorite_product': top_products[0]['name'] if top_products else 'None',
+            'join_date': user.get('join_date', 'Unknown'),
+            'last_order': max([order.get('date', datetime.datetime.min) for order in user_orders]) if user_orders else 'Never'
+        }
+        
+        return render_template('user_detail.html', 
+                             user=user, 
+                             user_orders=user_orders,
+                             user_stats=user_stats,
+                             top_products=top_products,
+                             monthly_spending=monthly_spending)
+    
+    except Exception as e:
+        print(f"Error in user details: {e}")
+        flash('Error loading user details', 'error')
+        return redirect(url_for('admin_dashboard'))
 
-    top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
+# PDF Export Route
+@app.route('/admin/export-user-pdf/<user_id>')
+@admin_required
+def export_user_pdf(user_id):
+    try:
+        # Get user data
+        user = users.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get user orders
+        user_orders = list(products_sold.find({'user_id': ObjectId(user_id)}))
+        total_spent = sum(float(calculate_sale_amount(order)) for order in user_orders)
+        
+        # Create PDF
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+        
+        # Header
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, height - 50, f"Sales Sense AI - User Report")
+        p.setFont("Helvetica", 12)
+        p.drawString(50, height - 80, f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # User Information
+        y_position = height - 120
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(50, y_position, "User Information")
+        y_position -= 30
+        
+        p.setFont("Helvetica", 10)
+        user_info = [
+            f"Name: {user.get('name', 'N/A')}",
+            f"Email: {user.get('email', 'N/A')}",
+            f"Join Date: {user.get('join_date', 'N/A')}",
+            f"Total Orders: {len(user_orders)}",
+            f"Total Spent: ${total_spent:.2f}"
+        ]
+        
+        for info in user_info:
+            p.drawString(70, y_position, info)
+            y_position -= 20
+        
+        # Order History
+        y_position -= 20
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(50, y_position, "Recent Orders")
+        y_position -= 30
+        
+        p.setFont("Helvetica", 8)
+        headers = ["Date", "Product", "Quantity", "Price", "Total"]
+        x_positions = [70, 150, 250, 320, 400]
+        
+        for i, header in enumerate(headers):
+            p.drawString(x_positions[i], y_position, header)
+        y_position -= 15
+        
+        for order in user_orders[:20]:  # Limit to recent 20 orders
+            if y_position < 50:  # Start new page if needed
+                p.showPage()
+                y_position = height - 50
+            
+            order_date = order.get('date', datetime.datetime.now())
+            if isinstance(order_date, datetime.datetime):
+                date_str = order_date.strftime('%Y-%m-%d')
+            else:
+                date_str = str(order_date)[:10]
+            
+            product_name = order.get('product_name', 'Unknown')[:15]  # Truncate long names
+            quantity = str(order.get('quantity', '0'))
+            price = f"${float(order.get('price', 0)):.2f}"
+            total = f"${float(calculate_sale_amount(order)):.2f}"
+            
+            row_data = [date_str, product_name, quantity, price, total]
+            for i, data in enumerate(row_data):
+                p.drawString(x_positions[i], y_position, str(data))
+            y_position -= 15
+        
+        p.save()
+        buffer.seek(0)
+        
+        from flask import Response
+        return Response(
+            buffer.getvalue(),
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename=user_report_{user_id}.pdf'}
+        )
+    
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        return jsonify({'error': 'Failed to generate PDF'}), 500
 
-    # Ensure all numeric values in stats are floats
-    stats = {
-        'total_users': int(stats['total_users']),
-        'new_users_today': int(stats['new_users_today']),
-        'total_sales': float(stats['total_sales']),
-        'sales_today': float(stats['sales_today']),
-        'total_products': int(stats['total_products']),
-        'low_stock_products': int(stats['low_stock_products']),
-        'total_workers': int(stats['total_workers']),
-        'active_workers': int(stats['active_workers'])
-    }
+# Email Marketing Route
+@app.route('/admin/send-marketing-email/<user_id>')
+@admin_required
+def send_marketing_email(user_id):
+    try:
+        # Get user data
+        user = users.find_one({'_id': ObjectId(user_id)})
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get user's most purchased products
+        user_orders = list(products_sold.find({'user_id': ObjectId(user_id)}))
+        product_purchases = {}
+        
+        for order in user_orders:
+            product_id = order['product_id']
+            if product_id not in product_purchases:
+                product_purchases[product_id] = 0
+            quantity = int(extract_numeric_value(order.get('quantity', 0)))
+            product_purchases[product_id] += quantity
+        
+        # Get top purchased product
+        if product_purchases:
+            top_product_id = max(product_purchases, key=product_purchases.get)
+            top_product = products_update.find_one({'_id': ObjectId(top_product_id)})
+            
+            if top_product:
+                # Create personalized email
+                subject = f"Special 15% OFF on {top_product['name']} - Just for You!"
+                
+                html_body = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h2 style="color: #007bff;">Hi {user.get('name', 'Valued Customer')}!</h2>
+                        
+                        <p>We noticed you're a big fan of <strong>{top_product['name']}</strong>! 📦</p>
+                        
+                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <h3 style="color: #28a745; text-align: center;">🎉 SPECIAL OFFER JUST FOR YOU! 🎉</h3>
+                            <h2 style="color: #dc3545; text-align: center; font-size: 2em;">15% OFF</h2>
+                            <p style="text-align: center; font-size: 1.2em;">On your favorite product: <strong>{top_product['name']}</strong></p>
+                        </div>
+                        
+                        <p>Since you've purchased this product <strong>{product_purchases[top_product_id]} times</strong>, we thought you'd love this exclusive discount!</p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="#" style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Shop Now & Save 15%</a>
+                        </div>
+                        
+                        <p style="font-size: 0.9em; color: #666;">
+                            This offer is valid for 7 days only. Don't miss out!<br>
+                            Best regards,<br>
+                            The Sales Sense AI Team
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                # Send email
+                if send_email(user['email'], subject, html_body):
+                    return jsonify({'success': True, 'message': f'Marketing email sent to {user["name"]}!'})
+                else:
+                    return jsonify({'error': 'Failed to send email'}), 500
+        
+        return jsonify({'error': 'No purchase history found for personalized email'}), 400
+    
+    except Exception as e:
+        print(f"Error sending marketing email: {e}")
+        return jsonify({'error': 'Failed to send marketing email'}), 500
 
-    # Convert any numeric values in top_products to appropriate types
-    for product in top_products:
-        product['units_sold'] = int(product['units_sold'])
-        product['revenue'] = float(product['revenue'])
+# Chatbot functionality
+@app.route('/admin/chatbot')
+@admin_required
+def chatbot():
+    return render_template('chatbot.html')
 
-    return render_template('admin_dashboard.html',
-                         stats=stats,
-                         users=users_data,
-                         products=products_data,
-                         workers=workers_data,
-                         sales_data=sales_data,
-                         category_data=category_data,
-                         top_products=top_products)
+@app.route('/admin/chat', methods=['POST'])
+@admin_required
+def admin_chat():
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '').lower().strip()
+        
+        # Simple pattern matching chatbot (can be enhanced with AI later)
+        response = process_admin_query(user_message)
+        
+        # Store chat history
+        chat_history.insert_one({
+            'user_type': 'admin',
+            'message': user_message,
+            'response': response,
+            'timestamp': datetime.datetime.now()
+        })
+        
+        return jsonify({'response': response})
+    
+    except Exception as e:
+        print(f"Error in chat: {e}")
+        return jsonify({'response': 'Sorry, I encountered an error processing your request.'})
+
+def process_admin_query(query):
+    """Process admin queries and return appropriate responses"""
+    try:
+        # Sales related queries
+        if any(word in query for word in ['sales', 'revenue', 'money', 'earning']):
+            return get_sales_summary()
+        
+        # User related queries
+        elif any(word in query for word in ['user', 'customer', 'client']):
+            return get_user_summary()
+        
+        # Product related queries
+        elif any(word in query for word in ['product', 'inventory', 'stock']):
+            return get_product_summary()
+        
+        # Worker related queries
+        elif any(word in query for word in ['worker', 'employee', 'staff']):
+            return get_worker_summary()
+        
+        # Top products
+        elif any(word in query for word in ['top', 'best', 'popular']):
+            return get_top_products_summary()
+        
+        # Low stock
+        elif any(word in query for word in ['low stock', 'shortage', 'running out']):
+            return get_low_stock_summary()
+        
+        # Recent activity
+        elif any(word in query for word in ['recent', 'today', 'latest']):
+            return get_recent_activity_summary()
+        
+        # General greetings
+        elif any(word in query for word in ['hello', 'hi', 'hey', 'help']):
+            return """Hello! I'm your Sales Sense AI assistant. I can help you with:
+            
+            📊 Sales data and revenue information
+            👥 User and customer analytics  
+            📦 Product and inventory status
+            👷 Worker management information
+            🏆 Top performing products
+            ⚠️ Low stock alerts
+            📅 Recent activity updates
+            
+            Just ask me anything about your business!"""
+        
+        else:
+            return """I'm not sure about that specific query. Try asking about:
+            - Sales and revenue
+            - Users and customers
+            - Products and inventory
+            - Workers and staff
+            - Top performing items
+            - Stock levels
+            - Recent activity"""
+    
+    except Exception as e:
+        print(f"Error processing query: {e}")
+        return "Sorry, I encountered an error processing your request."
+
+def get_sales_summary():
+    """Get sales summary for chatbot"""
+    try:
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        total_sales = sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())
+        today_sales = sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
+            'date': {'$gte': today}
+        }))
+        
+        return f"""📊 Sales Summary:
+        
+💰 Total Revenue: ${total_sales:.2f}
+📅 Today's Sales: ${today_sales:.2f}
+📈 Growth: {((today_sales / (total_sales - today_sales)) * 100) if (total_sales - today_sales) > 0 else 0:.1f}% vs yesterday
+
+Keep up the great work! 🚀"""
+    except:
+        return "Unable to fetch sales data at the moment."
+
+def get_user_summary():
+    """Get user summary for chatbot"""
+    try:
+        total_users = users.count_documents({})
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        new_today = users.count_documents({'created_at': {'$gte': today}})
+        
+        return f"""👥 User Analytics:
+        
+📊 Total Users: {total_users}
+🆕 New Today: {new_today}
+📈 Growth Rate: {(new_today / total_users * 100) if total_users > 0 else 0:.1f}%
+
+Your user base is growing! 🎉"""
+    except:
+        return "Unable to fetch user data at the moment."
+
+def get_product_summary():
+    """Get product summary for chatbot"""
+    try:
+        total_products = products_update.count_documents({})
+        low_stock = sum(1 for product in products_update.find() 
+                       for variant in product.get('variants', []) 
+                       if isinstance(variant, dict) and variant.get('stock', 0) < 10)
+        
+        return f"""📦 Inventory Status:
+        
+📋 Total Products: {total_products}
+⚠️ Low Stock Items: {low_stock}
+✅ Well Stocked: {total_products - low_stock}
+
+{f'⚠️ Attention needed for {low_stock} items!' if low_stock > 0 else '✅ All products well stocked!'}"""
+    except:
+        return "Unable to fetch product data at the moment."
+
+def get_worker_summary():
+    """Get worker summary for chatbot"""
+    try:
+        total_workers = workers_update.count_documents({})
+        active_workers = workers_update.count_documents({
+            'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
+        })
+        
+        return f"""👷 Workforce Overview:
+        
+👥 Total Workers: {total_workers}
+🟢 Active Today: {active_workers}
+📊 Activity Rate: {(active_workers / total_workers * 100) if total_workers > 0 else 0:.1f}%
+
+Your team is doing great! 💪"""
+    except:
+        return "Unable to fetch worker data at the moment."
+
+def get_top_products_summary():
+    """Get top products summary for chatbot"""
+    try:
+        product_sales = {}
+        for sale in products_sold.find():
+            product_id = sale['product_id']
+            if product_id not in product_sales:
+                product = products_update.find_one({'_id': ObjectId(product_id)})
+                if product:
+                    product_sales[product_id] = {
+                        'name': product['name'],
+                        'revenue': 0
+                    }
+            
+            if product_id in product_sales:
+                product_sales[product_id]['revenue'] += float(calculate_sale_amount(sale))
+        
+        top_3 = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:3]
+        
+        response = "🏆 Top Performing Products:\n\n"
+        for i, product in enumerate(top_3, 1):
+            response += f"{i}. {product['name']} - ${product['revenue']:.2f}\n"
+        
+        return response + "\nThese are your bestsellers! 🌟"
+    except:
+        return "Unable to fetch top products data at the moment."
+
+def get_low_stock_summary():
+    """Get low stock summary for chatbot"""
+    try:
+        low_stock_items = []
+        for product in products_update.find():
+            for variant in product.get('variants', []):
+                if isinstance(variant, dict) and variant.get('stock', 0) < 10:
+                    low_stock_items.append({
+                        'name': product['name'],
+                        'variant': variant.get('size', 'Default'),
+                        'stock': variant.get('stock', 0)
+                    })
+        
+        if low_stock_items:
+            response = "⚠️ Low Stock Alert:\n\n"
+            for item in low_stock_items[:5]:  # Show top 5
+                response += f"• {item['name']} ({item['variant']}) - {item['stock']} left\n"
+            
+            return response + f"\n📦 {len(low_stock_items)} items need restocking!"
+        else:
+            return "✅ Great news! All products are well stocked. No immediate restocking needed."
+    except:
+        return "Unable to fetch stock data at the moment."
+
+def get_recent_activity_summary():
+    """Get recent activity summary for chatbot"""
+    try:
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        
+        new_users = users.count_documents({'created_at': {'$gte': today}})
+        today_sales = list(products_sold.find({'date': {'$gte': today}}))
+        today_revenue = sum(float(calculate_sale_amount(sale)) for sale in today_sales)
+        
+        return f"""📅 Today's Activity:
+        
+🆕 New Registrations: {new_users}
+🛒 Orders Placed: {len(today_sales)}
+💰 Revenue Generated: ${today_revenue:.2f}
+
+{f'🎉 Busy day ahead!' if len(today_sales) > 5 else '📈 Steady progress!'}"""
+    except:
+        return "Unable to fetch recent activity data at the moment."
+
+# Auto-refresh functionality
+auto_refresh_cache = {}
+cache_lock = threading.Lock()
+
+def refresh_data_cache():
+    """Background function to refresh data cache every 15 minutes"""
+    while True:
+        try:
+            with cache_lock:
+                print("Refreshing data cache...")
+                
+                # Cache statistics
+                auto_refresh_cache['stats'] = {
+                    'total_users': users.count_documents({}),
+                    'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
+                    'total_products': products_update.count_documents({}),
+                    'total_workers': workers_update.count_documents({})
+                }
+                
+                auto_refresh_cache['last_updated'] = datetime.datetime.now()
+                print("Data cache refreshed successfully")
+                
+        except Exception as e:
+            print(f"Error refreshing cache: {e}")
+        
+        # Wait 15 minutes (900 seconds)
+        time.sleep(900)
+
+def start_auto_refresh_thread():
+    """Start the auto-refresh background thread"""
+    refresh_thread = threading.Thread(target=refresh_data_cache, daemon=True)
+    refresh_thread.start()
+    print("Auto-refresh thread started")
+
+@app.route('/admin/cache-status')
+@admin_required
+def cache_status():
+    """Get cache status for debugging"""
+    with cache_lock:
+        return jsonify({
+            'cache_size': len(auto_refresh_cache),
+            'last_updated': auto_refresh_cache.get('last_updated'),
+            'stats': auto_refresh_cache.get('stats', {})
+        })
+
+# API endpoint for business stats (for home page)
+@app.route('/api/business-stats')
+def business_stats_api():
+    try:
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        
+        stats = {
+            'total_users': users.count_documents({}),
+            'new_users_today': users.count_documents({'created_at': {'$gte': today}}),
+            'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
+            'sales_today': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
+                'date': {'$gte': today}
+            }))),
+            'total_products': products_update.count_documents({}),
+            'total_workers': workers_update.count_documents({})
+        }
+        
+        return jsonify(stats)
+    except Exception as e:
+        print(f"Error getting business stats: {e}")
+        return jsonify({
+            'total_users': 0,
+            'new_users_today': 0,
+            'total_sales': 0.0,
+            'sales_today': 0.0,
+            'total_products': 0,
+            'total_workers': 0
+        })
 
 @app.route('/admin/create-worker', methods=['POST'])
 def create_worker():
@@ -757,36 +1337,83 @@ def admin_login():
         if not email or not password:
             flash('Email and password are required', 'error')
             return render_template('admin_login.html')
+        
+        try:
+            # Check database connection first
+            if db is None:
+                flash('Database connection error. Please contact administrator.', 'error')
+                return render_template('admin_login.html')
             
-        # Check for default admin credentials
-        if email == 'admin' and password == 'admin123':
-            # Set session with default admin info
-            admin = admins.find_one({'email': 'admin'})
-            if admin:
-                session['admin_id'] = str(admin['_id'])
+            # Check for default admin credentials (both 'admin' and 'admin@salessense.com')
+            if (email in ['admin', 'admin@salessense.com'] and password == 'admin123'):
+                # Try to find existing admin user
+                admin = admins.find_one({'$or': [{'email': 'admin'}, {'email': 'admin@salessense.com'}]})
+                
+                if not admin:
+                    # Create admin user if it doesn't exist
+                    admin = {
+                        'email': 'admin@salessense.com',
+                        'password': 'admin123',
+                        'name': 'Admin',
+                        'role': 'admin',
+                        'created_at': datetime.datetime.utcnow()
+                    }
+                    result = admins.insert_one(admin)
+                    session['admin_id'] = str(result.inserted_id)
+                    print("Created new admin user")
+                else:
+                    session['admin_id'] = str(admin['_id'])
+                    print("Found existing admin user")
+                
+                session['admin_name'] = 'Admin'
+                session['admin_logged_in'] = True
+                session['login_time'] = datetime.datetime.utcnow().timestamp()
+                session['last_activity'] = datetime.datetime.utcnow().timestamp()
+                
+                flash('Login successful!', 'success')
+                return redirect(url_for('admin_dashboard'))
             else:
-                # Create admin user if it doesn't exist
-                admin = {
-                    'email': 'admin',
-                    'password': 'admin123',
-                    'name': 'Admin',
-                    'role': 'admin',
-                    'created_at': datetime.datetime.utcnow()
-                }
-                result = admins.insert_one(admin)
-                session['admin_id'] = str(result.inserted_id)
+                # Check for other admin users in database
+                admin = admins.find_one({'email': email, 'password': password})
+                if admin:
+                    session['admin_id'] = str(admin['_id'])
+                    session['admin_name'] = admin.get('name', 'Admin')
+                    session['admin_logged_in'] = True
+                    session['login_time'] = datetime.datetime.utcnow().timestamp()
+                    session['last_activity'] = datetime.datetime.utcnow().timestamp()
+                    
+                    flash('Login successful!', 'success')
+                    return redirect(url_for('admin_dashboard'))
+                
+            flash('Invalid credentials. Use admin/admin123 for default login.', 'error')
             
-            session['admin_name'] = 'Admin'
-            session['login_time'] = datetime.datetime.utcnow().timestamp()
-            session['last_activity'] = datetime.datetime.utcnow().timestamp()
+        except Exception as e:
+            print(f"Admin login error: {e}")
+            flash(f'Login error: {str(e)}', 'error')
             
-            flash('Login successful!', 'success')
-            return redirect(url_for('admin_dashboard'))
-            
-        flash('Invalid credentials', 'error')
         return render_template('admin_login.html')
     
     return render_template('admin_login.html')
+
+@app.route('/admin/debug')
+def admin_debug():
+    """Debug route to check admin setup"""
+    try:
+        if db is None:
+            return jsonify({'error': 'Database not connected'})
+        
+        # Check admin users
+        admin_count = admins.count_documents({})
+        admin_users = list(admins.find({}, {'password': 0}))  # Don't return passwords
+        
+        return jsonify({
+            'database_connected': True,
+            'admin_count': admin_count,
+            'admin_users': admin_users,
+            'collections': db.list_collection_names()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'database_connected': False})
 
 
 
@@ -1174,6 +1801,8 @@ def test_db_connection():
         }), 500
 
 if __name__ == '__main__':
+    # Start auto-refresh background thread
+    start_auto_refresh_thread()
     # Use environment variable for port (Render requirement)
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=True)

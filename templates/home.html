@@ -1,35 +1,313 @@
 {% extends "base.html" %}
 
+{% block title %}Sales Sense AI - Business Intelligence Platform{% endblock %}
+
 {% block content %}
 <div class="home-container">
-    <h1 class="text-center mb-5">Welcome to SalesSense</h1>
-    <div class="row">
+    <!-- Hero Section -->
+    <div class="hero-section text-center mb-5">
+        <h1 class="display-4 mb-4">Sales Sense AI</h1>
+        <p class="lead">Your Complete Business Intelligence Platform</p>
+        <p class="text-muted">Real-time analytics, smart insights, and automated reporting</p>
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h3 class="text-center mb-4">📊 Business Overview</h3>
+        </div>
         <div class="col-md-3">
-            <div class="card">
+            <div class="card bg-gradient-primary text-white h-100">
                 <div class="card-body text-center">
-                    <h3 class="card-title">Admin</h3>
-                    <p class="card-text">Manage system settings and users</p>
-                    <a href="/admin" class="btn btn-primary">Access Admin Panel</a>
+                    <i class="bi bi-people-fill mb-2" style="font-size: 2rem;"></i>
+                    <h4 id="totalUsers">Loading...</h4>
+                    <p class="mb-0">Total Users</p>
+                    <small id="newUsersToday">...</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card">
+            <div class="card bg-gradient-success text-white h-100">
                 <div class="card-body text-center">
-                    <h3 class="card-title">Worker</h3>
-                    <p class="card-text">Manage daily operations</p>
-                    <a href="/worker" class="btn btn-primary">Access Worker Panel</a>
+                    <i class="bi bi-cash-stack mb-2" style="font-size: 2rem;"></i>
+                    <h4 id="totalRevenue">Loading...</h4>
+                    <p class="mb-0">Total Revenue</p>
+                    <small>All Time Sales</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card">
+            <div class="card bg-gradient-info text-white h-100">
                 <div class="card-body text-center">
-                    <h3 class="card-title">Labor</h3>
-                    <p class="card-text">Track labor activities</p>
-                    <a href="/labor" class="btn btn-primary">Access Labor Panel</a>
+                    <i class="bi bi-box-seam mb-2" style="font-size: 2rem;"></i>
+                    <h4 id="totalProducts">Loading...</h4>
+                    <p class="mb-0">Products</p>
+                    <small>In Inventory</small>
                 </div>
             </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-gradient-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up-arrow mb-2" style="font-size: 2rem;"></i>
+                    <h4 id="todaySales">Loading...</h4>
+                    <p class="mb-0">Today's Sales</p>
+                    <small>Real-time Performance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Panels -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h3 class="text-center mb-4">🚀 System Access</h3>
+        </div>
+        <div class="col-md-4">
+            <div class="card access-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="card-title">Admin Panel</h3>
+                    <p class="card-text">Complete system management, analytics, and business intelligence dashboard</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li>📊 Advanced Analytics</li>
+                        <li>👥 User Management</li>
+                        <li>📧 Email Marketing</li>
+                        <li>🤖 AI Assistant</li>
+                        <li>📈 Real-time Reports</li>
+                    </ul>
+                    <a href="/admin" class="btn btn-primary btn-lg">Access Admin Panel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card access-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-workspace text-success mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="card-title">Worker Panel</h3>
+                    <p class="card-text">Streamlined interface for daily operations and product management</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li>📦 Product Management</li>
+                        <li>📝 Order Processing</li>
+                        <li>📊 Performance Tracking</li>
+                        <li>🔔 Task Notifications</li>
+                        <li>📋 Daily Reports</li>
+                    </ul>
+                    <a href="/worker" class="btn btn-success btn-lg">Access Worker Panel</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card access-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-gear-wide-connected text-info mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="card-title">Labor Management</h3>
+                    <p class="card-text">Track workforce activities and optimize labor efficiency</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li>⏰ Time Tracking</li>
+                        <li>📊 Productivity Analytics</li>
+                        <li>👷 Worker Assignments</li>
+                        <li>📈 Performance Metrics</li>
+                        <li>💼 Resource Planning</li>
+                    </ul>
+                    <a href="/labor" class="btn btn-info btn-lg">Access Labor Panel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h3 class="text-center mb-4">🛒 Customer Experience</h3>
+        </div>
+        <div class="col-md-6">
+            <div class="card shopping-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-shop text-warning mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="card-title">Browse Products</h3>
+                    <p class="card-text">Explore our comprehensive product catalog with smart recommendations</p>
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2">AI Recommendations</span>
+                        <span class="badge bg-success me-2">Real-time Inventory</span>
+                        <span class="badge bg-info">Secure Shopping</span>
+                    </div>
+                    <a href="/products" class="btn btn-warning btn-lg">Start Shopping</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shopping-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-circle text-secondary mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="card-title">User Account</h3>
+                    <p class="card-text">Manage your profile, orders, and personalized shopping experience</p>
+                    <div class="mb-3">
+                        <span class="badge bg-secondary me-2">Order History</span>
+                        <span class="badge bg-primary me-2">Wishlist</span>
+                        <span class="badge bg-success">Rewards</span>
+                    </div>
+                    <a href="/user/products" class="btn btn-secondary btn-lg">My Account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h3 class="text-center mb-4">✨ Platform Features</h3>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card text-center">
+                <i class="bi bi-robot text-primary mb-3" style="font-size: 2.5rem;"></i>
+                <h5>AI Assistant</h5>
+                <p class="text-muted">Smart chatbot for instant business insights</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card text-center">
+                <i class="bi bi-graph-up text-success mb-3" style="font-size: 2.5rem;"></i>
+                <h5>Real-time Analytics</h5>
+                <p class="text-muted">Live dashboard with auto-refresh every 15 minutes</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card text-center">
+                <i class="bi bi-envelope-paper text-info mb-3" style="font-size: 2.5rem;"></i>
+                <h5>Email Marketing</h5>
+                <p class="text-muted">Automated personalized customer outreach</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card text-center">
+                <i class="bi bi-file-pdf text-danger mb-3" style="font-size: 2.5rem;"></i>
+                <h5>PDF Reports</h5>
+                <p class="text-muted">Detailed analytics exported in professional formats</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 60px 20px;
+    border-radius: 15px;
+    margin-bottom: 3rem;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3) !important;
+}
+
+.bg-gradient-success {
+    background: linear-gradient(45deg, #28a745, #1e7e34) !important;
+}
+
+.bg-gradient-info {
+    background: linear-gradient(45deg, #17a2b8, #117a8b) !important;
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(45deg, #ffc107, #e0a800) !important;
+}
+
+.access-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.access-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.shopping-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.shopping-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card {
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
+}
+
+.home-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.btn-lg {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 25px;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 40px 15px;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<script>
+// Load business statistics on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadBusinessStats();
+    
+    // Refresh stats every 5 minutes
+    setInterval(loadBusinessStats, 300000);
+});
+
+async function loadBusinessStats() {
+    try {
+        const response = await fetch('/api/business-stats');
+        const data = await response.json();
+        
+        document.getElementById('totalUsers').textContent = data.total_users || '0';
+        document.getElementById('newUsersToday').textContent = `+${data.new_users_today || 0} today`;
+        document.getElementById('totalRevenue').textContent = `$${(data.total_sales || 0).toFixed(2)}`;
+        document.getElementById('totalProducts').textContent = data.total_products || '0';
+        document.getElementById('todaySales').textContent = `$${(data.sales_today || 0).toFixed(2)}`;
+        
+    } catch (error) {
+        console.error('Error loading business stats:', error);
+        // Set fallback values
+        document.getElementById('totalUsers').textContent = '--';
+        document.getElementById('newUsersToday').textContent = '';
+        document.getElementById('totalRevenue').textContent = '--';
+        document.getElementById('totalProducts').textContent = '--';
+        document.getElementById('todaySales').textContent = '--';
+    }
+}
+</script>
+
+    <!-- Additional Features Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h3 class="text-center mb-4">🚀 Quick Actions</h3>
         </div>
         <div class="col-md-3">
             <div class="card">

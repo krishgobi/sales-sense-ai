@@ -1,44 +1,50 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard - Sales Sense AI{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
-        <nav class="col-md-2 d-md-block bg-dark sidebar collapse">
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
             <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-light">
+                    <span>Admin Dashboard</span>
+                </h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link text-white active" href="#overview">
+                        <a class="nav-link text-light active" href="#overview">
                             <i class="bi bi-speedometer2"></i> Overview
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="#users">
+                        <a class="nav-link text-light" href="#users">
                             <i class="bi bi-people"></i> Users
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="#products">
-                            <i class="bi bi-box-seam"></i> Product Reports
+                        <a class="nav-link text-light" href="#products">
+                            <i class="bi bi-box"></i> Products
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="#workers">
+                        <a class="nav-link text-light" href="#workers">
                             <i class="bi bi-person-badge"></i> Workers
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="#email">
-                            <i class="bi bi-envelope"></i> Email Marketing
+                        <a class="nav-link text-light" href="#reports">
+                            <i class="bi bi-file-earmark-text"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#email">
+                            <i class="bi bi-envelope"></i> Email
                         </a>
                     </li>
                 </ul>
             </div>
         </nav>
 
-        <!-- Main content -->
+        <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1>Admin Dashboard</h1>
@@ -49,94 +55,41 @@
 
             <!-- Overview Section -->
             <section id="overview" class="mb-4">
-                <h2>Business Overview</h2>
                 <div class="row">
-                    <!-- Statistics Cards -->
                     <div class="col-md-3">
                         <div class="card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <h6>Total Users</h6>
-                                <h3>{{ stats.total_users }}</h3>
+                            <div class="card-body">
+                                <h5 class="card-title">Total Users</h5>
+                                <p class="display-4">{{ stats.total_users }}</p>
                                 <small>{{ stats.new_users_today }} new today</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h6>Total Revenue</h6>
-                                <h3>${{ "%.2f"|format(stats.total_sales) }}</h3>
-                                <small>All time</small>
+                            <div class="card-body">
+                                <h5 class="card-title">Total Sales</h5>
+                                <p class="display-4">${{ stats.total_sales }}</p>
+                                <small>${{ stats.sales_today }} today</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card bg-info text-white">
-                            <div class="card-body text-center">
-                                <h6>Today's Sales</h6>
-                                <h3>${{ "%.2f"|format(stats.sales_today) }}</h3>
-                                <small class="text-muted">Today</small>
+                            <div class="card-body">
+                                <h5 class="card-title">Products</h5>
+                                <p class="display-4">{{ stats.total_products }}</p>
+                                <small>{{ stats.low_stock_products }} low stock</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card bg-warning text-dark">
-                            <div class="card-body text-center">
-                                <h6>Avg Order Value</h6>
-                                <h3>${{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users > 0 else 0) }}</h3>
-                                <small>Per customer</small>
+                            <div class="card-body">
+                                <h5 class="card-title">Workers</h5>
+                                <p class="display-4">{{ stats.total_workers }}</p>
+                                <small>{{ stats.active_workers }} active now</small>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <h5>Sales Trend (Last 7 Days)</h5>
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Revenue by Category</h5>
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-12">
-                        <h5>Top Selling Products</h5>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Product</th>
-                                        <th>Units Sold</th>
-                                        <th>Revenue</th>
-                                        <th>Performance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for product in top_products %}
-                                    <tr>
-                                        <td>{{ loop.index }}</td>
-                                        <td>{{ product.name }}</td>
-                                        <td>{{ product.units_sold }}</td>
-                                        <td>${{ "%.2f"|format(product.revenue) }}</td>
-                                        <td>
-                                            <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar bg-success" role="progressbar" 
-                                                     style="width: {{ (product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0 }}%">
-                                                    {{ "%.1f"|format((product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0) }}%
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% if not top_products %}
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">No sales data available</td>
-                                    </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -145,8 +98,11 @@
             <!-- Users Section -->
             <section id="users" class="mb-4">
                 <div class="card">
-                    <div class="card-header">
-                        <h3>User Management</h3>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Users</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="bi bi-download"></i> Export Data
+                        </button>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -156,19 +112,21 @@
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Join Date</th>
+                                        <th>Orders</th>
+                                        <th>Total Spent</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for user in recent_users %}
+                                    {% for user in users %}
                                     <tr>
                                         <td>{{ user.name }}</td>
                                         <td>{{ user.email }}</td>
-                                        <td>{{ user.join_date }}</td>
+                                        <td>{{ user.join_date|format_date }}</td>
+                                        <td>{{ user.get('orders', [])|length }}</td>
+                                        <td>${{ user.get('total_spent', 0)|round(2) }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-primary" onclick="viewUserDetails('{{ user._id }}')">
-                                                <i class="bi bi-eye"></i> View
-                                            </button>
+                                            <button class="btn btn-sm btn-info" onclick="viewUserDetails('{{ user._id }}')">View</button>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -179,46 +137,62 @@
                 </div>
             </section>
 
-            <!-- Product Reports Section -->
+            <!-- Products Section -->
             <section id="products" class="mb-4">
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Product Reports</h3>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Products</h3>
+                        <div>
+                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#lowStockModal">
+                                <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="bi bi-plus-circle"></i> Add Product
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Total Products</h6>
-                                        <h2>{{ product_summary.total_products }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Stock Value</h6>
-                                        <h2>${{ "%.2f"|format(product_summary.total_stock_value) }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Total Units</h6>
-                                        <h2>{{ product_summary.total_stock_quantity }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Low Stock Items</h6>
-                                        <h2 class="text-warning">{{ product_summary.low_stock_count }}</h2>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Variants</th>
+                                        <th>Total Stock</th>
+                                        <th>Added By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <td>{{ product|safe_get('name', 'Unnamed Product') }}</td>
+                                        <td>{{ product|safe_get('category', 'Uncategorized') }}</td>
+                                        <td>
+                                            {% for variant in product.get('variants', []) %}
+                                                {% if variant is mapping %}
+                                                <small class="d-block">
+                                                    {{ variant|safe_get('quantity', 'N/A') }} - 
+                                                    ${{ variant|safe_get('price', '0.00') }} 
+                                                    (Stock: {{ variant|safe_get('stock', 0) }})
+                                                </small>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if not product.get('variants') %}
+                                                <small class="text-muted">No variants</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ product.get('variants', [])|safe_sum(attribute='stock') }}</td>
+                                        <td>{{ product|safe_get('added_by_name', 'System') }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="editProduct('{{ product._id }}')">Edit</button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('{{ product._id }}')">Delete</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -240,16 +214,20 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Email</th>
+                                        <th>Join Date</th>
                                         <th>Products Added</th>
+                                        <th>Last Active</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for worker in workers_summary %}
+                                    {% for worker in workers %}
                                     <tr>
                                         <td>{{ worker.name }}</td>
                                         <td>{{ worker.email }}</td>
-                                        <td>{{ worker.total_products_added or 0 }}</td>
+                                        <td>{{ worker.join_date|format_date }}</td>
+                                        <td>{{ worker.get('products_added', [])|length }}</td>
+                                        <td>{{ worker.last_active|format_date('%Y-%m-%d %H:%M') }}</td>
                                         <td>
                                             <button class="btn btn-sm btn-warning" onclick="resetWorkerPassword('{{ worker._id }}')">Reset Password</button>
                                             <button class="btn btn-sm btn-danger" onclick="deactivateWorker('{{ worker._id }}')">Deactivate</button>
@@ -258,6 +236,52 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Reports</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h4>Top Selling Products</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Category</th>
+                                                <th>Units Sold</th>
+                                                <th>Revenue</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for product in top_products %}
+                                            <tr>
+                                                <td>{{ product.name }}</td>
+                                                <td>{{ product.category }}</td>
+                                                <td>{{ product.units_sold }}</td>
+                                                <td>${{ product.revenue }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -346,42 +370,6 @@
         </div>
     </div>
 </div>
-
-<!-- Add Worker Modal -->
-<div class="modal fade" id="addWorkerModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Worker</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addWorkerForm" method="POST" action="{{ url_for('create_worker') }}">
-                    <div class="mb-3">
-                        <label for="workerName" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="workerName" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="workerEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="workerEmail" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="workerPassword" class="form-label">Password</label>
-                        <input type="text" class="form-control" id="workerPassword" name="password" value="worker123" required>
-                        <small class="form-text text-muted">In production this should be auto-generated and sent securely.</small>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Create Worker</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Include Chatbot -->
-{% include 'chatbot.html' %}
 
 <style>
 .sidebar {

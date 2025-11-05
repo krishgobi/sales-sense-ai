@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}User Details - {{ user.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 d-md-block bg-dark sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('admin_dashboard') }}">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('admin_dashboard') }}#users">
+                            <i class="bi bi-people"></i> Back to Users
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1>User Details: {{ user.name }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button class="btn btn-primary me-2" onclick="exportUserPDF('{{ user._id }}')">
+                        <i class="bi bi-file-pdf"></i> Export PDF
+                    </button>
+                    <button class="btn btn-success" onclick="sendMarketingEmail('{{ user._id }}')">
+                        <i class="bi bi-envelope"></i> Send Marketing Email
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Spent</h6>
+                                    <h3>${{ "%.2f"|format(user_stats.total_spent) }}</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-currency-dollar" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Orders</h6>
+                                    <h3>{{ user_stats.total_orders }}</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-bag-check" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Avg Order Value</h6>
+                                    <h3>${{ "%.2f"|format(user_stats.average_order_value) }}</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Favorite Product</h6>
+                                    <p class="mb-0" style="font-size: 0.9rem;">{{ user_stats.favorite_product }}</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-star-fill" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Information -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Name:</strong></td>
+                                    <td>{{ user.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Join Date:</strong></td>
+                                    <td>{{ user_stats.join_date }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Last Order:</strong></td>
+                                    <td>{{ user_stats.last_order }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Top Purchased Products</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if top_products %}
+                                {% for product in top_products %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>{{ product.name }}</strong><br>
+                                        <small class="text-muted">{{ product.quantity }} units</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-success">${{ "%.2f"|format(product.total_spent) }}</span>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}<hr>{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No purchase history available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Order History</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_orders %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in user_orders %}
+                                    <tr>
+                                        <td>{{ order.date }}</td>
+                                        <td>{{ order.product_name or 'Unknown Product' }}</td>
+                                        <td>{{ order.quantity }}</td>
+                                        <td>${{ "%.2f"|format(order.price|float) }}</td>
+                                        <td>${{ "%.2f"|format(order.total) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No orders found for this user.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+async function exportUserPDF(userId) {
+    try {
+        const response = await fetch(`/admin/export-user-pdf/${userId}`);
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `user_report_${userId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Error generating PDF');
+        }
+    } catch (error) {
+        alert('Error generating PDF: ' + error);
+    }
+}
+
+async function sendMarketingEmail(userId) {
+    try {
+        const response = await fetch(`/admin/send-marketing-email/${userId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error sending email: ' + error);
+    }
+}
+</script>
+{% endblock %}

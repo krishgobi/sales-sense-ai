@@ -1,0 +1,174 @@
+<!-- Chatbot Modal -->
+<div class="modal fade" id="chatbotModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sales Sense AI Assistant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-container" id="chatContainer" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                    <div class="chat-message bot-message">
+                        <strong>AI Assistant:</strong> Hello! I'm your Sales Sense AI assistant. I can help you with sales data, user analytics, inventory status, and more. What would you like to know?
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="chatInput" placeholder="Ask me anything about your business..." onkeypress="handleChatKeyPress(event)">
+                        <button class="btn btn-primary" onclick="sendChatMessage()">
+                            <i class="bi bi-send"></i> Send
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Try asking: "Show me sales data", "How many users?", "What's in low stock?", "Top products"
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chatbot Floating Button -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <button class="btn btn-primary btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#chatbotModal" title="Open AI Assistant">
+        <i class="bi bi-robot"></i>
+    </button>
+</div>
+
+<script>
+let chatHistory = [];
+
+function handleChatKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendChatMessage();
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addChatMessage('user', message);
+    
+    // Clear input
+    input.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        const response = await fetch('/admin/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const result = await response.json();
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Add bot response
+        addChatMessage('bot', result.response);
+        
+    } catch (error) {
+        removeTypingIndicator();
+        addChatMessage('bot', 'Sorry, I encountered an error. Please try again.');
+    }
+}
+
+function addChatMessage(sender, message) {
+    const chatContainer = document.getElementById('chatContainer');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}-message`;
+    
+    if (sender === 'user') {
+        messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
+        messageDiv.style.backgroundColor = '#007bff';
+        messageDiv.style.color = 'white';
+        messageDiv.style.marginLeft = 'auto';
+        messageDiv.style.textAlign = 'right';
+    } else {
+        messageDiv.innerHTML = `<strong>AI Assistant:</strong> ${message.replace(/\n/g, '<br>')}`;
+        messageDiv.style.backgroundColor = '#e9ecef';
+        messageDiv.style.color = '#333';
+    }
+    
+    messageDiv.style.padding = '10px';
+    messageDiv.style.marginBottom = '10px';
+    messageDiv.style.borderRadius = '10px';
+    messageDiv.style.maxWidth = '80%';
+    messageDiv.style.wordWrap = 'break-word';
+    
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const chatContainer = document.getElementById('chatContainer');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'chat-message bot-message';
+    typingDiv.innerHTML = '<strong>AI Assistant:</strong> <em>Typing...</em>';
+    typingDiv.style.backgroundColor = '#e9ecef';
+    typingDiv.style.color = '#666';
+    typingDiv.style.padding = '10px';
+    typingDiv.style.marginBottom = '10px';
+    typingDiv.style.borderRadius = '10px';
+    typingDiv.style.maxWidth = '80%';
+    
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// Auto-focus chat input when modal opens
+document.getElementById('chatbotModal').addEventListener('shown.bs.modal', function () {
+    document.getElementById('chatInput').focus();
+});
+</script>
+
+<style>
+.chat-message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    max-width: 70%;
+}
+
+.user-message {
+    background-color: #007bff;
+    color: white;
+    margin-left: auto;
+}
+
+.bot-message {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.chat-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.btn-floating {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+</style>
