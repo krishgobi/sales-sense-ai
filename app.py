@@ -144,13 +144,8 @@ def calculate_sale_amount(sale):
         # Otherwise calculate from price and quantity
         price = safe_float(sale.get('price', 0))
         
-        # Handle quantity conversion
-        try:
-            # First try to convert directly to float
-            quantity = float(str(sale.get('quantity', '0')).replace(',', ''))
-        except (ValueError, TypeError):
-            # If that fails, try to extract numeric value
-            quantity = extract_numeric_value(sale.get('quantity', 0))
+        # Handle quantity conversion safely
+        quantity = extract_numeric_value(sale.get('quantity', 0))
         
         # Ensure we have valid numbers
         if not isinstance(quantity, (int, float)):
@@ -409,7 +404,7 @@ def admin_dashboard():
                     product_sales[sale['product_id']]['units_sold'] += quantity
                     
                     # Calculate sale amount using our helper function
-                    sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
+                    sale_amount = calculate_sale_amount(sale)  # Already returns float
                     product_sales[sale['product_id']]['revenue'] += sale_amount
                 except (ValueError, TypeError) as e:
                     print(f"Error processing sale {sale.get('_id')}: {str(e)}")
@@ -468,12 +463,12 @@ def admin_dashboard():
                 'revenue': 0
             }
         try:
-            # Convert quantity to integer, defaulting to 0 if invalid
-            quantity = int(float(str(sale.get('quantity', '0')).replace(',', '')))
+            # Convert quantity safely using extract_numeric_value
+            quantity = int(extract_numeric_value(sale.get('quantity', '0')))
             product_sales[sale['product_id']]['units_sold'] += quantity
             
             # Calculate sale amount using our helper function
-            sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
+            sale_amount = calculate_sale_amount(sale)  # Already returns float
             product_sales[sale['product_id']]['revenue'] += sale_amount
         except (ValueError, TypeError) as e:
             print(f"Error processing sale {sale.get('_id')}: {str(e)}")
