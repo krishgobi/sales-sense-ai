@@ -137,62 +137,102 @@
                 </div>
             </section>
 
-            <!-- Products Section -->
+            <!-- Products Summary Section -->
             <section id="products" class="mb-4">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3>Products</h3>
+                        <h3>Product Reports</h3>
                         <div>
                             <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#lowStockModal">
                                 <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
                             </button>
-                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                                <i class="bi bi-plus-circle"></i> Add Product
-                            </button>
+                            <a href="/admin/products" class="btn btn-info">
+                                <i class="bi bi-list-ul"></i> Manage Products
+                            </a>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Variants</th>
-                                        <th>Total Stock</th>
-                                        <th>Added By</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for product in products %}
-                                    <tr>
-                                        <td>{{ product|safe_get('name', 'Unnamed Product') }}</td>
-                                        <td>{{ product|safe_get('category', 'Uncategorized') }}</td>
-                                        <td>
-                                            {% for variant in product.get('variants', []) %}
-                                                {% if variant is mapping %}
-                                                <small class="d-block">
-                                                    {{ variant|safe_get('quantity', 'N/A') }} - 
-                                                    ${{ variant|safe_get('price', '0.00') }} 
-                                                    (Stock: {{ variant|safe_get('stock', 0) }})
-                                                </small>
-                                                {% endif %}
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Total Products</h5>
+                                        <h2>{{ stats.total_products }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body text-center">
+                                        <h5>Low Stock Items</h5>
+                                        <h2>{{ stats.low_stock_products }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Categories</h5>
+                                        <h2>{{ product_categories|length }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Total Stock Value</h5>
+                                        <h2>${{ "%.2f"|format(product_summary.total_stock_value|default(0)) }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <h5>Top Categories by Stock</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Products</th>
+                                                <th>Total Stock</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for category in product_categories %}
+                                            <tr>
+                                                <td>{{ category.name }}</td>
+                                                <td>{{ category.product_count }}</td>
+                                                <td>{{ category.total_stock }}</td>
+                                            </tr>
                                             {% endfor %}
-                                            {% if not product.get('variants') %}
-                                                <small class="text-muted">No variants</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ product.get('variants', [])|safe_sum(attribute='stock') }}</td>
-                                        <td>{{ product|safe_get('added_by_name', 'System') }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary" onclick="editProduct('{{ product._id }}')">Edit</button>
-                                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('{{ product._id }}')">Delete</button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Low Stock Alerts</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Variant</th>
+                                                <th>Stock</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in low_stock_items %}
+                                            <tr>
+                                                <td>{{ item.product_name }}</td>
+                                                <td>{{ item.variant_name }}</td>
+                                                <td><span class="badge bg-warning">{{ item.stock }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -245,39 +285,93 @@
             <section id="reports" class="mb-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Reports</h3>
+                        <h3>Sales Reports & Analytics</h3>
                     </div>
                     <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Total Revenue</h6>
+                                        <h3>${{ "%.2f"|format(stats.total_sales|default(0)) }}</h3>
+                                        <small>All time</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Today's Sales</h6>
+                                        <h3>${{ "%.2f"|format(stats.sales_today|default(0)) }}</h3>
+                                        <small>{{ "Today"|strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body text-center">
+                                        <h6>Avg Order Value</h6>
+                                        <h3>${{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users > 0 else 0) }}</h3>
+                                        <small>Per customer</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h6>Growth</h6>
+                                        <h3>+{{ "%.1f"|format(((stats.sales_today / (stats.total_sales - stats.sales_today)) * 100) if (stats.total_sales - stats.sales_today) > 0 else 0) }}%</h3>
+                                        <small>vs yesterday</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
+                                <h5>Sales Trend (Last 7 Days)</h5>
                                 <canvas id="salesChart"></canvas>
                             </div>
                             <div class="col-md-6">
+                                <h5>Revenue by Category</h5>
                                 <canvas id="categoryChart"></canvas>
                             </div>
                         </div>
                         <div class="row mt-4">
                             <div class="col-md-12">
-                                <h4>Top Selling Products</h4>
+                                <h5>Top Selling Products</h5>
                                 <div class="table-responsive">
                                     <table class="table table-sm">
                                         <thead>
                                             <tr>
+                                                <th>#</th>
                                                 <th>Product</th>
-                                                <th>Category</th>
                                                 <th>Units Sold</th>
                                                 <th>Revenue</th>
+                                                <th>Performance</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for product in top_products %}
                                             <tr>
+                                                <td>{{ loop.index }}</td>
                                                 <td>{{ product.name }}</td>
-                                                <td>{{ product.category }}</td>
                                                 <td>{{ product.units_sold }}</td>
-                                                <td>${{ product.revenue }}</td>
+                                                <td>${{ "%.2f"|format(product.revenue|default(0)) }}</td>
+                                                <td>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" 
+                                                             style="width: {{ (product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0 }}%">
+                                                            {{ "%.1f"|format((product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0) }}%
+                                                        </div>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             {% endfor %}
+                                            {% if not top_products %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">No sales data available</td>
+                                            </tr>
+                                            {% endif %}
                                         </tbody>
                                     </table>
                                 </div>

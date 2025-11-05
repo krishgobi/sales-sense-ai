@@ -173,6 +173,16 @@ products_sold = db.products_sold
 products_by_user = db.products_by_user
 
 # Custom template filters
+@app.template_filter('strftime')
+def strftime_filter(date, format='%Y-%m-%d'):
+    """Format a date string"""
+    try:
+        if isinstance(date, str):
+            return datetime.datetime.now().strftime(format)
+        return date.strftime(format)
+    except:
+        return datetime.datetime.now().strftime(format)
+
 @app.template_filter('safe_sum')
 def safe_sum(variants, attribute):
     """Safely sum up values from a list of dictionaries"""
@@ -379,37 +389,136 @@ def admin_dashboard():
                 wp['product_id'] = str(wp['product_id'])
             worker['products_added'] = worker_products
 
-        # Get sales data for chart - simplified approach
+        # Generate real sales data for charts from actual sales
+        sales_by_date = {}
+        try:
+            for sale in products_sold.find():
+                sale_date = sale.get('date', datetime.datetime.utcnow())
+                if isinstance(sale_date, datetime.datetime):
+                    date_str = sale_date.strftime('%Y-%m-%d')
+                else:
+                    date_str = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+                
+                if date_str not in sales_by_date:
+                    sales_by_date[date_str] = 0.0
+                
+                sale_amount = float(calculate_sale_amount(sale))
+                sales_by_date[date_str] += sale_amount
+        except Exception as e:
+            print(f"Error processing sales data: {e}")
+
+        # Get last 7 days of sales data
+        today = datetime.datetime.now()
+        sales_dates = []
+        sales_values = []
+        
+        for i in range(6, -1, -1):  # Last 7 days
+            date = today - datetime.timedelta(days=i)
+            date_str = date.strftime('%Y-%m-%d')
+            sales_dates.append(date_str)
+            sales_values.append(sales_by_date.get(date_str, 0.0))
+
         sales_data = {
-            'dates': ['2025-11-01', '2025-11-02', '2025-11-03', '2025-11-04', '2025-11-05'],
-            'values': [100.0, 150.0, 200.0, 175.0, 225.0]
+            'dates': sales_dates,
+            'values': sales_values
         }
 
-        # Get category data for chart - simplified approach  
+        # Generate category data from actual products
+        category_sales = {}
+        category_counts = {}
+        try:
+            for product in products_update.find():
+                category = product.get('category', 'Uncategorized')
+                if category not in category_counts:
+                    category_counts[category] = 0
+                    category_sales[category] = 0.0
+                category_counts[category] += 1
+                
+                # Calculate sales for this product
+                for sale in products_sold.find({'product_id': product['_id']}):
+                    sale_amount = float(calculate_sale_amount(sale))
+                    category_sales[category] += sale_amount
+        except Exception as e:
+            print(f"Error processing category data: {e}")
+
         category_data = {
-            'labels': ['Electronics', 'Clothing', 'Books', 'Home'],
-            'values': [300.0, 200.0, 150.0, 100.0]
+            'labels': list(category_sales.keys())[:5],  # Top 5 categories
+            'values': [category_sales[cat] for cat in list(category_sales.keys())[:5]]
         }
 
-        # Get top selling products
+        # Generate product summary reports
+        product_categories = []
+        low_stock_items = []
+        total_stock_value = 0.0
+        
+        category_summary = {}
+        try:
+            for product in products_update.find():
+                category = product.get('category', 'Uncategorized')
+                if category not in category_summary:
+                    category_summary[category] = {'product_count': 0, 'total_stock': 0}
+                
+                category_summary[category]['product_count'] += 1
+                
+                # Process variants for stock and value calculations
+                for variant in product.get('variants', []):
+                    if isinstance(variant, dict):
+                        stock = int(variant.get('stock', 0)) if variant.get('stock') is not None else 0
+                        price = safe_float(variant.get('price', 0))
+                        
+                        category_summary[category]['total_stock'] += stock
+                        total_stock_value += float(stock) * float(price)
+                        
+                        # Check for low stock items
+                        if stock < 10 and stock > 0:
+                            low_stock_items.append({
+                                'product_name': product.get('name', 'Unknown'),
+                                'variant_name': variant.get('quantity', 'Default'),
+                                'stock': stock
+                            })
+        except Exception as e:
+            print(f"Error processing product summary: {e}")
+            total_stock_value = 0.0
+
+        # Convert to list format for template
+        for category, data in category_summary.items():
+            product_categories.append({
+                'name': category,
+                'product_count': data['product_count'],
+                'total_stock': data['total_stock']
+            })
+
+        # Sort categories by stock count
+        product_categories.sort(key=lambda x: x['total_stock'], reverse=True)
+        
+        # Ensure total_stock_value is always a valid float
+        product_summary = {
+            'total_stock_value': float(total_stock_value) if total_stock_value is not None else 0.0
+        }
+
+        # Get top selling products with category information
         top_products = []
         product_sales = {}
         try:
             for sale in products_sold.find():
-                if sale['product_id'] not in product_sales:
-                    product_sales[sale['product_id']] = {
+                product_id = sale['product_id']
+                if product_id not in product_sales:
+                    # Get product details for category
+                    product_details = products_update.find_one({'_id': product_id})
+                    product_sales[product_id] = {
                         'name': sale.get('product_name', 'Unknown Product'),
+                        'category': product_details.get('category', 'Uncategorized') if product_details else 'Uncategorized',
                         'units_sold': 0,
                         'revenue': 0.0
                     }
                 try:
                     # Convert quantity to integer, defaulting to 0 if invalid
                     quantity = int(float(str(sale.get('quantity', '0')).replace(',', '')))
-                    product_sales[sale['product_id']]['units_sold'] += quantity
+                    product_sales[product_id]['units_sold'] += quantity
                     
                     # Calculate sale amount using our helper function
                     sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
-                    product_sales[sale['product_id']]['revenue'] += sale_amount
+                    product_sales[product_id]['revenue'] += sale_amount
                 except (ValueError, TypeError) as e:
                     print(f"Error processing sale {sale.get('_id')}: {str(e)}")
                     continue
@@ -418,31 +527,33 @@ def admin_dashboard():
 
         top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
 
-        # Ensure all numeric values in stats are proper types
+        # Ensure all numeric values in stats are proper types with safe defaults
         stats = {
-            'total_users': int(stats['total_users']),
-            'new_users_today': int(stats['new_users_today']),
-            'total_sales': float(stats['total_sales']),
-            'sales_today': float(stats['sales_today']),
-            'total_products': int(stats['total_products']),
-            'low_stock_products': int(stats['low_stock_products']),
-            'total_workers': int(stats['total_workers']),
-            'active_workers': int(stats['active_workers'])
+            'total_users': int(stats.get('total_users', 0)),
+            'new_users_today': int(stats.get('new_users_today', 0)),
+            'total_sales': float(stats.get('total_sales', 0.0)),
+            'sales_today': float(stats.get('sales_today', 0.0)),
+            'total_products': int(stats.get('total_products', 0)),
+            'low_stock_products': int(stats.get('low_stock_products', 0)),
+            'total_workers': int(stats.get('total_workers', 0)),
+            'active_workers': int(stats.get('active_workers', 0))
         }
 
         # Convert any numeric values in top_products to appropriate types
         for product in top_products:
-            product['units_sold'] = int(product['units_sold'])
-            product['revenue'] = float(product['revenue'])
+            product['units_sold'] = int(product.get('units_sold', 0))
+            product['revenue'] = float(product.get('revenue', 0.0))
 
         return render_template('admin_dashboard.html',
                              stats=stats,
                              users=users_data,
-                             products=products_data,
                              workers=workers_data,
                              sales_data=sales_data,
                              category_data=category_data,
-                             top_products=top_products)
+                             top_products=top_products,
+                             product_categories=product_categories,
+                             low_stock_items=low_stock_items,
+                             product_summary=product_summary)
     
     except Exception as e:
         print(f"Error in admin dashboard: {e}")
@@ -450,11 +561,13 @@ def admin_dashboard():
         return render_template('admin_dashboard.html',
                              stats={'total_users': 0, 'new_users_today': 0, 'total_sales': 0.0, 'sales_today': 0.0, 'total_products': 0, 'low_stock_products': 0, 'total_workers': 0, 'active_workers': 0},
                              users=[],
-                             products=[],
                              workers=[],
                              sales_data={'dates': [], 'values': []},
                              category_data={'labels': [], 'values': []},
-                             top_products=[])
+                             top_products=[],
+                             product_categories=[],
+                             low_stock_items=[],
+                             product_summary={'total_stock_value': 0.0})
 
     # Get top selling products
     top_products = []
@@ -505,6 +618,23 @@ def admin_dashboard():
                          sales_data=sales_data,
                          category_data=category_data,
                          top_products=top_products)
+
+@app.route('/admin/products')
+@admin_required
+def admin_products():
+    """Separate page for managing products"""
+    try:
+        # Get all products for management
+        products_data = list(products_update.find())
+        for product in products_data:
+            product['_id'] = str(product['_id'])
+            if 'added_by' in product:
+                product['added_by'] = str(product['added_by'])
+                
+        return render_template('admin_products.html', products=products_data)
+    except Exception as e:
+        print(f"Error in admin products: {e}")
+        return render_template('admin_products.html', products=[])
 
 @app.route('/admin/create-worker', methods=['POST'])
 @admin_required
