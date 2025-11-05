@@ -54,6 +54,12 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1>Admin Dashboard</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="me-3">
+                        <small class="text-muted" id="refreshStatus">Auto-refresh: Active (15 min)</small>
+                    </div>
+                    <button class="btn btn-outline-primary me-2" onclick="forceDataRefresh()" title="Force refresh all data">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                    </button>
                     <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">Logout</a>
                 </div>
             </div>
@@ -559,6 +565,15 @@ main {
     border-radius: 4px;
     padding: 10px;
 }
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -567,6 +582,9 @@ main {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize refresh status countdown
+    updateRefreshStatus();
+    
     // Initialize Quill editor
     const quill = new Quill('#emailEditor', {
         theme: 'snow',
@@ -774,6 +792,58 @@ function deleteProduct(productId) {
 // User details function
 function viewUserDetails(userId) {
     window.location.href = `/admin/user-details/${userId}`;
+}
+
+// Force refresh data function
+function forceDataRefresh() {
+    // Show loading state
+    const refreshBtn = document.querySelector('button[onclick="forceDataRefresh()"]');
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Refreshing...';
+    refreshBtn.disabled = true;
+    
+    // Force refresh the page
+    fetch(window.location.href, {
+        cache: 'no-cache',
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    }).then(() => {
+        location.reload(true);
+    }).catch(() => {
+        // Fallback to simple reload
+        location.reload(true);
+    });
+}
+
+// Update refresh status indicator
+function updateRefreshStatus() {
+    const refreshStatusElement = document.getElementById('refreshStatus');
+    if (!refreshStatusElement) return;
+    
+    // Calculate time until next refresh (15 minutes = 900 seconds)
+    const pageLoadTime = new Date();
+    const nextRefreshTime = new Date(pageLoadTime.getTime() + 15 * 60 * 1000);
+    
+    function updateCountdown() {
+        const now = new Date();
+        const timeLeft = nextRefreshTime - now;
+        
+        if (timeLeft <= 0) {
+            refreshStatusElement.innerHTML = '<span class="text-warning">Refreshing soon...</span>';
+            return;
+        }
+        
+        const minutesLeft = Math.floor(timeLeft / (1000 * 60));
+        const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        refreshStatusElement.innerHTML = `Auto-refresh: <span class="text-success">${minutesLeft}m ${secondsLeft}s</span>`;
+    }
+    
+    // Update countdown every second
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
 }
 </script>
 {% endblock %}

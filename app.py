@@ -11,12 +11,151 @@ from email.mime.multipart import MIMEMultipart
 import re
 import datetime
 from decimal import Decimal
+import threading
+import time
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Required for session management
+
+# Auto-refresh configuration
+AUTO_REFRESH_ENABLED = True
+AUTO_REFRESH_INTERVAL = 15 * 60  # 15 minutes in seconds
+CACHE_REFRESH_INTERVAL = 5 * 60  # 5 minutes for cache refresh
+
+# Global cache for frequently accessed data
+data_cache = {
+    'last_refresh': None,
+    'stats': None,
+    'recent_activity': None
+}
+
+def auto_refresh_data():
+    """
+    Automatic data refresh function that runs in background
+    Refreshes cached data every 5 minutes to ensure fresh data for users
+    """
+    global data_cache
+    
+    while AUTO_REFRESH_ENABLED:
+        try:
+            print(f"[{datetime.datetime.now()}] Refreshing cached data...")
+            
+            # Refresh basic statistics
+            if db:
+                stats = {
+                    'total_users': users.count_documents({}),
+                    'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
+                    'total_products': products_update.count_documents({}),
+                    'total_workers': workers_update.count_documents({}),
+                    'active_workers': workers_update.count_documents({
+                        'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
+                    })
+                }
+                
+                # Update cache
+                data_cache['stats'] = stats
+                data_cache['last_refresh'] = datetime.datetime.now()
+                
+                print(f"[{datetime.datetime.now()}] Data cache refreshed successfully")
+            
+        except Exception as e:
+            print(f"Error in auto refresh: {e}")
+        
+        # Wait for next refresh cycle
+        time.sleep(CACHE_REFRESH_INTERVAL)
+
+def start_auto_refresh_thread():
+    """Start the auto-refresh background thread"""
+    if AUTO_REFRESH_ENABLED:
+        refresh_thread = threading.Thread(target=auto_refresh_data, daemon=True)
+        refresh_thread.start()
+        print("Auto-refresh background thread started")
+
+def get_cached_stats():
+    """Get statistics from cache or generate fresh if cache is empty"""
+    if data_cache['stats'] and data_cache['last_refresh']:
+        # Check if cache is still fresh (less than 10 minutes old)
+        cache_age = (datetime.datetime.now() - data_cache['last_refresh']).total_seconds()
+        if cache_age < 10 * 60:  # 10 minutes
+            return data_cache['stats']
+    
+    # Generate fresh stats if cache is stale or empty
+    try:
+        stats = {
+            'total_users': users.count_documents({}) if db else 0,
+            'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())) if db else 0.0,
+            'total_products': products_update.count_documents({}) if db else 0,
+            'total_workers': workers_update.count_documents({}) if db else 0,
+            'active_workers': workers_update.count_documents({
+                'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
+            }) if db else 0
+        }
+        
+        # Update cache
+        data_cache['stats'] = stats
+        data_cache['last_refresh'] = datetime.datetime.now()
+        
+        return stats
+    except Exception as e:
+        print(f"Error generating fresh stats: {e}")
+        return {
+            'total_users': 0,
+            'total_sales': 0.0,
+            'total_products': 0,
+            'total_workers': 0,
+            'active_workers': 0
+        }
+
+def force_refresh_client_data():
+    """
+    Force refresh client data by updating cache timestamp
+    This can be called after significant data changes
+    """
+    global data_cache
+    data_cache['last_refresh'] = None  # This will force a fresh data fetch
+    print("Client data refresh forced")
+
+@app.route('/api/refresh-status')
+def refresh_status():
+    """API endpoint to check refresh status and get latest stats"""
+    try:
+        stats = get_cached_stats()
+        return jsonify({
+            'success': True,
+            'auto_refresh_enabled': AUTO_REFRESH_ENABLED,
+            'refresh_interval': AUTO_REFRESH_INTERVAL,
+            'last_refresh': data_cache['last_refresh'].isoformat() if data_cache['last_refresh'] else None,
+            'stats': stats,
+            'server_time': datetime.datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+@app.route('/api/force-refresh', methods=['POST'])
+def force_refresh_api():
+    """API endpoint for admin to force refresh all client data"""
+    # Check if user is admin (simple check)
+    if 'admin_id' not in session:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+        
+    try:
+        force_refresh_client_data()
+        return jsonify({
+            'success': True,
+            'message': 'Data refresh forced successfully',
+            'timestamp': datetime.datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
 
 # MongoDB connection setup with error handling
 def get_database_connection():
@@ -2047,4 +2186,6 @@ def test_db_connection():
         }), 500
 
 if __name__ == '__main__':
+    # Start auto-refresh background thread
+    start_auto_refresh_thread()
     app.run(debug=True)
