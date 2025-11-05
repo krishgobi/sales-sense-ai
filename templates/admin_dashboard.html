@@ -11,11 +11,6 @@
                 </h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link text-light" href="{{ url_for('home') }}">
-                            <i class="bi bi-house"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link text-light active" href="#overview">
                             <i class="bi bi-speedometer2"></i> Overview
                         </a>
@@ -54,12 +49,6 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1>Admin Dashboard</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="me-3">
-                        <small class="text-muted" id="refreshStatus">Auto-refresh: Active (15 min)</small>
-                    </div>
-                    <button class="btn btn-outline-primary me-2" onclick="forceDataRefresh()" title="Force refresh all data">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh Data
-                    </button>
                     <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">Logout</a>
                 </div>
             </div>
@@ -148,102 +137,62 @@
                 </div>
             </section>
 
-            <!-- Products Summary Section -->
+            <!-- Products Section -->
             <section id="products" class="mb-4">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3>Product Reports</h3>
+                        <h3>Products</h3>
                         <div>
                             <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#lowStockModal">
                                 <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
                             </button>
-                            <a href="/admin/products" class="btn btn-info">
-                                <i class="bi bi-list-ul"></i> Manage Products
-                            </a>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="bi bi-plus-circle"></i> Add Product
+                            </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body text-center">
-                                        <h5>Total Products</h5>
-                                        <h2>{{ stats.total_products }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-warning text-dark">
-                                    <div class="card-body text-center">
-                                        <h5>Low Stock Items</h5>
-                                        <h2>{{ stats.low_stock_products }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body text-center">
-                                        <h5>Categories</h5>
-                                        <h2>{{ product_categories|length }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body text-center">
-                                        <h5>Total Stock Value</h5>
-                                        <h2>${{ "%.2f"|format(product_summary.total_stock_value|default(0)) }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <h5>Top Categories by Stock</h5>
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Category</th>
-                                                <th>Products</th>
-                                                <th>Total Stock</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for category in product_categories %}
-                                            <tr>
-                                                <td>{{ category.name }}</td>
-                                                <td>{{ category.product_count }}</td>
-                                                <td>{{ category.total_stock }}</td>
-                                            </tr>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Variants</th>
+                                        <th>Total Stock</th>
+                                        <th>Added By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <td>{{ product|safe_get('name', 'Unnamed Product') }}</td>
+                                        <td>{{ product|safe_get('category', 'Uncategorized') }}</td>
+                                        <td>
+                                            {% for variant in product.get('variants', []) %}
+                                                {% if variant is mapping %}
+                                                <small class="d-block">
+                                                    {{ variant|safe_get('quantity', 'N/A') }} - 
+                                                    ${{ variant|safe_get('price', '0.00') }} 
+                                                    (Stock: {{ variant|safe_get('stock', 0) }})
+                                                </small>
+                                                {% endif %}
                                             {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h5>Low Stock Alerts</h5>
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Product</th>
-                                                <th>Variant</th>
-                                                <th>Stock</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for item in low_stock_items %}
-                                            <tr>
-                                                <td>{{ item.product_name }}</td>
-                                                <td>{{ item.variant_name }}</td>
-                                                <td><span class="badge bg-warning">{{ item.stock }}</span></td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                                            {% if not product.get('variants') %}
+                                                <small class="text-muted">No variants</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ product.get('variants', [])|safe_sum(attribute='stock') }}</td>
+                                        <td>{{ product|safe_get('added_by_name', 'System') }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="editProduct('{{ product._id }}')">Edit</button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('{{ product._id }}')">Delete</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -296,93 +245,39 @@
             <section id="reports" class="mb-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Sales Reports & Analytics</h3>
+                        <h3>Reports</h3>
                     </div>
                     <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body text-center">
-                                        <h6>Total Revenue</h6>
-                                        <h3>${{ "%.2f"|format(stats.total_sales|default(0)) }}</h3>
-                                        <small>All time</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body text-center">
-                                        <h6>Today's Sales</h6>
-                                        <h3>${{ "%.2f"|format(stats.sales_today|default(0)) }}</h3>
-                                        <small>{{ "Today"|strftime('%Y-%m-%d') }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-warning text-dark">
-                                    <div class="card-body text-center">
-                                        <h6>Avg Order Value</h6>
-                                        <h3>${{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users > 0 else 0) }}</h3>
-                                        <small>Per customer</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body text-center">
-                                        <h6>Growth</h6>
-                                        <h3>+{{ "%.1f"|format(((stats.sales_today / (stats.total_sales - stats.sales_today)) * 100) if (stats.total_sales - stats.sales_today) > 0 else 0) }}%</h3>
-                                        <small>vs yesterday</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <h5>Sales Trend (Last 7 Days)</h5>
                                 <canvas id="salesChart"></canvas>
                             </div>
                             <div class="col-md-6">
-                                <h5>Revenue by Category</h5>
                                 <canvas id="categoryChart"></canvas>
                             </div>
                         </div>
                         <div class="row mt-4">
                             <div class="col-md-12">
-                                <h5>Top Selling Products</h5>
+                                <h4>Top Selling Products</h4>
                                 <div class="table-responsive">
                                     <table class="table table-sm">
                                         <thead>
                                             <tr>
-                                                <th>#</th>
                                                 <th>Product</th>
+                                                <th>Category</th>
                                                 <th>Units Sold</th>
                                                 <th>Revenue</th>
-                                                <th>Performance</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for product in top_products %}
                                             <tr>
-                                                <td>{{ loop.index }}</td>
                                                 <td>{{ product.name }}</td>
+                                                <td>{{ product.category }}</td>
                                                 <td>{{ product.units_sold }}</td>
-                                                <td>${{ "%.2f"|format(product.revenue|default(0)) }}</td>
-                                                <td>
-                                                    <div class="progress" style="height: 20px;">
-                                                        <div class="progress-bar bg-success" role="progressbar" 
-                                                             style="width: {{ (product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0 }}%">
-                                                            {{ "%.1f"|format((product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0) }}%
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                <td>${{ product.revenue }}</td>
                                             </tr>
                                             {% endfor %}
-                                            {% if not top_products %}
-                                            <tr>
-                                                <td colspan="5" class="text-center text-muted">No sales data available</td>
-                                            </tr>
-                                            {% endif %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -476,42 +371,6 @@
     </div>
 </div>
 
-<!-- Add Worker Modal -->
-<div class="modal fade" id="addWorkerModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Worker</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addWorkerForm" method="POST" action="{{ url_for('create_worker') }}">
-                    <div class="mb-3">
-                        <label for="workerName" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="workerName" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="workerEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="workerEmail" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="workerPassword" class="form-label">Password</label>
-                        <input type="text" class="form-control" id="workerPassword" name="password" value="worker123" required>
-                        <small class="form-text text-muted">In production this should be auto-generated and sent securely.</small>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Create Worker</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Include Chatbot -->
-{% include 'chatbot.html' %}
-
 <style>
 .sidebar {
     position: fixed;
@@ -565,15 +424,6 @@ main {
     border-radius: 4px;
     padding: 10px;
 }
-
-.spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -582,9 +432,6 @@ main {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize refresh status countdown
-    updateRefreshStatus();
-    
     // Initialize Quill editor
     const quill = new Quill('#emailEditor', {
         theme: 'snow',
@@ -792,58 +639,6 @@ function deleteProduct(productId) {
 // User details function
 function viewUserDetails(userId) {
     window.location.href = `/admin/user-details/${userId}`;
-}
-
-// Force refresh data function
-function forceDataRefresh() {
-    // Show loading state
-    const refreshBtn = document.querySelector('button[onclick="forceDataRefresh()"]');
-    const originalText = refreshBtn.innerHTML;
-    refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Refreshing...';
-    refreshBtn.disabled = true;
-    
-    // Force refresh the page
-    fetch(window.location.href, {
-        cache: 'no-cache',
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    }).then(() => {
-        location.reload(true);
-    }).catch(() => {
-        // Fallback to simple reload
-        location.reload(true);
-    });
-}
-
-// Update refresh status indicator
-function updateRefreshStatus() {
-    const refreshStatusElement = document.getElementById('refreshStatus');
-    if (!refreshStatusElement) return;
-    
-    // Calculate time until next refresh (15 minutes = 900 seconds)
-    const pageLoadTime = new Date();
-    const nextRefreshTime = new Date(pageLoadTime.getTime() + 15 * 60 * 1000);
-    
-    function updateCountdown() {
-        const now = new Date();
-        const timeLeft = nextRefreshTime - now;
-        
-        if (timeLeft <= 0) {
-            refreshStatusElement.innerHTML = '<span class="text-warning">Refreshing soon...</span>';
-            return;
-        }
-        
-        const minutesLeft = Math.floor(timeLeft / (1000 * 60));
-        const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        
-        refreshStatusElement.innerHTML = `Auto-refresh: <span class="text-success">${minutesLeft}m ${secondsLeft}s</span>`;
-    }
-    
-    // Update countdown every second
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
 }
 </script>
 {% endblock %}

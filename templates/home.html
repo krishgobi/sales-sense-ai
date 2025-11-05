@@ -3,249 +3,43 @@
 {% block content %}
 <div class="home-container">
     <h1 class="text-center mb-5">Welcome to SalesSense</h1>
-    
-    <!-- System Overview Cards -->
-    <div class="row mb-5">
+    <div class="row">
         <div class="col-md-3">
-            <div class="card border-primary">
+            <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="card-title text-primary">Admin</h3>
+                    <h3 class="card-title">Admin</h3>
                     <p class="card-text">Manage system settings and users</p>
                     <a href="/admin" class="btn btn-primary">Access Admin Panel</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-success">
+            <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="card-title text-success">Worker</h3>
+                    <h3 class="card-title">Worker</h3>
                     <p class="card-text">Manage daily operations</p>
-                    <a href="/worker" class="btn btn-success">Access Worker Panel</a>
+                    <a href="/worker" class="btn btn-primary">Access Worker Panel</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-warning">
+            <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="card-title text-warning">Labor</h3>
+                    <h3 class="card-title">Labor</h3>
                     <p class="card-text">Track labor activities</p>
-                    <a href="/labor" class="btn btn-warning">Access Labor Panel</a>
+                    <a href="/labor" class="btn btn-primary">Access Labor Panel</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-info">
+            <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="card-title text-info">Products</h3>
+                    <h3 class="card-title">Products</h3>
                     <p class="card-text">View and manage products</p>
-                    <a href="/products" class="btn btn-info">View Products</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- System Statistics -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h2 class="text-center mb-4">System Overview</h2>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h4>{{ home_stats.total_users }}</h4>
-                    <p class="mb-0">Total Users</p>
-                    <small>{{ home_stats.new_users_today }} new today</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h4>${{ "%.2f"|format(home_stats.total_sales|default(0)) }}</h4>
-                    <p class="mb-0">Total Sales</p>
-                    <small>${{ "%.2f"|format(home_stats.sales_today|default(0)) }} today</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h4>{{ home_stats.total_products }}</h4>
-                    <p class="mb-0">Products</p>
-                    <small>{{ home_stats.total_categories }} categories</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                    <h4>{{ home_stats.total_workers }}</h4>
-                    <p class="mb-0">Workers</p>
-                    <small>{{ home_stats.active_workers }} active</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="row mb-5">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5><i class="bi bi-people"></i> Recent Users</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Joined</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in recent_users %}
-                                <tr>
-                                    <td>{{ user.name }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.join_date|format_date if user.join_date else 'N/A' }}</td>
-                                </tr>
-                                {% endfor %}
-                                {% if not recent_users %}
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">No users found</td>
-                                </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5><i class="bi bi-bag-check"></i> Recent Sales</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>User</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sale in recent_sales %}
-                                <tr>
-                                    <td>{{ sale.product_name|truncate(20) }}</td>
-                                    <td>{{ sale.user_name|default('Anonymous')|truncate(15) }}</td>
-                                    <td>${{ "%.2f"|format(sale.total_price|default(0)) }}</td>
-                                </tr>
-                                {% endfor %}
-                                {% if not recent_sales %}
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">No recent sales</td>
-                                </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Products -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5><i class="bi bi-trophy"></i> Top Performing Products</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for product in top_products %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-info">
-                                <div class="card-body">
-                                    <h6 class="card-title">{{ product.name }}</h6>
-                                    <p class="card-text">
-                                        <small class="text-muted">
-                                            {{ product.units_sold }} units sold<br>
-                                            Revenue: ${{ "%.2f"|format(product.revenue|default(0)) }}
-                                        </small>
-                                    </p>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-info" style="width: {{ (product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0 }}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        {% if not top_products %}
-                        <div class="col-12">
-                            <p class="text-center text-muted">No product data available</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
-                </div>
-                <div class="card-body text-center">
-                    <a href="/admin/dashboard" class="btn btn-primary me-2">
-                        <i class="bi bi-speedometer2"></i> Admin Dashboard
-                    </a>
-                    <a href="/worker/dashboard" class="btn btn-success me-2">
-                        <i class="bi bi-person-workspace"></i> Worker Dashboard
-                    </a>
-                    <a href="/products" class="btn btn-info me-2">
-                        <i class="bi bi-box-seam"></i> View Products
-                    </a>
-                    <a href="/labor" class="btn btn-warning">
-                        <i class="bi bi-person-check"></i> Labor Portal
-                    </a>
+                    <a href="/products" class="btn btn-primary">View Products</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.home-container {
-    padding: 20px;
-}
-
-.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin-bottom: 20px;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.bg-primary { background-color: #007bff !important; }
-.bg-success { background-color: #28a745 !important; }
-.bg-info { background-color: #17a2b8 !important; }
-.bg-warning { background-color: #ffc107 !important; }
-.bg-secondary { background-color: #6c757d !important; }
-
-.progress {
-    height: 8px;
-}
-</style>
 {% endblock %}
