@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, ConfigurationError
 from bson import ObjectId
-from functools import wraps
 import os
 from dotenv import load_dotenv
 import smtplib
@@ -18,56 +16,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Required for session management
 
-# MongoDB connection setup with error handling
-def get_database_connection():
-    try:
-        # Get MongoDB connection details from environment variables
-        mongodb_url = os.getenv('MONGODB_URL')
-        database_name = os.getenv('MONGODB_DATABASE')
-        
-        if not mongodb_url or not database_name:
-            raise ValueError("MongoDB connection details not found in environment variables")
-        
-        # Set up MongoDB client with proper configurations
-        client = MongoClient(
-            mongodb_url,
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connectTimeoutMS=5000,
-            socketTimeoutMS=5000,
-            maxPoolSize=50,
-            retryWrites=True,
-            retryReads=True
-        )
-        
-        # Test the connection
-        client.admin.command('ping')
-        
-        # Get database
-        db = client[database_name]
-        return db
-    
-    except Exception as e:
-        print(f"Error connecting to MongoDB: {str(e)}")
-        print("Please check your MongoDB connection string and ensure the service is running.")
-        print("Also check if your IP address is whitelisted in MongoDB Atlas.")
-        raise
-
-try:
-    db = get_database_connection()
-    # Initialize default admin user if not exists
-    if db.admins.count_documents({}) == 0:
-        default_admin = {
-            'email': 'admin',
-            'password': 'admin123',
-            'name': 'Admin',
-            'role': 'admin',
-            'created_at': datetime.datetime.utcnow()
-        }
-        db.admins.insert_one(default_admin)
-        print("Default admin user created")
-except Exception as e:
-    print("Failed to establish MongoDB connection. Starting with limited functionality.")
-    db = None  # We'll handle this case in our routes
+# MongoDB connection
+client = MongoClient(os.getenv('MONGODB_URL'))
+db = client[os.getenv('MONGODB_DATABASE')]
 
 # Email configuration
 def send_welcome_email(user_email, user_name):
@@ -101,27 +52,15 @@ def send_welcome_email(user_email, user_name):
 # Helper functions for safe calculations
 def extract_numeric_value(value):
     """Extract numeric value from strings like '1kg', '500g', etc."""
-    try:
-        if isinstance(value, (int, float)):
-            return float(value)
-        if isinstance(value, str):
-            # Remove commas and any currency symbols
-            value = str(value).replace(',', '').replace('$', '').strip()
-            
-            # Try direct conversion first
-            try:
-                return float(value)
-            except ValueError:
-                # If direct conversion fails, try to extract numeric part
-                import re
-                numeric_parts = re.findall(r'[-+]?\d*\.\d+|\d+', value)
-                if numeric_parts:
-                    # Take the first number found
-                    return float(numeric_parts[0])
-        return 0.0
-    except Exception as e:
-        print(f"Error extracting numeric value from {value}: {e}")
-        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        # Extract numeric part using regex
+        import re
+        numeric_part = re.search(r'[\d.]+', str(value))
+        if numeric_part:
+            return float(numeric_part.group())
+    return 0.0
 
 def safe_float(value, default=0.0):
     """Safely convert a value to float"""
@@ -136,30 +75,14 @@ def safe_float(value, default=0.0):
 def calculate_sale_amount(sale):
     """Safely calculate sale amount from either total_price or price * quantity"""
     try:
-        # If total_price exists and is valid, use it
         if sale.get('total_price'):
             return safe_float(sale['total_price'])
         
-        # Otherwise calculate from price and quantity
         price = safe_float(sale.get('price', 0))
-        
-        # Handle quantity conversion
-        try:
-            # First try to convert directly to float
-            quantity = float(str(sale.get('quantity', '0')).replace(',', ''))
-        except (ValueError, TypeError):
-            # If that fails, try to extract numeric value
-            quantity = extract_numeric_value(sale.get('quantity', 0))
-        
-        # Ensure we have valid numbers
-        if not isinstance(quantity, (int, float)):
-            quantity = 0
-        if not isinstance(price, (int, float)):
-            price = 0
-            
-        return float(price) * float(quantity)
+        quantity = extract_numeric_value(sale.get('quantity', 0))
+        return price * quantity
     except Exception as e:
-        print(f"Error calculating sale amount for sale {sale.get('_id', 'unknown')}: {e}")
+        print(f"Error calculating sale amount: {e}")
         return 0.0
 
 # Collections
@@ -259,20 +182,7 @@ def send_worker_credentials_email(worker_email, worker_name, password):
         print(f"Error sending worker credentials email: {e}")
         return False
 
-# Database connection check decorator
-def require_db_connection(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if db is None:
-            flash("Database connection is currently unavailable. Please try again later.", "error")
-            return render_template('error.html', 
-                                error="Database Connection Error",
-                                message="Unable to connect to the database. Please try again later.")
-        return f(*args, **kwargs)
-    return decorated_function
-
 @app.route('/')
-@require_db_connection
 def home():
     return render_template('home.html')
 
@@ -282,179 +192,76 @@ def product_list():
     all_products = list(products_update.find())
     return render_template('products.html', products=all_products)
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'admin_id' not in session:
-            flash('Please login first.', 'error')
-            return redirect(url_for('admin_login'))
-        
-        # Check session timeout (30 minutes)
-        last_activity = session.get('last_activity')
-        if last_activity:
-            last_activity_time = datetime.datetime.fromtimestamp(last_activity)
-            if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
-                session.clear()
-                flash('Session expired. Please login again.', 'error')
-                return redirect(url_for('admin_login'))
-        
-        # Update last activity
-        session['last_activity'] = datetime.datetime.utcnow().timestamp()
-        return f(*args, **kwargs)
-    return decorated_function
-
 @app.route('/admin')
-def admin_route():
-    # Check if user is authenticated
-    if 'admin_id' not in session:
-        return redirect(url_for('admin_login'))
-    
-    # Check session timeout
-    last_activity = session.get('last_activity')
-    if last_activity:
-        last_activity_time = datetime.datetime.fromtimestamp(last_activity)
-        if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
-            session.clear()
-            flash('Session expired. Please login again.', 'error')
-            return redirect(url_for('admin_dashboard'))
-    
-    # Update last activity and proceed to admin panel
-    session['last_activity'] = datetime.datetime.utcnow().timestamp()
-    return redirect(url_for('admin_dashboard'))
+def admin_panel():
+    # Get statistics
+    stats = {
+        'total_users': users.count_documents({}),
+        'new_users_today': users.count_documents({
+            'created_at': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
+        }),
+        'total_sales': sum(calculate_sale_amount(sale) for sale in products_sold.find()),
+        'sales_today': sum(calculate_sale_amount(sale) for sale in products_sold.find({
+            'date': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
+        })),
+        'total_products': products_update.count_documents({}),
+        'low_stock_products': sum(1 for product in products_update.find() 
+                                for variant in product.get('variants', []) 
+                                if isinstance(variant, dict) and variant.get('stock', 0) < 10),
+        'total_workers': workers_update.count_documents({}),
+        'active_workers': workers_update.count_documents({
+            'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
+        })
+    }
 
-@app.route('/admin/dashboard')
-@admin_required
-def admin_dashboard():
-    try:
-        # Get statistics
-        stats = {
-            'total_users': users.count_documents({}),
-            'new_users_today': users.count_documents({
-                'created_at': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
-            }),
-            'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
-            'sales_today': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
-                'date': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
-            }))),
-            'total_products': products_update.count_documents({}),
-            'low_stock_products': sum(1 for product in products_update.find() 
-                                    for variant in product.get('variants', []) 
-                                    if isinstance(variant, dict) and variant.get('stock', 0) < 10),
-            'total_workers': workers_update.count_documents({}),
-            'active_workers': workers_update.count_documents({
-                'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
-            })
-        }
+    # Get user data
+    users_data = list(users.find().sort('join_date', -1).limit(10))
+    for user in users_data:
+        user_orders = list(products_sold.find({'user_id': user['_id']}))
+        user['orders'] = user_orders
+        user['total_spent'] = sum(calculate_sale_amount(order) for order in user_orders)
 
-        # Get user data
-        users_data = list(users.find().sort('join_date', -1).limit(10))
-        for user in users_data:
-            # Convert ObjectId to string for JSON serialization
-            user['_id'] = str(user['_id'])
-            user_orders = list(products_sold.find({'user_id': ObjectId(user['_id'])}))
-            # Convert ObjectIds in orders as well
-            for order in user_orders:
-                order['_id'] = str(order['_id'])
-                order['user_id'] = str(order['user_id'])
-                order['product_id'] = str(order['product_id'])
-            user['orders'] = user_orders
-            user['total_spent'] = float(sum(float(calculate_sale_amount(order)) for order in user_orders))
+    # Get product data
+    products_data = list(products_update.find())
 
-        # Get product data
-        products_data = list(products_update.find())
-        for product in products_data:
-            product['_id'] = str(product['_id'])
-            if 'added_by' in product:
-                product['added_by'] = str(product['added_by'])
+    # Get worker data
+    workers_data = list(workers_update.find())
+    for worker in workers_data:
+        worker['products_added'] = list(worker_specific_added.find({'worker_id': worker['_id']}))
 
-        # Get worker data
-        workers_data = list(workers_update.find())
-        for worker in workers_data:
-            worker['_id'] = str(worker['_id'])
-            worker_products = list(worker_specific_added.find({'worker_id': ObjectId(worker['_id'])}))
-            # Convert ObjectIds in worker products
-            for wp in worker_products:
-                wp['_id'] = str(wp['_id'])
-                wp['worker_id'] = str(wp['worker_id'])
-                wp['product_id'] = str(wp['product_id'])
-            worker['products_added'] = worker_products
+    # Get sales data for chart
+    today = datetime.datetime.now()
+    past_week = today - datetime.timedelta(days=7)
+    sales_by_date = {}
+    for sale in products_sold.find({'date': {'$gte': past_week}}):
+        date_str = sale['date'].strftime('%Y-%m-%d')
+        if date_str not in sales_by_date:
+            sales_by_date[date_str] = 0
+        # Calculate sale amount using helper function
+        sale_amount = calculate_sale_amount(sale)
+        sales_by_date[date_str] += sale_amount
 
-        # Get sales data for chart - simplified approach
-        sales_data = {
-            'dates': ['2025-11-01', '2025-11-02', '2025-11-03', '2025-11-04', '2025-11-05'],
-            'values': [100.0, 150.0, 200.0, 175.0, 225.0]
-        }
+    sales_data = {
+        'dates': list(sales_by_date.keys()),
+        'values': list(sales_by_date.values())
+    }
 
-        # Get category data for chart - simplified approach  
-        category_data = {
-            'labels': ['Electronics', 'Clothing', 'Books', 'Home'],
-            'values': [300.0, 200.0, 150.0, 100.0]
-        }
+    # Get category data for chart
+    category_sales = {}
+    for sale in products_sold.find():
+        product = products_update.find_one({'_id': sale['product_id']})
+        if product:
+            category = product.get('category', 'Uncategorized')
+            if category not in category_sales:
+                category_sales[category] = 0
+            # Calculate sale amount using helper function
+            sale_amount = calculate_sale_amount(sale)
+            category_sales[category] += sale_amount
 
-        # Get top selling products
-        top_products = []
-        product_sales = {}
-        try:
-            for sale in products_sold.find():
-                if sale['product_id'] not in product_sales:
-                    product_sales[sale['product_id']] = {
-                        'name': sale.get('product_name', 'Unknown Product'),
-                        'units_sold': 0,
-                        'revenue': 0.0
-                    }
-                try:
-                    # Convert quantity to integer, defaulting to 0 if invalid
-                    quantity = int(float(str(sale.get('quantity', '0')).replace(',', '')))
-                    product_sales[sale['product_id']]['units_sold'] += quantity
-                    
-                    # Calculate sale amount using our helper function
-                    sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
-                    product_sales[sale['product_id']]['revenue'] += sale_amount
-                except (ValueError, TypeError) as e:
-                    print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-                    continue
-        except Exception as e:
-            print(f"Error processing top products: {e}")
-
-        top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
-
-        # Ensure all numeric values in stats are proper types
-        stats = {
-            'total_users': int(stats['total_users']),
-            'new_users_today': int(stats['new_users_today']),
-            'total_sales': float(stats['total_sales']),
-            'sales_today': float(stats['sales_today']),
-            'total_products': int(stats['total_products']),
-            'low_stock_products': int(stats['low_stock_products']),
-            'total_workers': int(stats['total_workers']),
-            'active_workers': int(stats['active_workers'])
-        }
-
-        # Convert any numeric values in top_products to appropriate types
-        for product in top_products:
-            product['units_sold'] = int(product['units_sold'])
-            product['revenue'] = float(product['revenue'])
-
-        return render_template('admin_dashboard.html',
-                             stats=stats,
-                             users=users_data,
-                             products=products_data,
-                             workers=workers_data,
-                             sales_data=sales_data,
-                             category_data=category_data,
-                             top_products=top_products)
-    
-    except Exception as e:
-        print(f"Error in admin dashboard: {e}")
-        # Return a safe fallback response
-        return render_template('admin_dashboard.html',
-                             stats={'total_users': 0, 'new_users_today': 0, 'total_sales': 0.0, 'sales_today': 0.0, 'total_products': 0, 'low_stock_products': 0, 'total_workers': 0, 'active_workers': 0},
-                             users=[],
-                             products=[],
-                             workers=[],
-                             sales_data={'dates': [], 'values': []},
-                             category_data={'labels': [], 'values': []},
-                             top_products=[])
+    category_data = {
+        'labels': list(category_sales.keys()),
+        'values': list(category_sales.values())
+    }
 
     # Get top selling products
     top_products = []
@@ -462,40 +269,15 @@ def admin_dashboard():
     for sale in products_sold.find():
         if sale['product_id'] not in product_sales:
             product_sales[sale['product_id']] = {
-                'name': sale.get('product_name', 'Unknown Product'),
+                'name': sale['product_name'],
                 'units_sold': 0,
                 'revenue': 0
             }
-        try:
-            # Convert quantity to integer, defaulting to 0 if invalid
-            quantity = int(float(str(sale.get('quantity', '0')).replace(',', '')))
-            product_sales[sale['product_id']]['units_sold'] += quantity
-            
-            # Calculate sale amount using our helper function
-            sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
-            product_sales[sale['product_id']]['revenue'] += sale_amount
-        except (ValueError, TypeError) as e:
-            print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-            continue
+        product_sales[sale['product_id']]['units_sold'] += sale['quantity']
+        sale_amount = calculate_sale_amount(sale)
+        product_sales[sale['product_id']]['revenue'] += sale_amount
 
     top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
-
-    # Ensure all numeric values in stats are floats
-    stats = {
-        'total_users': int(stats['total_users']),
-        'new_users_today': int(stats['new_users_today']),
-        'total_sales': float(stats['total_sales']),
-        'sales_today': float(stats['sales_today']),
-        'total_products': int(stats['total_products']),
-        'low_stock_products': int(stats['low_stock_products']),
-        'total_workers': int(stats['total_workers']),
-        'active_workers': int(stats['active_workers'])
-    }
-
-    # Convert any numeric values in top_products to appropriate types
-    for product in top_products:
-        product['units_sold'] = int(product['units_sold'])
-        product['revenue'] = float(product['revenue'])
 
     return render_template('admin_dashboard.html',
                          stats=stats,
@@ -515,12 +297,12 @@ def create_worker():
 
         if not name or not email or not password:
             flash('All fields are required', 'error')
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_panel'))
 
         # Check if worker already exists
         if workers_update.find_one({'email': email}):
             flash('Worker with this email already exists', 'error')
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_panel'))
 
         # Create new worker
         worker = {
@@ -734,65 +516,6 @@ def admin_delete_product(product_id):
         return jsonify({'error': 'Product not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route('/admin/logout')
-def admin_logout():
-    # Log the logout event
-    if 'admin_id' in session:
-        print(f"Admin {session.get('admin_name')} logged out at {datetime.datetime.utcnow()}")
-    
-    # Clear all session data
-    session.clear()
-    
-    flash('Logged out successfully', 'success')
-    return redirect(url_for('admin_login'))
-
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    # Check if already logged in
-    if 'admin_id' in session:
-        return redirect(url_for('admin_dashboard'))
-
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        # Basic input validation
-        if not email or not password:
-            flash('Email and password are required', 'error')
-            return render_template('admin_login.html')
-            
-        # Check for default admin credentials
-        if email == 'admin' and password == 'admin123':
-            # Set session with default admin info
-            admin = admins.find_one({'email': 'admin'})
-            if admin:
-                session['admin_id'] = str(admin['_id'])
-            else:
-                # Create admin user if it doesn't exist
-                admin = {
-                    'email': 'admin',
-                    'password': 'admin123',
-                    'name': 'Admin',
-                    'role': 'admin',
-                    'created_at': datetime.datetime.utcnow()
-                }
-                result = admins.insert_one(admin)
-                session['admin_id'] = str(result.inserted_id)
-            
-            session['admin_name'] = 'Admin'
-            session['login_time'] = datetime.datetime.utcnow().timestamp()
-            session['last_activity'] = datetime.datetime.utcnow().timestamp()
-            
-            flash('Login successful!', 'success')
-            return redirect(url_for('admin_dashboard'))
-            
-        flash('Invalid credentials', 'error')
-        return render_template('admin_login.html')
-    
-    return render_template('admin_login.html')
-
-
 
 @app.route('/worker')
 def worker_panel():
@@ -1153,29 +876,6 @@ def labor_logout():
     session.pop('user_id', None)
     flash('Logged out successfully', 'success')
     return redirect(url_for('labor_panel'))
-
-@app.route('/test-db-connection')
-def test_db_connection():
-    """Route to test database connectivity"""
-    try:
-        if db is None:
-            return jsonify({
-                'status': 'error',
-                'message': 'Database connection not initialized'
-            }), 500
-        
-        # Test the connection by performing a simple operation
-        db.command('ping')
-        return jsonify({
-            'status': 'success',
-            'message': 'Successfully connected to MongoDB'
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e),
-            'type': type(e).__name__
-        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

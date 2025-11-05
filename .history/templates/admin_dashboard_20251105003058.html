@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-light">
+                    <span>Admin Dashboard</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link text-light active" href="#overview">
+                            <i class="bi bi-speedometer2"></i> Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#users">
+                            <i class="bi bi-people"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#products">
+                            <i class="bi bi-box"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#workers">
+                            <i class="bi bi-person-badge"></i> Workers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#reports">
+                            <i class="bi bi-file-earmark-text"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="#email">
+                            <i class="bi bi-envelope"></i> Email
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1>Admin Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">Logout</a>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <section id="overview" class="mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Users</h5>
+                                <p class="display-4">{{ stats.total_users }}</p>
+                                <small>{{ stats.new_users_today }} new today</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Sales</h5>
+                                <p class="display-4">${{ stats.total_sales }}</p>
+                                <small>${{ stats.sales_today }} today</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Products</h5>
+                                <p class="display-4">{{ stats.total_products }}</p>
+                                <small>{{ stats.low_stock_products }} low stock</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">Workers</h5>
+                                <p class="display-4">{{ stats.total_workers }}</p>
+                                <small>{{ stats.active_workers }} active now</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Users</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="bi bi-download"></i> Export Data
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Join Date</th>
+                                        <th>Orders</th>
+                                        <th>Total Spent</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.join_date|format_date }}</td>
+                                        <td>{{ user.get('orders', [])|length }}</td>
+                                        <td>${{ user.get('total_spent', 0)|round(2) }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" onclick="viewUserDetails('{{ user._id }}')">View</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section id="products" class="mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Products</h3>
+                        <div>
+                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#lowStockModal">
+                                <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="bi bi-plus-circle"></i> Add Product
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Variants</th>
+                                        <th>Total Stock</th>
+                                        <th>Added By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <td>{{ product|safe_get('name', 'Unnamed Product') }}</td>
+                                        <td>{{ product|safe_get('category', 'Uncategorized') }}</td>
+                                        <td>
+                                            {% for variant in product.get('variants', []) %}
+                                                {% if variant is mapping %}
+                                                <small class="d-block">
+                                                    {{ variant|safe_get('quantity', 'N/A') }} - 
+                                                    ${{ variant|safe_get('price', '0.00') }} 
+                                                    (Stock: {{ variant|safe_get('stock', 0) }})
+                                                </small>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if not product.get('variants') %}
+                                                <small class="text-muted">No variants</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ product.get('variants', [])|safe_sum(attribute='stock') }}</td>
+                                        <td>{{ product|safe_get('added_by_name', 'System') }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="editProduct('{{ product._id }}')">Edit</button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('{{ product._id }}')">Delete</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workers Section -->
+            <section id="workers" class="mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Workers</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWorkerModal">
+                            <i class="bi bi-person-plus"></i> Add Worker
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Join Date</th>
+                                        <th>Products Added</th>
+                                        <th>Last Active</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for worker in workers %}
+                                    <tr>
+                                        <td>{{ worker.name }}</td>
+                                        <td>{{ worker.email }}</td>
+                                        <td>{{ worker.join_date|format_date }}</td>
+                                        <td>{{ worker.get('products_added', [])|length }}</td>
+                                        <td>{{ worker.last_active|format_date('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning" onclick="resetWorkerPassword('{{ worker._id }}')">Reset Password</button>
+                                            <button class="btn btn-sm btn-danger" onclick="deactivateWorker('{{ worker._id }}')">Deactivate</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Reports</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h4>Top Selling Products</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Category</th>
+                                                <th>Units Sold</th>
+                                                <th>Revenue</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for product in top_products %}
+                                            <tr>
+                                                <td>{{ product.name }}</td>
+                                                <td>{{ product.category }}</td>
+                                                <td>{{ product.units_sold }}</td>
+                                                <td>${{ product.revenue }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Email Section -->
+            <section id="email" class="mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Send Email</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="emailForm">
+                            <div class="mb-3">
+                                <label for="recipients" class="form-label">Recipients</label>
+                                <select class="form-select" id="recipientType">
+                                    <option value="all_users">All Users</option>
+                                    <option value="all_workers">All Workers</option>
+                                    <option value="custom">Custom Recipients</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="customRecipientsDiv" style="display: none;">
+                                <label for="customRecipients" class="form-label">Custom Recipients</label>
+                                <input type="text" class="form-control" id="customRecipients" placeholder="Enter email addresses separated by commas">
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailSubject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="emailSubject" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailBody" class="form-label">Message</label>
+                                <div id="emailEditor"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="attachment" class="form-label">Attachment (optional)</label>
+                                <input type="file" class="form-control" id="attachment">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Email</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Data to Export</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="users" id="exportUsers">
+                            <label class="form-check-label" for="exportUsers">Users</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="orders" id="exportOrders">
+                            <label class="form-check-label" for="exportOrders">Orders</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="products" id="exportProducts">
+                            <label class="form-check-label" for="exportProducts">Products</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Format</label>
+                        <select class="form-select" id="exportFormat">
+                            <option value="csv">CSV</option>
+                            <option value="excel">Excel</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="exportData()">Export</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    padding: .5rem 1rem;
+    transition: color .15s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    color: rgba(255, 255, 255, .75) !important;
+}
+
+.sidebar .nav-link.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, .1);
+}
+
+main {
+    margin-top: 48px;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+#overview .card {
+    border: none;
+    border-radius: 10px;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+#emailEditor {
+    height: 300px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 10px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Quill editor
+    const quill = new Quill('#emailEditor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'header': 1 }, { 'header': 2 }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
+                ['clean']
+            ]
+        }
+    });
+
+    // Initialize Charts
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: {{ sales_data.dates|tojson }},
+            datasets: [{
+                label: 'Daily Sales',
+                data: {{ sales_data.values|tojson }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        }
+    });
+
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_data.labels|tojson }},
+            datasets: [{
+                data: {{ category_data.values|tojson }},
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)'
+                ]
+            }]
+        }
+    });
+
+    // Handle recipient type change
+    document.getElementById('recipientType').addEventListener('change', function() {
+        const customDiv = document.getElementById('customRecipientsDiv');
+        customDiv.style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+
+    // Handle email form submission
+    document.getElementById('emailForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const recipientType = document.getElementById('recipientType').value;
+        const customRecipients = document.getElementById('customRecipients').value;
+        const subject = document.getElementById('emailSubject').value;
+        const content = quill.root.innerHTML;
+        const attachment = document.getElementById('attachment').files[0];
+
+        const formData = new FormData();
+        formData.append('recipientType', recipientType);
+        formData.append('customRecipients', customRecipients);
+        formData.append('subject', subject);
+        formData.append('content', content);
+        if (attachment) {
+            formData.append('attachment', attachment);
+        }
+
+        try {
+            const response = await fetch('/admin/send-email', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Email sent successfully!');
+                this.reset();
+                quill.setContents([]);
+            } else {
+                alert('Error sending email: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error sending email: ' + error);
+        }
+    });
+});
+
+// Export data function
+async function exportData() {
+    const selectedData = Array.from(document.querySelectorAll('#exportForm input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+    const format = document.getElementById('exportFormat').value;
+
+    if (selectedData.length === 0) {
+        alert('Please select at least one data type to export');
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/export-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                data_types: selectedData,
+                format: format
+            })
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `export_${new Date().toISOString().split('T')[0]}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Error exporting data');
+        }
+    } catch (error) {
+        alert('Error exporting data: ' + error);
+    }
+}
+
+// Worker management functions
+function resetWorkerPassword(workerId) {
+    if (confirm('Are you sure you want to reset this worker\'s password?')) {
+        fetch(`/admin/reset-worker-password/${workerId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Password reset successfully. New password has been sent to worker\'s email.');
+            } else {
+                alert('Error resetting password: ' + result.error);
+            }
+        })
+        .catch(error => alert('Error resetting password: ' + error));
+    }
+}
+
+function deactivateWorker(workerId) {
+    if (confirm('Are you sure you want to deactivate this worker?')) {
+        fetch(`/admin/deactivate-worker/${workerId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Error deactivating worker: ' + result.error);
+            }
+        })
+        .catch(error => alert('Error deactivating worker: ' + error));
+    }
+}
+
+// Product management functions
+function editProduct(productId) {
+    window.location.href = `/admin/edit-product/${productId}`;
+}
+
+function deleteProduct(productId) {
+    if (confirm('Are you sure you want to delete this product?')) {
+        fetch(`/admin/delete-product/${productId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('Error deleting product: ' + result.error);
+            }
+        })
+        .catch(error => alert('Error deleting product: ' + error));
+    }
+}
+
+// User details function
+function viewUserDetails(userId) {
+    window.location.href = `/admin/user-details/${userId}`;
+}
+</script>
+{% endblock %}

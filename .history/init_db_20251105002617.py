@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 import os
-import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -106,13 +105,8 @@ admin = {
 
 # Insert products into database
 try:
-    # Clear existing products and admin collections
+    # Clear existing products from the new collection
     db.products_update.delete_many({})
-    db.admins.delete_many({})
-    
-    # Insert admin user
-    db.admins.insert_one(admin)
-    print(f"Successfully created admin user: {admin['email']}")
     
     # Insert new products
     result = db.products_update.insert_many(products)

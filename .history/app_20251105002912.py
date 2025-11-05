@@ -54,17 +54,6 @@ def get_database_connection():
 
 try:
     db = get_database_connection()
-    # Initialize default admin user if not exists
-    if db.admins.count_documents({}) == 0:
-        default_admin = {
-            'email': 'admin',
-            'password': 'admin123',
-            'name': 'Admin',
-            'role': 'admin',
-            'created_at': datetime.datetime.utcnow()
-        }
-        db.admins.insert_one(default_admin)
-        print("Default admin user created")
 except Exception as e:
     print("Failed to establish MongoDB connection. Starting with limited functionality.")
     db = None  # We'll handle this case in our routes
@@ -304,157 +293,76 @@ def admin_required(f):
     return decorated_function
 
 @app.route('/admin')
-def admin_route():
-    # Check if user is authenticated
-    if 'admin_id' not in session:
-        return redirect(url_for('admin_login'))
-    
-    # Check session timeout
-    last_activity = session.get('last_activity')
-    if last_activity:
-        last_activity_time = datetime.datetime.fromtimestamp(last_activity)
-        if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
-            session.clear()
-            flash('Session expired. Please login again.', 'error')
-            return redirect(url_for('admin_dashboard'))
-    
-    # Update last activity and proceed to admin panel
-    session['last_activity'] = datetime.datetime.utcnow().timestamp()
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/dashboard')
 @admin_required
-def admin_dashboard():
-    try:
-        # Get statistics
-        stats = {
-            'total_users': users.count_documents({}),
-            'new_users_today': users.count_documents({
-                'created_at': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
-            }),
-            'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
-            'sales_today': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
-                'date': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
-            }))),
-            'total_products': products_update.count_documents({}),
-            'low_stock_products': sum(1 for product in products_update.find() 
-                                    for variant in product.get('variants', []) 
-                                    if isinstance(variant, dict) and variant.get('stock', 0) < 10),
-            'total_workers': workers_update.count_documents({}),
-            'active_workers': workers_update.count_documents({
-                'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
-            })
-        }
+def admin_panel():
+    # Get statistics
+    stats = {
+        'total_users': users.count_documents({}),
+        'new_users_today': users.count_documents({
+            'created_at': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
+        }),
+        'total_sales': sum(calculate_sale_amount(sale) for sale in products_sold.find()),
+        'sales_today': sum(calculate_sale_amount(sale) for sale in products_sold.find({
+            'date': {'$gte': datetime.datetime.now().replace(hour=0, minute=0, second=0)}
+        })),
+        'total_products': products_update.count_documents({}),
+        'low_stock_products': sum(1 for product in products_update.find() 
+                                for variant in product.get('variants', []) 
+                                if isinstance(variant, dict) and variant.get('stock', 0) < 10),
+        'total_workers': workers_update.count_documents({}),
+        'active_workers': workers_update.count_documents({
+            'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
+        })
+    }
 
-        # Get user data
-        users_data = list(users.find().sort('join_date', -1).limit(10))
-        for user in users_data:
-            # Convert ObjectId to string for JSON serialization
-            user['_id'] = str(user['_id'])
-            user_orders = list(products_sold.find({'user_id': ObjectId(user['_id'])}))
-            # Convert ObjectIds in orders as well
-            for order in user_orders:
-                order['_id'] = str(order['_id'])
-                order['user_id'] = str(order['user_id'])
-                order['product_id'] = str(order['product_id'])
-            user['orders'] = user_orders
-            user['total_spent'] = float(sum(float(calculate_sale_amount(order)) for order in user_orders))
+    # Get user data
+    users_data = list(users.find().sort('join_date', -1).limit(10))
+    for user in users_data:
+        user_orders = list(products_sold.find({'user_id': user['_id']}))
+        user['orders'] = user_orders
+        user['total_spent'] = sum(calculate_sale_amount(order) for order in user_orders)
 
-        # Get product data
-        products_data = list(products_update.find())
-        for product in products_data:
-            product['_id'] = str(product['_id'])
-            if 'added_by' in product:
-                product['added_by'] = str(product['added_by'])
+    # Get product data
+    products_data = list(products_update.find())
 
-        # Get worker data
-        workers_data = list(workers_update.find())
-        for worker in workers_data:
-            worker['_id'] = str(worker['_id'])
-            worker_products = list(worker_specific_added.find({'worker_id': ObjectId(worker['_id'])}))
-            # Convert ObjectIds in worker products
-            for wp in worker_products:
-                wp['_id'] = str(wp['_id'])
-                wp['worker_id'] = str(wp['worker_id'])
-                wp['product_id'] = str(wp['product_id'])
-            worker['products_added'] = worker_products
+    # Get worker data
+    workers_data = list(workers_update.find())
+    for worker in workers_data:
+        worker['products_added'] = list(worker_specific_added.find({'worker_id': worker['_id']}))
 
-        # Get sales data for chart - simplified approach
-        sales_data = {
-            'dates': ['2025-11-01', '2025-11-02', '2025-11-03', '2025-11-04', '2025-11-05'],
-            'values': [100.0, 150.0, 200.0, 175.0, 225.0]
-        }
+    # Get sales data for chart
+    today = datetime.datetime.now()
+    past_week = today - datetime.timedelta(days=7)
+    sales_by_date = {}
+    for sale in products_sold.find({'date': {'$gte': past_week}}):
+        date_str = sale['date'].strftime('%Y-%m-%d')
+        if date_str not in sales_by_date:
+            sales_by_date[date_str] = 0
+        # Calculate sale amount using helper function
+        sale_amount = calculate_sale_amount(sale)
+        sales_by_date[date_str] += sale_amount
 
-        # Get category data for chart - simplified approach  
-        category_data = {
-            'labels': ['Electronics', 'Clothing', 'Books', 'Home'],
-            'values': [300.0, 200.0, 150.0, 100.0]
-        }
+    sales_data = {
+        'dates': list(sales_by_date.keys()),
+        'values': list(sales_by_date.values())
+    }
 
-        # Get top selling products
-        top_products = []
-        product_sales = {}
-        try:
-            for sale in products_sold.find():
-                if sale['product_id'] not in product_sales:
-                    product_sales[sale['product_id']] = {
-                        'name': sale.get('product_name', 'Unknown Product'),
-                        'units_sold': 0,
-                        'revenue': 0.0
-                    }
-                try:
-                    # Convert quantity to integer, defaulting to 0 if invalid
-                    quantity = int(float(str(sale.get('quantity', '0')).replace(',', '')))
-                    product_sales[sale['product_id']]['units_sold'] += quantity
-                    
-                    # Calculate sale amount using our helper function
-                    sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
-                    product_sales[sale['product_id']]['revenue'] += sale_amount
-                except (ValueError, TypeError) as e:
-                    print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-                    continue
-        except Exception as e:
-            print(f"Error processing top products: {e}")
+    # Get category data for chart
+    category_sales = {}
+    for sale in products_sold.find():
+        product = products_update.find_one({'_id': sale['product_id']})
+        if product:
+            category = product.get('category', 'Uncategorized')
+            if category not in category_sales:
+                category_sales[category] = 0
+            # Calculate sale amount using helper function
+            sale_amount = calculate_sale_amount(sale)
+            category_sales[category] += sale_amount
 
-        top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
-
-        # Ensure all numeric values in stats are proper types
-        stats = {
-            'total_users': int(stats['total_users']),
-            'new_users_today': int(stats['new_users_today']),
-            'total_sales': float(stats['total_sales']),
-            'sales_today': float(stats['sales_today']),
-            'total_products': int(stats['total_products']),
-            'low_stock_products': int(stats['low_stock_products']),
-            'total_workers': int(stats['total_workers']),
-            'active_workers': int(stats['active_workers'])
-        }
-
-        # Convert any numeric values in top_products to appropriate types
-        for product in top_products:
-            product['units_sold'] = int(product['units_sold'])
-            product['revenue'] = float(product['revenue'])
-
-        return render_template('admin_dashboard.html',
-                             stats=stats,
-                             users=users_data,
-                             products=products_data,
-                             workers=workers_data,
-                             sales_data=sales_data,
-                             category_data=category_data,
-                             top_products=top_products)
-    
-    except Exception as e:
-        print(f"Error in admin dashboard: {e}")
-        # Return a safe fallback response
-        return render_template('admin_dashboard.html',
-                             stats={'total_users': 0, 'new_users_today': 0, 'total_sales': 0.0, 'sales_today': 0.0, 'total_products': 0, 'low_stock_products': 0, 'total_workers': 0, 'active_workers': 0},
-                             users=[],
-                             products=[],
-                             workers=[],
-                             sales_data={'dates': [], 'values': []},
-                             category_data={'labels': [], 'values': []},
-                             top_products=[])
+    category_data = {
+        'labels': list(category_sales.keys()),
+        'values': list(category_sales.values())
+    }
 
     # Get top selling products
     top_products = []
@@ -472,30 +380,13 @@ def admin_dashboard():
             product_sales[sale['product_id']]['units_sold'] += quantity
             
             # Calculate sale amount using our helper function
-            sale_amount = float(calculate_sale_amount(sale))  # Ensure float conversion
+            sale_amount = calculate_sale_amount(sale)
             product_sales[sale['product_id']]['revenue'] += sale_amount
         except (ValueError, TypeError) as e:
             print(f"Error processing sale {sale.get('_id')}: {str(e)}")
             continue
 
     top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
-
-    # Ensure all numeric values in stats are floats
-    stats = {
-        'total_users': int(stats['total_users']),
-        'new_users_today': int(stats['new_users_today']),
-        'total_sales': float(stats['total_sales']),
-        'sales_today': float(stats['sales_today']),
-        'total_products': int(stats['total_products']),
-        'low_stock_products': int(stats['low_stock_products']),
-        'total_workers': int(stats['total_workers']),
-        'active_workers': int(stats['active_workers'])
-    }
-
-    # Convert any numeric values in top_products to appropriate types
-    for product in top_products:
-        product['units_sold'] = int(product['units_sold'])
-        product['revenue'] = float(product['revenue'])
 
     return render_template('admin_dashboard.html',
                          stats=stats,
@@ -515,12 +406,12 @@ def create_worker():
 
         if not name or not email or not password:
             flash('All fields are required', 'error')
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_panel'))
 
         # Check if worker already exists
         if workers_update.find_one({'email': email}):
             flash('Worker with this email already exists', 'error')
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_panel'))
 
         # Create new worker
         worker = {
@@ -737,13 +628,9 @@ def admin_delete_product(product_id):
 
 @app.route('/admin/logout')
 def admin_logout():
-    # Log the logout event
-    if 'admin_id' in session:
-        print(f"Admin {session.get('admin_name')} logged out at {datetime.datetime.utcnow()}")
-    
-    # Clear all session data
-    session.clear()
-    
+    # Clear admin session data
+    session.pop('admin_id', None)
+    session.pop('admin_name', None)
     flash('Logged out successfully', 'success')
     return redirect(url_for('admin_login'))
 
@@ -751,7 +638,7 @@ def admin_logout():
 def admin_login():
     # Check if already logged in
     if 'admin_id' in session:
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('admin_panel'))
 
     if request.method == 'POST':
         email = request.form.get('email')
@@ -761,38 +648,48 @@ def admin_login():
         if not email or not password:
             flash('Email and password are required', 'error')
             return render_template('admin_login.html')
+
+        # Add rate limiting for failed attempts
+        failed_attempts = session.get('failed_attempts', 0)
+        last_attempt = session.get('last_attempt_time')
+        
+        if last_attempt:
+            last_attempt = datetime.datetime.fromtimestamp(last_attempt)
+            if failed_attempts >= 5 and (datetime.datetime.utcnow() - last_attempt).seconds < 300:
+                flash('Too many failed attempts. Please try again in 5 minutes.', 'error')
+                return render_template('admin_login.html')
+
+        admin = admins.find_one({'email': email})
+        if not admin:
+            session['failed_attempts'] = failed_attempts + 1
+            session['last_attempt_time'] = datetime.datetime.utcnow().timestamp()
+            flash('Invalid credentials', 'error')
+            return render_template('admin_login.html')
+
+        # Verify password (in production, use proper password hashing)
+        if admin.get('password') != password:
+            session['failed_attempts'] = failed_attempts + 1
+            session['last_attempt_time'] = datetime.datetime.utcnow().timestamp()
+            flash('Invalid credentials', 'error')
+            return render_template('admin_login.html')
             
-        # Check for default admin credentials
-        if email == 'admin' and password == 'admin123':
-            # Set session with default admin info
-            admin = admins.find_one({'email': 'admin'})
-            if admin:
-                session['admin_id'] = str(admin['_id'])
-            else:
-                # Create admin user if it doesn't exist
-                admin = {
-                    'email': 'admin',
-                    'password': 'admin123',
-                    'name': 'Admin',
-                    'role': 'admin',
-                    'created_at': datetime.datetime.utcnow()
-                }
-                result = admins.insert_one(admin)
-                session['admin_id'] = str(result.inserted_id)
-            
-            session['admin_name'] = 'Admin'
-            session['login_time'] = datetime.datetime.utcnow().timestamp()
-            session['last_activity'] = datetime.datetime.utcnow().timestamp()
-            
-            flash('Login successful!', 'success')
-            return redirect(url_for('admin_dashboard'))
-            
-        flash('Invalid credentials', 'error')
-        return render_template('admin_login.html')
-    
+        # Clear failed attempts on successful login
+        session.pop('failed_attempts', None)
+        session.pop('last_attempt_time', None)
+        
+        # Set session with timeout
+        session['admin_id'] = str(admin['_id'])
+        session['admin_name'] = admin.get('name', 'Admin')
+        session['login_time'] = datetime.datetime.utcnow().timestamp()
+        session['last_activity'] = datetime.datetime.utcnow().timestamp()
+        
+        # Log successful login
+        print(f"Admin login successful for {email} at {datetime.datetime.utcnow()}")
+        
+        flash('Login successful!', 'success')
+        return redirect(url_for('admin_panel'))
+        
     return render_template('admin_login.html')
-
-
 
 @app.route('/worker')
 def worker_panel():
