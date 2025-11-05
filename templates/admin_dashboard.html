@@ -371,6 +371,39 @@
     </div>
 </div>
 
+<!-- Add Worker Modal -->
+<div class="modal fade" id="addWorkerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Worker</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addWorkerForm" method="POST" action="{{ url_for('create_worker') }}">
+                    <div class="mb-3">
+                        <label for="workerName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="workerName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workerEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="workerEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workerPassword" class="form-label">Password</label>
+                        <input type="text" class="form-control" id="workerPassword" name="password" value="worker123" required>
+                        <small class="form-text text-muted">In production this should be auto-generated and sent securely.</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create Worker</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .sidebar {
     position: fixed;

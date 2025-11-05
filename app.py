@@ -507,6 +507,7 @@ def admin_dashboard():
                          top_products=top_products)
 
 @app.route('/admin/create-worker', methods=['POST'])
+@admin_required
 def create_worker():
     if request.method == 'POST':
         name = request.form.get('name')
@@ -539,10 +540,10 @@ def create_worker():
                     flash('Worker created successfully and credentials sent', 'success')
                 else:
                     flash('Worker created but email could not be sent', 'warning')
-                return redirect(url_for('admin_panel'))
+                return redirect(url_for('admin_dashboard'))
         except Exception as e:
             flash(f'Error creating worker: {str(e)}', 'error')
-            return redirect(url_for('admin_panel'))
+            return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/send-email', methods=['POST'])
 def admin_send_email():
