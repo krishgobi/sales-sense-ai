@@ -1,0 +1,307 @@
+<!-- Chatbot Modal -->
+<div class="modal fade" id="chatbotModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-robot"></i> SalesSense AI Assistant
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chatHistory" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background-color: #f8f9fa;">
+                    <div class="chat-message bot-message">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                <i class="bi bi-robot text-white"></i>
+                            </div>
+                            <div class="message-content">
+                                <div class="bg-primary text-white p-2 rounded">
+                                    Hello! I'm your SalesSense AI Assistant. I can help you with:
+                                    <ul class="mb-0 mt-2">
+                                        <li>Sales reports and analytics</li>
+                                        <li>User statistics</li>
+                                        <li>Product information</li>
+                                        <li>System operations</li>
+                                    </ul>
+                                    How can I assist you today?
+                                </div>
+                                <small class="text-muted">Just now</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group mt-3">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type your question here..." onkeypress="handleChatKeyPress(event)">
+                    <button class="btn btn-primary" onclick="sendChatMessage()">
+                        <i class="bi bi-send"></i> Send
+                    </button>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <strong>Try asking:</strong> "Show me today's sales", "How many users do we have?", "What are our top products?"
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="clearChatHistory()">
+                    <i class="bi bi-trash"></i> Clear History
+                </button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chatbot Button -->
+<div id="chatbotFloat" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050;">
+    <button class="btn btn-primary rounded-circle" style="width: 60px; height: 60px;" data-bs-toggle="modal" data-bs-target="#chatbotModal" title="AI Assistant">
+        <i class="bi bi-robot" style="font-size: 24px;"></i>
+    </button>
+</div>
+
+<style>
+.chat-message {
+    margin-bottom: 15px;
+}
+
+.user-message .message-content {
+    margin-left: auto;
+    max-width: 70%;
+}
+
+.bot-message .message-content {
+    max-width: 70%;
+}
+
+.user-message .bg-user {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+.bot-message .bg-bot {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+}
+
+.avatar {
+    min-width: 35px;
+    font-size: 16px;
+}
+
+#chatHistory {
+    scroll-behavior: smooth;
+}
+
+.typing-indicator {
+    display: none;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #999;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.3; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+.floating-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+</style>
+
+<script>
+let chatHistory = [];
+
+// Chat Functions
+function handleChatKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendChatMessage();
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addMessageToChat('user', message);
+    input.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        // Send message to chatbot endpoint
+        const response = await fetch('/admin/chatbot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                history: chatHistory
+            })
+        });
+        
+        const result = await response.json();
+        
+        // Hide typing indicator
+        hideTypingIndicator();
+        
+        if (result.success) {
+            addMessageToChat('bot', result.response);
+            
+            // Store in history
+            chatHistory.push({
+                user: message,
+                bot: result.response,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            addMessageToChat('bot', 'Sorry, I encountered an error. Please try again.');
+        }
+        
+    } catch (error) {
+        hideTypingIndicator();
+        addMessageToChat('bot', 'Sorry, I could not process your request. Please check your connection and try again.');
+        console.error('Chat error:', error);
+    }
+}
+
+function addMessageToChat(sender, message) {
+    const chatHistory = document.getElementById('chatHistory');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}-message`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    
+    if (sender === 'user') {
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-start mb-3 justify-content-end">
+                <div class="message-content">
+                    <div class="bg-user p-2 rounded">
+                        ${escapeHtml(message)}
+                    </div>
+                    <small class="text-muted d-block text-end">${timestamp}</small>
+                </div>
+                <div class="avatar bg-secondary rounded-circle d-flex align-items-center justify-content-center ms-2" style="width: 35px; height: 35px;">
+                    <i class="bi bi-person text-white"></i>
+                </div>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-start mb-3">
+                <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                    <i class="bi bi-robot text-white"></i>
+                </div>
+                <div class="message-content">
+                    <div class="bg-primary text-white p-2 rounded">
+                        ${formatBotMessage(message)}
+                    </div>
+                    <small class="text-muted">${timestamp}</small>
+                </div>
+            </div>
+        `;
+    }
+    
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const chatHistory = document.getElementById('chatHistory');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'chat-message bot-message typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="d-flex align-items-start mb-3">
+            <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                <i class="bi bi-robot text-white"></i>
+            </div>
+            <div class="message-content">
+                <div class="bg-primary text-white p-2 rounded">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    Thinking...
+                </div>
+            </div>
+        </div>
+    `;
+    typingDiv.style.display = 'block';
+    chatHistory.appendChild(typingDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+function formatBotMessage(message) {
+    // Convert basic markdown-like formatting
+    message = escapeHtml(message);
+    message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    message = message.replace(/\n/g, '<br>');
+    return message;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function clearChatHistory() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        const chatHistoryDiv = document.getElementById('chatHistory');
+        chatHistoryDiv.innerHTML = `
+            <div class="chat-message bot-message">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                        <i class="bi bi-robot text-white"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="bg-primary text-white p-2 rounded">
+                            Chat history cleared. How can I help you today?
+                        </div>
+                        <small class="text-muted">Just now</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatHistory = [];
+    }
+}
+
+// Add floating pulse effect
+document.addEventListener('DOMContentLoaded', function() {
+    const floatingBtn = document.querySelector('#chatbotFloat button');
+    if (floatingBtn) {
+        floatingBtn.classList.add('floating-pulse');
+    }
+});
+</script>

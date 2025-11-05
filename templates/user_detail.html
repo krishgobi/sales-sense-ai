@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-light">
+                    <span>User Details</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="{{ url_for('home') }}">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="{{ url_for('admin_dashboard') }}">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light active" href="#user-info">
+                            <i class="bi bi-person"></i> User Information
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1>User Details: {{ user.name }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button class="btn btn-danger" onclick="downloadUserPDF('{{ user._id }}')">
+                        <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                    </button>
+                    <button class="btn btn-success ms-2" onclick="sendTargetedEmail('{{ user._id }}')">
+                        <i class="bi bi-envelope"></i> Send Targeted Email
+                    </button>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <!-- User Information Cards -->
+            <div class="row">
+                <!-- Basic Info Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5><i class="bi bi-person-circle"></i> Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Name:</strong></td>
+                                    <td>{{ user.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mobile:</strong></td>
+                                    <td>{{ user.mobile|default('Not provided') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Join Date:</strong></td>
+                                    <td>{{ user.join_date|format_date if user.join_date else 'Not available' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        <span class="badge bg-success">Active</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5><i class="bi bi-graph-up"></i> Purchase Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h3 class="text-primary">{{ user_stats.total_orders }}</h3>
+                                        <p class="mb-0">Total Orders</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <h3 class="text-success">${{ "%.2f"|format(user_stats.total_spent|default(0)) }}</h3>
+                                        <p class="mb-0">Total Spent</p>
+                                    </div>
+                                </div>
+                                <div class="col-6 mt-3">
+                                    <div class="text-center">
+                                        <h3 class="text-warning">${{ "%.2f"|format(user_stats.avg_order_value|default(0)) }}</h3>
+                                        <p class="mb-0">Avg Order Value</p>
+                                    </div>
+                                </div>
+                                <div class="col-6 mt-3">
+                                    <div class="text-center">
+                                        <h3 class="text-info">{{ user_stats.last_order_days|default('N/A') }}</h3>
+                                        <p class="mb-0">Days Since Last Order</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purchase History -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h5><i class="bi bi-bag-check"></i> Purchase History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Product</th>
+                                            <th>Variant</th>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Total</th>
+                                            <th>Payment Method</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in user_orders %}
+                                        <tr>
+                                            <td>{{ order.date|format_date if order.date else 'N/A' }}</td>
+                                            <td>{{ order.product_name|default('Unknown Product') }}</td>
+                                            <td>{{ order.variant_quantity|default('Default') }}</td>
+                                            <td>{{ order.quantity|default(0) }}</td>
+                                            <td>${{ "%.2f"|format(order.price|default(0)) }}</td>
+                                            <td>${{ "%.2f"|format(order.total_price|default(0)) }}</td>
+                                            <td>{{ order.payment_method|default('N/A') }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% if not user_orders %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">No purchase history found</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Favorite Products -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5><i class="bi bi-heart"></i> Most Purchased Products</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for product in favorite_products %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ product.name }}</h6>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    Purchased {{ product.purchase_count }} times<br>
+                                                    Total spent: ${{ "%.2f"|format(product.total_spent|default(0)) }}
+                                                </small>
+                                            </p>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-warning" style="width: {{ (product.purchase_count / favorite_products[0].purchase_count * 100) if favorite_products else 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if not favorite_products %}
+                                <div class="col-12">
+                                    <p class="text-center text-muted">No favorite products identified yet</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    padding: .5rem 1rem;
+    transition: color .15s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    color: rgba(255, 255, 255, .75) !important;
+}
+
+.sidebar .nav-link.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, .1);
+}
+
+main {
+    margin-top: 48px;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+async function downloadUserPDF(userId) {
+    try {
+        const response = await fetch(`/admin/user-pdf/${userId}`, {
+            method: 'GET'
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `user_${userId}_details.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Error generating PDF');
+        }
+    } catch (error) {
+        alert('Error downloading PDF: ' + error);
+    }
+}
+
+async function sendTargetedEmail(userId) {
+    if (confirm('Send targeted email with personalized offers to this user?')) {
+        try {
+            const response = await fetch(`/admin/send-targeted-email/${userId}`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Targeted email sent successfully!');
+            } else {
+                alert('Error sending email: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error sending email: ' + error);
+        }
+    }
+}
+</script>
+{% endblock %}

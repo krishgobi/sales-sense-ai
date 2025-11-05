@@ -11,6 +11,11 @@
                 </h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
+                        <a class="nav-link text-light" href="{{ url_for('home') }}">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-light active" href="#overview">
                             <i class="bi bi-speedometer2"></i> Overview
                         </a>
@@ -497,6 +502,9 @@
         </div>
     </div>
 </div>
+
+<!-- Include Chatbot -->
+{% include 'chatbot.html' %}
 
 <style>
 .sidebar {
