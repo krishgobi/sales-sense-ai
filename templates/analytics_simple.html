@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Sales Sense AI{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-graph-up"></i> Analytics Dashboard</h2>
+            <p class="text-muted">Real-time business intelligence and performance metrics</p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Date Range Filter</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quick Select</label>
+                    <select class="form-select" id="quickSelect" onchange="applyQuickSelect()">
+                        <option value="">Custom Range</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="7days" selected>Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="90days">Last 90 Days</option>
+                        <option value="thisMonth">This Month</option>
+                        <option value="lastMonth">Last Month</option>
+                        <option value="thisYear">This Year</option>
+                        <option value="allTime">All Time</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary w-100" onclick="loadAnalytics()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="bi bi-currency-dollar"></i> Total Revenue</h6>
+                    <h3 id="totalRevenue">$0.00</h3>
+                    <small id="revenueChange">--</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="bi bi-cart-check"></i> Total Orders</h6>
+                    <h3 id="totalOrders">0</h3>
+                    <small id="ordersChange">--</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="bi bi-bag"></i> Avg Order Value</h6>
+                    <h3 id="avgOrderValue">$0.00</h3>
+                    <small id="avgChange">--</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="bi bi-people"></i> Active Customers</h6>
+                    <h3 id="activeCustomers">0</h3>
+                    <small id="customersChange">--</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up-arrow"></i> Sales Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart"></i> Sales by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categorySalesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Performance Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-bar-chart-line"></i> Top 20 Products by Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 500px;">
+                        <canvas id="topProductsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-cart4"></i> Top 20 Products by Units Sold</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 500px;">
+                        <canvas id="topProductsUnitsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Analytics Report -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-box-seam"></i> Detailed Product Performance Report</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Search Product</label>
+                            <input type="text" class="form-control" id="productReportSearch" placeholder="Search by product name...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Filter by Category</label>
+                            <select class="form-select" id="productCategoryFilter">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sort By</label>
+                            <select class="form-select" id="productReportSort">
+                                <option value="revenue">Revenue (High to Low)</option>
+                                <option value="units">Units Sold</option>
+                                <option value="name">Product Name (A-Z)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Show</label>
+                            <select class="form-select" id="productReportLimit">
+                                <option value="25">25 Products</option>
+                                <option value="50" selected>50 Products</option>
+                                <option value="all">All Products</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height: 600px;">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-success sticky-top">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Units Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Avg Price</th>
+                                    <th>% of Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productReportTable">
+                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-success" id="productReportCount">0 products</span>
+                        <span class="badge bg-info" id="productReportRevenue">$0.00 total revenue</span>
+                        <button class="btn btn-sm btn-success float-end" onclick="exportProductReport()">
+                            <i class="bi bi-download"></i> Export to CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.analytics-container {
+    padding: 20px;
+}
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+.card-body h3 {
+    margin: 10px 0;
+    font-weight: bold;
+}
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+</style>
+
+<script>
+let salesTrendChart, categorySalesChart, topProductsChart, topProductsUnitsChart;
+let productReportData = [];
+
+// Initialize date inputs
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default dates (last 7 days)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+    
+    document.getElementById('endDate').valueAsDate = endDate;
+    document.getElementById('startDate').valueAsDate = startDate;
+    
+    loadAnalytics();
+    
+    // Auto-refresh every 30 seconds
+    setInterval(loadAnalytics, 30000);
+});
+
+function applyQuickSelect() {
+    const select = document.getElementById('quickSelect');
+    const value = select.value;
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch(value) {
+        case 'today':
+            startDate = new Date();
+            break;
+        case 'yesterday':
+            startDate.setDate(startDate.getDate() - 1);
+            endDate.setDate(endDate.getDate() - 1);
+            break;
+        case '7days':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+        case '30days':
+            startDate.setDate(startDate.getDate() - 30);
+            break;
+        case '90days':
+            startDate.setDate(startDate.getDate() - 90);
+            break;
+        case 'thisMonth':
+            startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+            break;
+        case 'lastMonth':
+            startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+            endDate.setDate(0);
+            break;
+        case 'thisYear':
+            startDate = new Date(endDate.getFullYear(), 0, 1);
+            break;
+        case 'allTime':
+            startDate = new Date('2020-01-01');
+            break;
+    }
+    
+    document.getElementById('startDate').valueAsDate = startDate;
+    document.getElementById('endDate').valueAsDate = endDate;
+    
+    loadAnalytics();
+}
+
+function loadAnalytics() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    console.log('Loading analytics for:', startDate, 'to', endDate);
+    
+    fetch(`/api/analytics?start_date=${startDate}&end_date=${endDate}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Analytics data received:', data);
+            updateMetrics(data);
+            updateCharts(data);
+            updateProductReport(data);
+        })
+        .catch(error => {
+            console.error('Error loading analytics:', error);
+            alert('Error loading analytics data. Please check console for details.');
+        });
+}
+
+function updateMetrics(data) {
+    document.getElementById('totalRevenue').textContent = `$${data.period_sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('totalOrders').textContent = data.total_orders.toLocaleString();
+    document.getElementById('avgOrderValue').textContent = `$${data.avg_order_value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('activeCustomers').textContent = data.active_customers.toLocaleString();
+}
+
+function updateCharts(data) {
+    // Sales Trend Chart
+    if (salesTrendChart) salesTrendChart.destroy();
+    const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+    salesTrendChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: data.sales_trend.map(d => d.date),
+            datasets: [{
+                label: 'Daily Sales',
+                data: data.sales_trend.map(d => d.sales),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Sales: $' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Category Sales Chart
+    if (categorySalesChart) categorySalesChart.destroy();
+    const categoryCtx = document.getElementById('categorySalesChart').getContext('2d');
+    categorySalesChart = new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+            labels: data.category_sales.map(c => c.category),
+            datasets: [{
+                data: data.category_sales.map(c => c.revenue),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            return label + ': $' + value.toLocaleString('en-US', {minimumFractionDigits: 2});
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Top Products by Revenue Chart
+    if (topProductsChart) topProductsChart.destroy();
+    const topProducts = (data.all_products || []).slice(0, 20);
+    const productsRevenueCtx = document.getElementById('topProductsChart').getContext('2d');
+    topProductsChart = new Chart(productsRevenueCtx, {
+        type: 'bar',
+        data: {
+            labels: topProducts.map(p => p.name),
+            datasets: [{
+                label: 'Revenue',
+                data: topProducts.map(p => p.revenue),
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Revenue: $' + context.parsed.x.toLocaleString('en-US', {minimumFractionDigits: 2});
+                        }
+                    }
+                },
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Top Products by Units Chart
+    if (topProductsUnitsChart) topProductsUnitsChart.destroy();
+    const productsUnitsCtx = document.getElementById('topProductsUnitsChart').getContext('2d');
+    topProductsUnitsChart = new Chart(productsUnitsCtx, {
+        type: 'bar',
+        data: {
+            labels: topProducts.map(p => p.name),
+            datasets: [{
+                label: 'Units Sold',
+                data: topProducts.map(p => p.units_sold),
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Units: ' + context.parsed.x.toLocaleString();
+                        }
+                    }
+                },
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function updateProductReport(data) {
+    productReportData = data.all_products || [];
+    
+    // Calculate total revenue for percentage
+    const totalRevenue = productReportData.reduce((sum, p) => sum + p.revenue, 0);
+    
+    // Populate category filter
+    const categories = [...new Set(productReportData.map(p => p.category))].sort();
+    const categoryFilter = document.getElementById('productCategoryFilter');
+    categoryFilter.innerHTML = '<option value="">All Categories</option>' + 
+        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    
+    // Store total revenue for display
+    productReportData.forEach(p => {
+        p.totalRevenue = totalRevenue;
+    });
+    
+    displayProductReport();
+}
+
+function displayProductReport() {
+    let filteredProducts = [...productReportData];
+    
+    // Apply search filter
+    const searchTerm = document.getElementById('productReportSearch').value.toLowerCase();
+    if (searchTerm) {
+        filteredProducts = filteredProducts.filter(p => 
+            p.name.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Apply category filter
+    const categoryFilter = document.getElementById('productCategoryFilter').value;
+    if (categoryFilter) {
+        filteredProducts = filteredProducts.filter(p => p.category === categoryFilter);
+    }
+    
+    // Apply sorting
+    const sortBy = document.getElementById('productReportSort').value;
+    switch(sortBy) {
+        case 'revenue':
+            filteredProducts.sort((a, b) => b.revenue - a.revenue);
+            break;
+        case 'units':
+            filteredProducts.sort((a, b) => b.units_sold - a.units_sold);
+            break;
+        case 'name':
+            filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+    }
+    
+    // Apply limit
+    const limit = document.getElementById('productReportLimit').value;
+    const displayProducts = limit === 'all' ? filteredProducts : filteredProducts.slice(0, parseInt(limit));
+    
+    // Calculate totals for displayed products
+    const displayRevenue = displayProducts.reduce((sum, p) => sum + p.revenue, 0);
+    const totalRevenue = productReportData.reduce((sum, p) => sum + p.revenue, 0);
+    
+    // Generate table HTML
+    const tableHTML = displayProducts.map((p, i) => {
+        const avgPrice = p.units_sold > 0 ? p.revenue / p.units_sold : 0;
+        const percentage = totalRevenue > 0 ? (p.revenue / totalRevenue * 100) : 0;
+        
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${p.name}</strong></td>
+            <td><span class="badge bg-secondary">${p.category}</span></td>
+            <td>${p.units_sold.toLocaleString()}</td>
+            <td>$${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>$${avgPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>${percentage.toFixed(2)}%</td>
+        </tr>
+        `;
+    }).join('');
+    
+    document.getElementById('productReportTable').innerHTML = tableHTML || '<tr><td colspan="7" class="text-center">No products found</td></tr>';
+    document.getElementById('productReportCount').textContent = `${displayProducts.length} products`;
+    document.getElementById('productReportRevenue').textContent = `$${displayRevenue.toLocaleString('en-US', {minimumFractionDigits: 2})} total revenue`;
+}
+
+// Add event listeners for product report filtering
+document.addEventListener('DOMContentLoaded', function() {
+    const productSearchInput = document.getElementById('productReportSearch');
+    const productCategoryFilter = document.getElementById('productCategoryFilter');
+    const productSortSelect = document.getElementById('productReportSort');
+    const productLimitSelect = document.getElementById('productReportLimit');
+    
+    if (productSearchInput) productSearchInput.addEventListener('input', displayProductReport);
+    if (productCategoryFilter) productCategoryFilter.addEventListener('change', displayProductReport);
+    if (productSortSelect) productSortSelect.addEventListener('change', displayProductReport);
+    if (productLimitSelect) productLimitSelect.addEventListener('change', displayProductReport);
+});
+
+function exportProductReport() {
+    if (productReportData.length === 0) {
+        alert('No data to export. Please load analytics first.');
+        return;
+    }
+    
+    const totalRevenue = productReportData.reduce((sum, p) => sum + p.revenue, 0);
+    
+    let csv = 'Product Name,Category,Units Sold,Revenue,Avg Price,% of Total\n';
+    productReportData.forEach(p => {
+        const avgPrice = p.units_sold > 0 ? p.revenue / p.units_sold : 0;
+        const percentage = totalRevenue > 0 ? (p.revenue / totalRevenue * 100) : 0;
+        csv += `"${p.name}","${p.category}",${p.units_sold},${p.revenue.toFixed(2)},${avgPrice.toFixed(2)},${percentage.toFixed(2)}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `product_report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+</script>
+{% endblock %}

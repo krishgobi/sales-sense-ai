@@ -81,6 +81,19 @@ def get_database_connection():
 
 try:
     db = get_database_connection()
+    
+    # Create indexes for faster queries
+    print("Creating database indexes...")
+    try:
+        db.products_sold.create_index([('date', -1)])
+        db.products_sold.create_index([('product_id', 1)])
+        db.products_sold.create_index([('user_id', 1)])
+        db.users.create_index([('email', 1)], unique=True)
+        db.users.create_index([('created_at', -1)])
+        print("Database indexes created successfully")
+    except Exception as idx_error:
+        print(f"Index creation warning: {idx_error}")
+    
     # Initialize default admin user if not exists
     if db.admins.count_documents({}) == 0:
         default_admin = {
@@ -380,99 +393,152 @@ def admin_dashboard():
         # Get current date for calculations
         today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
         
-        # Get statistics
+        # Use MongoDB aggregation for faster total sales calculation
+        total_sales_pipeline = [
+            {'$group': {
+                '_id': None,
+                'total': {'$sum': '$total'}
+            }}
+        ]
+        total_sales_result = list(products_sold.aggregate(total_sales_pipeline))
+        total_sales = float(total_sales_result[0]['total']) if total_sales_result else 0.0
+        
+        # Calculate today's sales using aggregation
+        sales_today_pipeline = [
+            {'$match': {'date': {'$gte': today}}},
+            {'$group': {
+                '_id': None,
+                'total': {'$sum': '$total'}
+            }}
+        ]
+        sales_today_result = list(products_sold.aggregate(sales_today_pipeline))
+        sales_today = float(sales_today_result[0]['total']) if sales_today_result else 0.0
+        
+        # Get statistics - optimized queries
         stats = {
             'total_users': users.count_documents({}),
             'new_users_today': users.count_documents({
                 'created_at': {'$gte': today}
             }),
-            'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
-            'sales_today': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
-                'date': {'$gte': today}
-            }))),
+            'total_sales': total_sales,
+            'sales_today': sales_today,
             'total_products': products_update.count_documents({}),
-            'low_stock_products': sum(1 for product in products_update.find() 
-                                    for variant in product.get('variants', []) 
-                                    if isinstance(variant, dict) and variant.get('stock', 0) < 10),
+            'low_stock_products': 0,  # Will calculate separately
             'total_workers': workers_update.count_documents({}),
             'active_workers': workers_update.count_documents({
                 'last_active': {'$gte': datetime.datetime.now() - datetime.timedelta(hours=24)}
             })
         }
+        
+        # Calculate low stock products efficiently
+        low_stock_count = 0
+        for product in products_update.find({}, {'variants': 1}):
+            for variant in product.get('variants', []):
+                if isinstance(variant, dict) and variant.get('stock', 0) < 10:
+                    low_stock_count += 1
+        stats['low_stock_products'] = low_stock_count
 
-        # Get recent users (for reports, not full listing)
-        recent_users = list(users.find().sort('join_date', -1).limit(5))
+        # Get recent users with pagination support
+        page = request.args.get('page', 1, type=int)
+        per_page = 20  # Show 20 users per page
+        skip = (page - 1) * per_page
+        
+        total_users_count = users.count_documents({})
+        total_pages = (total_users_count + per_page - 1) // per_page
+        
+        recent_users = list(users.find().sort('created_at', -1).skip(skip).limit(per_page))
         for user in recent_users:
             user['_id'] = str(user['_id'])
+        
+        pagination = {
+            'page': page,
+            'per_page': per_page,
+            'total': total_users_count,
+            'pages': total_pages
+        }
 
         # Get worker summary (not full listing)
         workers_summary = list(workers_update.find().limit(5))
         for worker in workers_summary:
             worker['_id'] = str(worker['_id'])
 
-        # Get sales data for charts
+        # Get sales data for charts - using aggregation for speed
         sales_data = {
             'dates': [],
             'values': []
         }
         
-        # Last 7 days sales
+        # Last 7 days sales using aggregation
         for i in range(6, -1, -1):
             date = datetime.datetime.now() - datetime.timedelta(days=i)
             start_date = date.replace(hour=0, minute=0, second=0)
             end_date = date.replace(hour=23, minute=59, second=59)
             
-            daily_sales = sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
-                'date': {'$gte': start_date, '$lte': end_date}
-            }))
+            # Use aggregation for faster calculation
+            daily_sales_pipeline = [
+                {'$match': {'date': {'$gte': start_date, '$lte': end_date}}},
+                {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+            ]
+            daily_result = list(products_sold.aggregate(daily_sales_pipeline))
+            daily_sales = float(daily_result[0]['total']) if daily_result else 0.0
             
             sales_data['dates'].append(date.strftime('%m/%d'))
             sales_data['values'].append(daily_sales)
 
-        # Category data for pie chart
+        # Category data for pie chart - using aggregation with lookup
+        category_sales_pipeline = [
+            {'$lookup': {
+                'from': 'products_update',
+                'localField': 'product_id',
+                'foreignField': '_id',
+                'as': 'product'
+            }},
+            {'$unwind': {'path': '$product', 'preserveNullAndEmptyArrays': True}},
+            {'$group': {
+                '_id': {'$ifNull': ['$product.category', 'Other']},
+                'total': {'$sum': '$total'}
+            }}
+        ]
+        
         category_sales = {}
-        for sale in products_sold.find():
-            try:
-                product = products_update.find_one({'_id': ObjectId(sale['product_id'])})
-                if product:
-                    category = product.get('category', 'Other')
-                    if category not in category_sales:
-                        category_sales[category] = 0
-                    category_sales[category] += float(calculate_sale_amount(sale))
-            except Exception as e:
-                print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-                continue
+        try:
+            category_results = list(products_sold.aggregate(category_sales_pipeline))
+            for result in category_results:
+                category_sales[result['_id']] = float(result['total'])
+        except Exception as e:
+            print(f"Error in category aggregation: {str(e)}")
+            # Fallback to simpler method
+            category_sales = {'Other': total_sales}
 
         category_data = {
             'labels': list(category_sales.keys()) if category_sales else ['No Data'],
             'values': list(category_sales.values()) if category_sales else [0]
         }
 
-        # Top products (for reports)
-        product_sales = {}
-        for sale in products_sold.find():
-            try:
-                product_id = sale['product_id']
-                if product_id not in product_sales:
-                    product = products_update.find_one({'_id': ObjectId(product_id)})
-                    if product:
-                        product_sales[product_id] = {
-                            'name': product['name'],
-                            'units_sold': 0,
-                            'revenue': 0.0
-                        }
-
-                if product_id in product_sales:
-                    quantity = int(extract_numeric_value(sale.get('quantity', 0)))
-                    product_sales[product_id]['units_sold'] += quantity
-                    
-                    sale_amount = calculate_sale_amount(sale)
-                    product_sales[product_id]['revenue'] += sale_amount
-            except (ValueError, TypeError) as e:
-                print(f"Error processing sale {sale.get('_id')}: {str(e)}")
-                continue
-
-        top_products = sorted(product_sales.values(), key=lambda x: x['revenue'], reverse=True)[:5]
+        # Top products (for reports) - using aggregation
+        top_products_pipeline = [
+            {'$group': {
+                '_id': '$product_id',
+                'total_revenue': {'$sum': '$total'},
+                'units_sold': {'$sum': '$quantity'},
+                'product_name': {'$first': '$product_name'}
+            }},
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 5}
+        ]
+        
+        top_products = []
+        try:
+            top_products_results = list(products_sold.aggregate(top_products_pipeline))
+            for result in top_products_results:
+                top_products.append({
+                    'name': result.get('product_name', 'Unknown'),
+                    'units_sold': int(result.get('units_sold', 0)),
+                    'revenue': float(result.get('total_revenue', 0.0))
+                })
+        except Exception as e:
+            print(f"Error in top products aggregation: {str(e)}")
+            top_products = []
 
         # Product summary for reports
         total_products = products_update.count_documents({})
@@ -509,6 +575,7 @@ def admin_dashboard():
         return render_template('admin_dashboard.html',
                              stats=stats,
                              recent_users=recent_users,
+                             pagination=pagination,
                              workers_summary=workers_summary,
                              sales_data=sales_data,
                              category_data=category_data,
@@ -1059,28 +1126,422 @@ def business_stats_api():
     try:
         today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
         
+        # Use aggregation for faster calculations - handle null totals
+        total_sales_pipeline = [
+            {'$match': {'total': {'$ne': None}}},
+            {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+        ]
+        total_sales_result = list(products_sold.aggregate(total_sales_pipeline))
+        total_sales = float(total_sales_result[0]['total']) if total_sales_result and total_sales_result[0].get('total') else 0.0
+        
+        sales_today_pipeline = [
+            {'$match': {'date': {'$gte': today}, 'total': {'$ne': None}}},
+            {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+        ]
+        sales_today_result = list(products_sold.aggregate(sales_today_pipeline))
+        sales_today = float(sales_today_result[0]['total']) if sales_today_result and sales_today_result[0].get('total') else 0.0
+        
+        # Get total sales count
+        total_orders = products_sold.count_documents({'total': {'$ne': None}})
+        orders_today = products_sold.count_documents({'date': {'$gte': today}, 'total': {'$ne': None}})
+        
+        # Get active users (purchased in last 30 days) - check last_purchase exists and is not None
+        thirty_days_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        active_users = users.count_documents({
+            'last_purchase': {'$exists': True, '$ne': None, '$gte': thirty_days_ago}
+        })
+        
+        # Get top selling products (last 30 days)
+        top_products_pipeline = [
+            {'$match': {'date': {'$gte': thirty_days_ago}, 'total': {'$ne': None}}},
+            {'$group': {
+                '_id': '$product_name',
+                'total_revenue': {'$sum': '$total'},
+                'units_sold': {'$sum': '$quantity'}
+            }},
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 5}
+        ]
+        top_products_result = list(products_sold.aggregate(top_products_pipeline))
+        top_products = [
+            {
+                'name': p['_id'],
+                'revenue': float(p.get('total_revenue', 0)),
+                'units': int(p.get('units_sold', 0))
+            }
+            for p in top_products_result
+        ]
+        
+        # Last 7 days sales trend
+        sales_trend = []
+        for i in range(6, -1, -1):
+            date = datetime.datetime.now() - datetime.timedelta(days=i)
+            start = date.replace(hour=0, minute=0, second=0)
+            end = date.replace(hour=23, minute=59, second=59)
+            
+            daily_pipeline = [
+                {'$match': {'date': {'$gte': start, '$lte': end}, 'total': {'$ne': None}}},
+                {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+            ]
+            daily_result = list(products_sold.aggregate(daily_pipeline))
+            daily_sales = float(daily_result[0]['total']) if daily_result and daily_result[0].get('total') else 0.0
+            
+            sales_trend.append({
+                'date': date.strftime('%m/%d'),
+                'sales': daily_sales
+            })
+        
         stats = {
             'total_users': users.count_documents({}),
             'new_users_today': users.count_documents({'created_at': {'$gte': today}}),
-            'total_sales': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find())),
-            'sales_today': float(sum(float(calculate_sale_amount(sale)) for sale in products_sold.find({
-                'date': {'$gte': today}
-            }))),
+            'active_users': active_users,
+            'total_sales': total_sales,
+            'sales_today': sales_today,
+            'total_orders': total_orders,
+            'orders_today': orders_today,
             'total_products': products_update.count_documents({}),
-            'total_workers': workers_update.count_documents({})
+            'total_workers': workers_update.count_documents({}),
+            'top_products': top_products,
+            'sales_trend': sales_trend,
+            'avg_order_value': round(total_sales / total_orders, 2) if total_orders > 0 else 0
         }
         
         return jsonify(stats)
     except Exception as e:
         print(f"Error getting business stats: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'total_users': 0,
             'new_users_today': 0,
+            'active_users': 0,
             'total_sales': 0.0,
             'sales_today': 0.0,
+            'total_orders': 0,
+            'orders_today': 0,
             'total_products': 0,
-            'total_workers': 0
+            'total_workers': 0,
+            'top_products': [],
+            'sales_trend': [],
+            'avg_order_value': 0
         })
+
+@app.route('/api/products-list')
+def products_list_api():
+    """Get list of all products for filter dropdown"""
+    try:
+        products = list(products_update.find({}, {'_id': 1, 'name': 1, 'category': 1}))
+        for p in products:
+            p['_id'] = str(p['_id'])
+        return jsonify(products)
+    except Exception as e:
+        print(f"Error getting products list: {e}")
+        return jsonify([])
+
+@app.route('/api/users-list')
+def users_list_api():
+    """Get list of all users for filter dropdown"""
+    try:
+        users_list = list(users.find({}, {'_id': 1, 'name': 1, 'email': 1}).sort('name', 1))
+        for u in users_list:
+            u['_id'] = str(u['_id'])
+        return jsonify(users_list)
+    except Exception as e:
+        print(f"Error getting users list: {e}")
+        return jsonify([])
+
+@app.route('/api/analytics')
+def analytics_api():
+    try:
+        # Get date range from query parameters
+        start_date_str = request.args.get('start_date') or request.args.get('start')
+        end_date_str = request.args.get('end_date') or request.args.get('end')
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'Start and end dates are required'}), 400
+        
+        # Parse dates
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0)
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+        
+        # Get optional filters
+        products_filter = request.args.get('products', '')
+        users_filter = request.args.get('users', '')
+        
+        # Build base match query
+        base_match = {
+            'date': {'$gte': start_date, '$lte': end_date},
+            'total': {'$ne': None}
+        }
+        
+        # Add product filter if specified
+        if products_filter:
+            product_ids = products_filter.split(',')
+            base_match['product_id'] = {'$in': product_ids}
+        
+        # Add user filter if specified
+        if users_filter:
+            user_ids = users_filter.split(',')
+            base_match['user_id'] = {'$in': user_ids}
+        
+        # Sales in period (using filtered match)
+        period_sales_pipeline = [
+            {'$match': base_match},
+            {'$group': {
+                '_id': None,
+                'total_revenue': {'$sum': '$total'},
+                'total_orders': {'$sum': 1},
+                'total_units': {'$sum': '$quantity'}
+            }}
+        ]
+        period_sales_result = list(products_sold.aggregate(period_sales_pipeline))
+        
+        if period_sales_result:
+            total_revenue = float(period_sales_result[0]['total_revenue'])
+            total_orders = int(period_sales_result[0]['total_orders'])
+            total_units = int(period_sales_result[0]['total_units'])
+            avg_order_value = round(total_revenue / total_orders, 2) if total_orders > 0 else 0
+        else:
+            total_revenue = 0
+            total_orders = 0
+            total_units = 0
+            avg_order_value = 0
+        
+        # Active customers in period (made purchases) - with filters
+        active_customers_pipeline = [
+            {'$match': base_match},
+            {'$group': {'_id': '$user_id'}}
+        ]
+        active_customers = len(list(products_sold.aggregate(active_customers_pipeline)))
+        
+        # New customers in period - with user filter if specified
+        new_customers_query = {'created_at': {'$gte': start_date, '$lte': end_date}}
+        if users_filter:
+            user_object_ids = [ObjectId(uid) for uid in users_filter.split(',') if uid]
+            new_customers_query['_id'] = {'$in': user_object_ids}
+        new_customers = users.count_documents(new_customers_query)
+        
+        # Top products in period (with filters)
+        top_products_pipeline = [
+            {'$match': base_match},
+            {'$group': {
+                '_id': '$product_name',
+                'total_revenue': {'$sum': '$total'},
+                'units_sold': {'$sum': '$quantity'}
+            }},
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 10}
+        ]
+        top_products_result = list(products_sold.aggregate(top_products_pipeline))
+        top_products = [
+            {
+                'name': p['_id'],
+                'revenue': float(p['total_revenue']),
+                'units': int(p['units_sold'])
+            }
+            for p in top_products_result
+        ]
+        
+        # All products performance (with filters)
+        all_products_pipeline = [
+            {'$match': base_match},
+            {'$group': {
+                '_id': '$product_id',
+                'product_name': {'$first': '$product_name'},
+                'total_revenue': {'$sum': '$total'},
+                'units_sold': {'$sum': '$quantity'}
+            }},
+            {'$sort': {'total_revenue': -1}}
+        ]
+        all_products_result = list(products_sold.aggregate(all_products_pipeline))
+        
+        all_products = []
+        for p in all_products_result:
+            try:
+                product_doc = products_update.find_one({'_id': ObjectId(p['_id'])})
+                total_stock = 0
+                category = 'Other'
+                
+                if product_doc:
+                    category = product_doc.get('category', 'Other')
+                    for variant in product_doc.get('variants', []):
+                        if isinstance(variant, dict):
+                            total_stock += int(variant.get('stock', 0))
+                
+                all_products.append({
+                    'name': p['product_name'],
+                    'category': category,
+                    'revenue': float(p['total_revenue']),
+                    'units_sold': int(p['units_sold']),
+                    'stock': total_stock
+                })
+            except:
+                continue
+        
+        # Category sales (with filters)
+        category_sales = {}
+        for sale in products_sold.find(base_match):
+            try:
+                product = products_update.find_one({'_id': ObjectId(sale['product_id'])})
+                if product:
+                    category = product.get('category', 'Other')
+                    if category not in category_sales:
+                        category_sales[category] = 0
+                    category_sales[category] += float(sale.get('total', 0))
+            except:
+                continue
+        
+        category_sales_list = [
+            {'category': cat, 'revenue': rev}
+            for cat, rev in sorted(category_sales.items(), key=lambda x: x[1], reverse=True)
+        ]
+        
+        top_category = category_sales_list[0]['category'] if category_sales_list else None
+        top_category_revenue = category_sales_list[0]['revenue'] if category_sales_list else 0
+        
+        # Top customers (with filters) - Get top 100 for chart
+        top_customers_pipeline = [
+            {'$match': base_match},
+            {'$group': {
+                '_id': '$user_id',
+                'total_spent': {'$sum': '$total'},
+                'orders': {'$sum': 1}
+            }},
+            {'$sort': {'total_spent': -1}},
+            {'$limit': 100}
+        ]
+        top_customers_result = list(products_sold.aggregate(top_customers_pipeline))
+        
+        top_customers = []
+        for c in top_customers_result:
+            try:
+                user = users.find_one({'_id': ObjectId(c['_id'])})
+                if user:
+                    top_customers.append({
+                        'name': user.get('name', 'Unknown'),
+                        'email': user.get('email', ''),
+                        'orders': int(c['orders']),
+                        'total_spent': float(c['total_spent'])
+                    })
+            except:
+                continue
+        
+        # Sales trend (daily breakdown with filters)
+        sales_trend = []
+        current_date = start_date
+        while current_date <= end_date:
+            day_start = current_date.replace(hour=0, minute=0, second=0)
+            day_end = current_date.replace(hour=23, minute=59, second=59)
+            
+            # Build daily match by combining base_match with date range
+            daily_match = base_match.copy()
+            daily_match['date'] = {'$gte': day_start, '$lte': day_end}
+            
+            daily_pipeline = [
+                {'$match': daily_match},
+                {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+            ]
+            daily_result = list(products_sold.aggregate(daily_pipeline))
+            daily_sales = float(daily_result[0]['total']) if daily_result and daily_result[0].get('total') else 0.0
+            
+            sales_trend.append({
+                'date': current_date.strftime('%m/%d'),
+                'sales': daily_sales
+            })
+            
+            current_date += datetime.timedelta(days=1)
+        
+        return jsonify({
+            'period_sales': total_revenue,
+            'total_orders': total_orders,
+            'total_units_sold': total_units,
+            'avg_order_value': avg_order_value,
+            'active_customers': active_customers,
+            'new_customers': new_customers,
+            'top_category': top_category,
+            'top_category_revenue': top_category_revenue,
+            'top_products': top_products,
+            'all_products': all_products,
+            'category_sales': category_sales_list,
+            'top_customers': top_customers,
+            'sales_trend': sales_trend
+        })
+        
+    except Exception as e:
+        print(f"Error in analytics API: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/analytics')
+def analytics_page():
+    return render_template('analytics_simple.html')
+
+@app.route('/api/user-report')
+def user_report_api():
+    try:
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'Start and end dates are required'}), 400
+        
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0)
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+        
+        # Get all users with their purchase data
+        user_report_pipeline = [
+            {
+                '$match': {
+                    'date': {'$gte': start_date, '$lte': end_date},
+                    'total': {'$ne': None}
+                }
+            },
+            {
+                '$group': {
+                    '_id': '$user_id',
+                    'total_spent': {'$sum': '$total'},
+                    'orders': {'$sum': 1},
+                    'last_purchase_date': {'$max': '$date'}
+                }
+            },
+            {
+                '$sort': {'total_spent': -1}
+            }
+        ]
+        
+        user_purchases = list(products_sold.aggregate(user_report_pipeline))
+        
+        user_report = []
+        for up in user_purchases:
+            try:
+                user = users.find_one({'_id': ObjectId(up['_id'])})
+                if user:
+                    avg_order = up['total_spent'] / up['orders'] if up['orders'] > 0 else 0
+                    last_purchase = up['last_purchase_date'].strftime('%Y-%m-%d %H:%M') if up.get('last_purchase_date') else None
+                    
+                    user_report.append({
+                        'name': user.get('name', 'Unknown'),
+                        'email': user.get('email', ''),
+                        'orders': int(up['orders']),
+                        'total_spent': float(up['total_spent']),
+                        'avg_order': float(avg_order),
+                        'last_purchase': last_purchase
+                    })
+            except Exception as e:
+                print(f"Error processing user {up['_id']}: {e}")
+                continue
+        
+        return jsonify({
+            'users': user_report,
+            'total_users': len(user_report)
+        })
+        
+    except Exception as e:
+        print(f"Error in user report API: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/create-worker', methods=['POST'])
 def create_worker():

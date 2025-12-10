@@ -42,7 +42,7 @@
                 {% endif %}
             {% endwith %}
 
-            <form method="POST" action="{{ url_for('admin_login') }}">
+            <form method="POST" action="{{ url_for('admin_login') }}" id="loginForm">
                 <div class="form-group">
                     <label for="email">Username/Email</label>
                     <input type="text" class="form-control" id="email" name="email" placeholder="admin" required>
@@ -51,8 +51,26 @@
                     <label for="password">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
+                <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                    <span id="loginText">Login</span>
+                    <span id="loginSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span id="loadingText" class="d-none">Loading dashboard...</span>
+                </button>
             </form>
+            
+            <script>
+                document.getElementById('loginForm').addEventListener('submit', function() {
+                    const btn = document.getElementById('loginBtn');
+                    const loginText = document.getElementById('loginText');
+                    const loadingText = document.getElementById('loadingText');
+                    const spinner = document.getElementById('loginSpinner');
+                    
+                    loginText.classList.add('d-none');
+                    spinner.classList.remove('d-none');
+                    loadingText.classList.remove('d-none');
+                    btn.disabled = true;
+                });
+            </script>
         </div>
     </div>
 
