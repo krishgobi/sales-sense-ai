@@ -325,9 +325,10 @@ function loadAnalytics() {
 }
 
 function updateMetrics(data) {
-    document.getElementById('totalRevenue').textContent = `$${data.period_sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const USD_TO_INR = 83.5;
+    document.getElementById('totalRevenue').textContent = `₹${(data.period_sales * USD_TO_INR).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     document.getElementById('totalOrders').textContent = data.total_orders.toLocaleString();
-    document.getElementById('avgOrderValue').textContent = `$${data.avg_order_value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('avgOrderValue').textContent = `₹${(data.avg_order_value * USD_TO_INR).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     document.getElementById('activeCustomers').textContent = data.active_customers.toLocaleString();
 }
 
@@ -355,7 +356,7 @@ function updateCharts(data) {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return '$' + value.toLocaleString();
+                            return '₹' + (value * 83.5).toLocaleString('en-IN');
                         }
                     }
                 }
@@ -364,7 +365,7 @@ function updateCharts(data) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Sales: $' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2});
+                            return 'Sales: ₹' + (context.parsed.y * 83.5).toLocaleString('en-IN', {minimumFractionDigits: 2});
                         }
                     }
                 }
@@ -400,7 +401,7 @@ function updateCharts(data) {
                         label: function(context) {
                             const label = context.label || '';
                             const value = context.parsed || 0;
-                            return label + ': $' + value.toLocaleString('en-US', {minimumFractionDigits: 2});
+                            return label + ': ₹' + (value * 83.5).toLocaleString('en-IN', {minimumFractionDigits: 2});
                         }
                     }
                 }
@@ -433,7 +434,7 @@ function updateCharts(data) {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return '$' + value.toLocaleString();
+                            return '₹' + (value * 83.5).toLocaleString('en-IN');
                         }
                     }
                 }
@@ -442,7 +443,7 @@ function updateCharts(data) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Revenue: $' + context.parsed.x.toLocaleString('en-US', {minimumFractionDigits: 2});
+                            return 'Revenue: ₹' + (context.parsed.x * 83.5).toLocaleString('en-IN', {minimumFractionDigits: 2});
                         }
                     }
                 },
@@ -568,8 +569,8 @@ function displayProductReport() {
             <td><strong>${p.name}</strong></td>
             <td><span class="badge bg-secondary">${p.category}</span></td>
             <td>${p.units_sold.toLocaleString()}</td>
-            <td>$${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-            <td>$${avgPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>₹${(p.revenue * 83.5).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+            <td>₹${(avgPrice * 83.5).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
             <td>${percentage.toFixed(2)}%</td>
         </tr>
         `;
@@ -577,7 +578,7 @@ function displayProductReport() {
     
     document.getElementById('productReportTable').innerHTML = tableHTML || '<tr><td colspan="7" class="text-center">No products found</td></tr>';
     document.getElementById('productReportCount').textContent = `${displayProducts.length} products`;
-    document.getElementById('productReportRevenue').textContent = `$${displayRevenue.toLocaleString('en-US', {minimumFractionDigits: 2})} total revenue`;
+    document.getElementById('productReportRevenue').textContent = `₹${(displayRevenue * 83.5).toLocaleString('en-IN', {minimumFractionDigits: 2})} total revenue`;
 }
 
 // Add event listeners for product report filtering
