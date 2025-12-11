@@ -14,9 +14,12 @@
     <!-- Analytics Button -->
     <div class="row mb-4">
         <div class="col-md-12 text-center">
-            <a href="/analytics" class="btn btn-primary btn-lg shadow">
+            <a href="/analytics" class="btn btn-primary btn-lg shadow me-2">
                 <i class="bi bi-graph-up-arrow"></i> Open Advanced Analytics Dashboard
             </a>
+            <button onclick="exportBusinessSummaryPDF()" class="btn btn-danger btn-lg shadow">
+                <i class="bi bi-file-pdf"></i> Export Business Summary PDF
+            </button>
         </div>
     </div>
 
@@ -520,6 +523,35 @@ function updateWeeklySummary(trendData) {
     document.getElementById('weeklyOrders').textContent = (weeklyOrders * 10).toLocaleString(); // Approximate multiplier
     document.getElementById('avgDailySales').textContent = '₹' + avgDaily.toLocaleString('en-IN', {minimumFractionDigits: 2});
     document.getElementById('bestDay').textContent = bestDay ? bestDay.date : '--';
+}
+
+function exportBusinessSummaryPDF() {
+    showInfo('Generating business summary PDF...');
+    
+    fetch('/api/export-business-summary-pdf')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const filename = `business_summary_${new Date().toISOString().split('T')[0]}.pdf`;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showSuccess('Business summary PDF exported successfully!');
+        })
+        .catch(error => {
+            console.error('Error exporting PDF:', error);
+            showError('Failed to export PDF. Please try again.');
+        });
 }
 </script>
 

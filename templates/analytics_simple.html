@@ -48,6 +48,16 @@
                     </button>
                 </div>
             </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <button class="btn btn-danger" onclick="exportAnalyticsPDF()">
+                        <i class="bi bi-file-pdf"></i> Export as PDF
+                    </button>
+                    <button class="btn btn-success ms-2" onclick="exportProductReport()">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export Products CSV
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -299,10 +309,11 @@ function loadAnalytics() {
     const endDate = document.getElementById('endDate').value;
     
     if (!startDate || !endDate) {
-        alert('Please select both start and end dates');
+        showError('Please select both start and end dates');
         return;
     }
     
+    showInfo('Loading analytics data...');
     console.log('Loading analytics for:', startDate, 'to', endDate);
     
     fetch(`/api/analytics?start_date=${startDate}&end_date=${endDate}`)
@@ -317,10 +328,11 @@ function loadAnalytics() {
             updateMetrics(data);
             updateCharts(data);
             updateProductReport(data);
+            showSuccess('Analytics data loaded successfully!');
         })
         .catch(error => {
             console.error('Error loading analytics:', error);
-            alert('Error loading analytics data. Please check console for details.');
+            showError('Error loading analytics data. Please try again.');
         });
 }
 
@@ -596,9 +608,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function exportProductReport() {
     if (productReportData.length === 0) {
-        alert('No data to export. Please load analytics first.');
+        showError('No data to export. Please load analytics first.');
         return;
     }
+    
+    showInfo('Preparing CSV export...');
     
     const totalRevenue = productReportData.reduce((sum, p) => sum + p.revenue, 0);
     
@@ -615,6 +629,47 @@ function exportProductReport() {
     a.href = url;
     a.download = `product_report_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    
+    showSuccess(`Product report exported successfully! (${productReportData.length} products)`);
+}
+
+function exportAnalyticsPDF() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        showError('Please select date range before exporting');
+        return;
+    }
+    
+    showInfo('Generating PDF report...');
+    
+    // Create download link
+    const url = `/api/export-analytics-pdf?start_date=${startDate}&end_date=${endDate}`;
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics_report_${startDate}_${endDate}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showSuccess('Analytics PDF exported successfully!');
+        })
+        .catch(error => {
+            console.error('Error exporting PDF:', error);
+            showError('Failed to export PDF. Please try again.');
+        });
 }
 
 </script>

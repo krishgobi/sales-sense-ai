@@ -1378,28 +1378,33 @@ def analytics_api():
             except:
                 continue
         
-        # Category sales (with filters)
-        category_sales = {}
-        for sale in products_sold.find(base_match):
-            try:
-                product = products_update.find_one({'_id': ObjectId(sale['product_id'])})
-                if product:
-                    category = product.get('category', 'Other')
-                    if category not in category_sales:
-                        category_sales[category] = 0
-                    category_sales[category] += float(sale.get('total', 0))
-            except:
-                continue
+        # Category sales (with filters) - Optimized with aggregation
+        category_sales_pipeline = [
+            {'$match': base_match},
+            {'$lookup': {
+                'from': 'products_update',
+                'localField': 'product_id',
+                'foreignField': '_id',
+                'as': 'product'
+            }},
+            {'$unwind': {'path': '$product', 'preserveNullAndEmptyArrays': True}},
+            {'$group': {
+                '_id': {'$ifNull': ['$product.category', 'Other']},
+                'revenue': {'$sum': '$total'}
+            }},
+            {'$sort': {'revenue': -1}}
+        ]
+        category_sales_result = list(products_sold.aggregate(category_sales_pipeline))
         
         category_sales_list = [
-            {'category': cat, 'revenue': rev}
-            for cat, rev in sorted(category_sales.items(), key=lambda x: x[1], reverse=True)
+            {'category': c['_id'], 'revenue': float(c['revenue'])}
+            for c in category_sales_result
         ]
         
         top_category = category_sales_list[0]['category'] if category_sales_list else None
         top_category_revenue = category_sales_list[0]['revenue'] if category_sales_list else 0
         
-        # Top customers (with filters) - Get top 100 for chart
+        # Top customers (with filters) - Optimized with lookup
         top_customers_pipeline = [
             {'$match': base_match},
             {'$group': {
@@ -1408,47 +1413,58 @@ def analytics_api():
                 'orders': {'$sum': 1}
             }},
             {'$sort': {'total_spent': -1}},
-            {'$limit': 100}
+            {'$limit': 100},
+            {'$lookup': {
+                'from': 'users',
+                'localField': '_id',
+                'foreignField': '_id',
+                'as': 'user'
+            }},
+            {'$unwind': {'path': '$user', 'preserveNullAndEmptyArrays': True}},
+            {'$project': {
+                'name': {'$ifNull': ['$user.name', 'Unknown']},
+                'email': {'$ifNull': ['$user.email', '']},
+                'orders': 1,
+                'total_spent': 1
+            }}
         ]
         top_customers_result = list(products_sold.aggregate(top_customers_pipeline))
         
-        top_customers = []
-        for c in top_customers_result:
-            try:
-                user = users.find_one({'_id': ObjectId(c['_id'])})
-                if user:
-                    top_customers.append({
-                        'name': user.get('name', 'Unknown'),
-                        'email': user.get('email', ''),
-                        'orders': int(c['orders']),
-                        'total_spent': float(c['total_spent'])
-                    })
-            except:
-                continue
+        top_customers = [
+            {
+                'name': c.get('name', 'Unknown'),
+                'email': c.get('email', ''),
+                'orders': int(c.get('orders', 0)),
+                'total_spent': float(c.get('total_spent', 0))
+            }
+            for c in top_customers_result
+        ]
         
-        # Sales trend (daily breakdown with filters)
+        # Sales trend (daily breakdown with filters) - Optimized single aggregation
+        sales_trend_pipeline = [
+            {'$match': base_match},
+            {'$group': {
+                '_id': {
+                    '$dateToString': {'format': '%Y-%m-%d', 'date': '$date'}
+                },
+                'total': {'$sum': '$total'}
+            }},
+            {'$sort': {'_id': 1}}
+        ]
+        sales_trend_result = list(products_sold.aggregate(sales_trend_pipeline))
+        
+        # Create a map for quick lookup
+        sales_map = {r['_id']: float(r['total']) for r in sales_trend_result}
+        
+        # Fill in all dates including zeros
         sales_trend = []
         current_date = start_date
         while current_date <= end_date:
-            day_start = current_date.replace(hour=0, minute=0, second=0)
-            day_end = current_date.replace(hour=23, minute=59, second=59)
-            
-            # Build daily match by combining base_match with date range
-            daily_match = base_match.copy()
-            daily_match['date'] = {'$gte': day_start, '$lte': day_end}
-            
-            daily_pipeline = [
-                {'$match': daily_match},
-                {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
-            ]
-            daily_result = list(products_sold.aggregate(daily_pipeline))
-            daily_sales = float(daily_result[0]['total']) if daily_result and daily_result[0].get('total') else 0.0
-            
+            date_key = current_date.strftime('%Y-%m-%d')
             sales_trend.append({
                 'date': current_date.strftime('%m/%d'),
-                'sales': daily_sales
+                'sales': sales_map.get(date_key, 0.0)
             })
-            
             current_date += datetime.timedelta(days=1)
         
         return jsonify({
@@ -1476,6 +1492,366 @@ def analytics_api():
 @app.route('/analytics')
 def analytics_page():
     return render_template('analytics_simple.html')
+
+@app.route('/api/export-analytics-pdf')
+def export_analytics_pdf():
+    """Export analytics report as PDF"""
+    try:
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+        from flask import make_response
+        
+        # Get date parameters
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'Start and end dates are required'}), 400
+        
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0)
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+        
+        # Get analytics data
+        pipeline = [
+            {
+                '$match': {
+                    'date': {'$gte': start_date, '$lte': end_date},
+                    'total': {'$ne': None}
+                }
+            },
+            {
+                '$group': {
+                    '_id': None,
+                    'total_sales': {'$sum': '$total'},
+                    'total_orders': {'$sum': 1},
+                    'unique_customers': {'$addToSet': '$user_id'}
+                }
+            }
+        ]
+        
+        result = list(db.products_sold.aggregate(pipeline))
+        
+        if result:
+            period_sales = float(result[0].get('total_sales', 0))
+            total_orders = result[0].get('total_orders', 0)
+            active_customers = len(result[0].get('unique_customers', []))
+            avg_order_value = period_sales / total_orders if total_orders > 0 else 0
+        else:
+            period_sales = 0
+            total_orders = 0
+            active_customers = 0
+            avg_order_value = 0
+        
+        # Get product performance
+        product_pipeline = [
+            {
+                '$match': {
+                    'date': {'$gte': start_date, '$lte': end_date},
+                    'total': {'$ne': None}
+                }
+            },
+            {
+                '$group': {
+                    '_id': '$product_id',
+                    'product_name': {'$first': '$product_name'},
+                    'total_revenue': {'$sum': '$total'},
+                    'total_units': {'$sum': '$quantity'}
+                }
+            },
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 20}
+        ]
+        
+        top_products = list(db.products_sold.aggregate(product_pipeline))
+        
+        # Create PDF
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
+        
+        # Container for PDF elements
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#2C3E50'),
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=16,
+            textColor=colors.HexColor('#34495E'),
+            spaceAfter=12,
+            spaceBefore=12
+        )
+        
+        # Title
+        title = Paragraph("Sales Analytics Report", title_style)
+        elements.append(title)
+        
+        # Date range
+        date_text = f"Period: {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
+        date_para = Paragraph(date_text, styles['Normal'])
+        elements.append(date_para)
+        elements.append(Spacer(1, 20))
+        
+        # Summary metrics
+        elements.append(Paragraph("Summary Metrics", heading_style))
+        
+        # Convert USD to INR
+        usd_to_inr = 83.5
+        
+        summary_data = [
+            ['Metric', 'Value'],
+            ['Total Revenue', f'₹{(period_sales * usd_to_inr):,.2f}'],
+            ['Total Orders', f'{total_orders:,}'],
+            ['Active Customers', f'{active_customers:,}'],
+            ['Average Order Value', f'₹{(avg_order_value * usd_to_inr):,.2f}']
+        ]
+        
+        summary_table = Table(summary_data, colWidths=[3*inch, 3*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498DB')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+        ]))
+        
+        elements.append(summary_table)
+        elements.append(Spacer(1, 30))
+        
+        # Top Products
+        if top_products:
+            elements.append(Paragraph("Top 20 Products by Revenue", heading_style))
+            
+            product_data = [['#', 'Product Name', 'Revenue (₹)', 'Units Sold']]
+            for idx, product in enumerate(top_products, 1):
+                product_data.append([
+                    str(idx),
+                    product.get('product_name', 'Unknown')[:40],
+                    f"₹{(float(product.get('total_revenue', 0)) * usd_to_inr):,.2f}",
+                    f"{product.get('total_units', 0):,}"
+                ])
+            
+            product_table = Table(product_data, colWidths=[0.5*inch, 3*inch, 1.5*inch, 1*inch])
+            product_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2ECC71')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (2, 0), (3, -1), 'RIGHT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+            ]))
+            
+            elements.append(product_table)
+        
+        # Footer
+        elements.append(Spacer(1, 30))
+        footer_text = f"Generated on {datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p')}"
+        footer = Paragraph(footer_text, styles['Italic'])
+        elements.append(footer)
+        
+        # Build PDF
+        doc.build(elements)
+        
+        # Get PDF data
+        pdf_data = buffer.getvalue()
+        buffer.close()
+        
+        # Create response
+        response = make_response(pdf_data)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=analytics_report_{start_date.strftime("%Y%m%d")}_{end_date.strftime("%Y%m%d")}.pdf'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/export-business-summary-pdf')
+def export_business_summary_pdf():
+    """Export business summary report as PDF"""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_CENTER
+        from flask import make_response
+        
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+        thirty_days_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        
+        # Get business metrics
+        total_sales_pipeline = [
+            {'$match': {'total': {'$ne': None}}},
+            {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+        ]
+        total_sales_result = list(db.products_sold.aggregate(total_sales_pipeline))
+        total_sales = float(total_sales_result[0]['total']) if total_sales_result and total_sales_result[0].get('total') else 0.0
+        
+        total_orders = db.products_sold.count_documents({'total': {'$ne': None}})
+        total_users = db.users.count_documents({})
+        total_products = db.products_update.count_documents({})
+        
+        active_users = db.users.count_documents({
+            'last_purchase': {'$exists': True, '$ne': None, '$gte': thirty_days_ago}
+        })
+        
+        avg_order = total_sales / total_orders if total_orders > 0 else 0
+        
+        # Top products
+        top_products_pipeline = [
+            {'$match': {'date': {'$gte': thirty_days_ago}, 'total': {'$ne': None}}},
+            {'$group': {
+                '_id': '$product_name',
+                'total_revenue': {'$sum': '$total'},
+                'units_sold': {'$sum': '$quantity'}
+            }},
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 10}
+        ]
+        top_products = list(db.products_sold.aggregate(top_products_pipeline))
+        
+        # Create PDF
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
+        
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#2C3E50'),
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=16,
+            textColor=colors.HexColor('#34495E'),
+            spaceAfter=12,
+            spaceBefore=12
+        )
+        
+        # Title
+        title = Paragraph("Business Summary Report", title_style)
+        elements.append(title)
+        
+        date_text = f"Generated on {datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p')}"
+        date_para = Paragraph(date_text, styles['Normal'])
+        elements.append(date_para)
+        elements.append(Spacer(1, 20))
+        
+        # Overall metrics
+        elements.append(Paragraph("Overall Business Metrics", heading_style))
+        
+        usd_to_inr = 83.5
+        
+        overall_data = [
+            ['Metric', 'Value'],
+            ['Total Revenue (All Time)', f'₹{(total_sales * usd_to_inr):,.2f}'],
+            ['Total Orders', f'{total_orders:,}'],
+            ['Total Customers', f'{total_users:,}'],
+            ['Total Products', f'{total_products:,}'],
+            ['Active Customers (30 days)', f'{active_users:,}'],
+            ['Average Order Value', f'₹{(avg_order * usd_to_inr):,.2f}']
+        ]
+        
+        overall_table = Table(overall_data, colWidths=[3*inch, 3*inch])
+        overall_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498DB')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+        ]))
+        
+        elements.append(overall_table)
+        elements.append(Spacer(1, 30))
+        
+        # Top products (last 30 days)
+        if top_products:
+            elements.append(Paragraph("Top 10 Products (Last 30 Days)", heading_style))
+            
+            product_data = [['#', 'Product Name', 'Revenue (₹)', 'Units']]
+            for idx, product in enumerate(top_products, 1):
+                product_data.append([
+                    str(idx),
+                    product.get('_id', 'Unknown')[:35],
+                    f"₹{(float(product.get('total_revenue', 0)) * usd_to_inr):,.2f}",
+                    f"{product.get('units_sold', 0):,}"
+                ])
+            
+            product_table = Table(product_data, colWidths=[0.5*inch, 3*inch, 1.5*inch, 1*inch])
+            product_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2ECC71')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (2, 0), (3, -1), 'RIGHT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+            ]))
+            
+            elements.append(product_table)
+        
+        # Build PDF
+        doc.build(elements)
+        
+        pdf_data = buffer.getvalue()
+        buffer.close()
+        
+        response = make_response(pdf_data)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=business_summary_{datetime.datetime.now().strftime("%Y%m%d")}.pdf'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error generating business summary PDF: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/user-report')
 def user_report_api():

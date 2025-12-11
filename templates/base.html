@@ -45,8 +45,42 @@
         </div>
     </nav>
 
-    <!-- Auto-refresh notification toast -->
+    <!-- Notification toasts -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1070;">
+        <!-- Success notification -->
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span id="successMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        
+        <!-- Error notification -->
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span id="errorMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        
+        <!-- Info notification -->
+        <div id="infoToast" class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <span id="infoMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        
+        <!-- Auto-refresh notification -->
         <div id="refreshToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <i class="bi bi-arrow-clockwise me-2"></i>
@@ -142,6 +176,32 @@
                 sessionStorage.removeItem('scrollPosition');
             }
         });
+        
+        // Notification helper functions
+        function showNotification(type, message) {
+            const toastId = type + 'Toast';
+            const messageId = type + 'Message';
+            
+            document.getElementById(messageId).textContent = message;
+            const toastEl = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 4000
+            });
+            toast.show();
+        }
+        
+        function showSuccess(message) {
+            showNotification('success', message);
+        }
+        
+        function showError(message) {
+            showNotification('error', message);
+        }
+        
+        function showInfo(message) {
+            showNotification('info', message);
+        }
     </script>
 </body>
 </html>
