@@ -61,6 +61,16 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="text-center">
+            <div class="spinner-border text-light" role="status" style="width: 4rem; height: 4rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="text-white mt-3 h4">Loading Analytics...</div>
+        </div>
+    </div>
+
     <!-- Key Metrics -->
     <div class="row mb-4">
         <div class="col-md-3">
@@ -256,8 +266,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadAnalytics();
     
-    // Auto-refresh every 30 seconds
-    setInterval(loadAnalytics, 30000);
+    // Auto-refresh disabled for performance - use Refresh button instead
+    // setInterval(loadAnalytics, 30000);
 });
 
 function applyQuickSelect() {
@@ -313,8 +323,13 @@ function loadAnalytics() {
         return;
     }
     
-    showInfo('Loading analytics data...');
+    // Show loading overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.style.display = 'flex';
+    
     console.log('Loading analytics for:', startDate, 'to', endDate);
+    
+    const startTime = performance.now();
     
     fetch(`/api/analytics?start_date=${startDate}&end_date=${endDate}`)
         .then(response => {
@@ -324,14 +339,20 @@ function loadAnalytics() {
             return response.json();
         })
         .then(data => {
-            console.log('Analytics data received:', data);
+            const loadTime = ((performance.now() - startTime) / 1000).toFixed(2);
+            console.log(`Analytics data received in ${loadTime}s:`, data);
+            
             updateMetrics(data);
             updateCharts(data);
             updateProductReport(data);
-            showSuccess('Analytics data loaded successfully!');
+            
+            // Hide loading overlay
+            loadingOverlay.style.display = 'none';
+            showSuccess(`Analytics loaded successfully! (${loadTime}s)`);
         })
         .catch(error => {
             console.error('Error loading analytics:', error);
+            loadingOverlay.style.display = 'none';
             showError('Error loading analytics data. Please try again.');
         });
 }
@@ -345,6 +366,9 @@ function updateMetrics(data) {
 }
 
 function updateCharts(data) {
+    console.log('Updating charts with data:', data);
+    console.log('Category sales data:', data.category_sales);
+    
     // Sales Trend Chart
     if (salesTrendChart) salesTrendChart.destroy();
     const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
@@ -388,6 +412,16 @@ function updateCharts(data) {
     // Category Sales Chart
     if (categorySalesChart) categorySalesChart.destroy();
     const categoryCtx = document.getElementById('categorySalesChart').getContext('2d');
+    
+    // Check if category sales data exists
+    if (!data.category_sales || data.category_sales.length === 0) {
+        console.warn('No category sales data available');
+        categoryCtx.font = '14px Arial';
+        categoryCtx.textAlign = 'center';
+        categoryCtx.fillText('No category data available', categoryCtx.canvas.width / 2, categoryCtx.canvas.height / 2);
+        return;
+    }
+    
     categorySalesChart = new Chart(categoryCtx, {
         type: 'pie',
         data: {

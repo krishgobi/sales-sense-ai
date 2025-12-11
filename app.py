@@ -85,11 +85,22 @@ try:
     # Create indexes for faster queries
     print("Creating database indexes...")
     try:
-        db.products_sold.create_index([('date', -1)])
+        # Compound indexes for common query patterns
+        db.products_sold.create_index([('date', -1), ('total', 1)])
+        db.products_sold.create_index([('date', -1), ('product_id', 1)])
+        db.products_sold.create_index([('date', -1), ('user_id', 1)])
         db.products_sold.create_index([('product_id', 1)])
         db.products_sold.create_index([('user_id', 1)])
+        
+        # User indexes
         db.users.create_index([('email', 1)], unique=True)
         db.users.create_index([('created_at', -1)])
+        db.users.create_index([('last_purchase', -1)])
+        
+        # Product indexes
+        db.products_update.create_index([('category', 1)])
+        db.products_update.create_index([('name', 1)])
+        
         print("Database indexes created successfully")
     except Exception as idx_error:
         print(f"Index creation warning: {idx_error}")
@@ -1294,7 +1305,7 @@ def analytics_api():
                 'total_units': {'$sum': '$quantity'}
             }}
         ]
-        period_sales_result = list(products_sold.aggregate(period_sales_pipeline))
+        period_sales_result = list(products_sold.aggregate(period_sales_pipeline, allowDiskUse=True))
         
         if period_sales_result:
             total_revenue = float(period_sales_result[0]['total_revenue'])
@@ -1312,7 +1323,7 @@ def analytics_api():
             {'$match': base_match},
             {'$group': {'_id': '$user_id'}}
         ]
-        active_customers = len(list(products_sold.aggregate(active_customers_pipeline)))
+        active_customers = len(list(products_sold.aggregate(active_customers_pipeline, allowDiskUse=True)))
         
         # New customers in period - with user filter if specified
         new_customers_query = {'created_at': {'$gte': start_date, '$lte': end_date}}
@@ -1332,7 +1343,7 @@ def analytics_api():
             {'$sort': {'total_revenue': -1}},
             {'$limit': 10}
         ]
-        top_products_result = list(products_sold.aggregate(top_products_pipeline))
+        top_products_result = list(products_sold.aggregate(top_products_pipeline, allowDiskUse=True))
         top_products = [
             {
                 'name': p['_id'],
@@ -1342,7 +1353,7 @@ def analytics_api():
             for p in top_products_result
         ]
         
-        # All products performance (with filters)
+        # All products performance (with filters) - Optimized with lookup and ObjectId conversion
         all_products_pipeline = [
             {'$match': base_match},
             {'$group': {
@@ -1351,39 +1362,48 @@ def analytics_api():
                 'total_revenue': {'$sum': '$total'},
                 'units_sold': {'$sum': '$quantity'}
             }},
+            {'$addFields': {
+                'product_object_id': {'$toObjectId': '$_id'}
+            }},
+            {'$lookup': {
+                'from': 'products_update',
+                'localField': 'product_object_id',
+                'foreignField': '_id',
+                'as': 'product'
+            }},
+            {'$unwind': {'path': '$product', 'preserveNullAndEmptyArrays': True}},
+            {'$addFields': {
+                'category': {'$ifNull': ['$product.category', 'Other']},
+                'variants': {'$ifNull': ['$product.variants', []]}
+            }},
             {'$sort': {'total_revenue': -1}}
         ]
-        all_products_result = list(products_sold.aggregate(all_products_pipeline))
+        all_products_result = list(products_sold.aggregate(all_products_pipeline, allowDiskUse=True))
         
         all_products = []
         for p in all_products_result:
-            try:
-                product_doc = products_update.find_one({'_id': ObjectId(p['_id'])})
-                total_stock = 0
-                category = 'Other'
-                
-                if product_doc:
-                    category = product_doc.get('category', 'Other')
-                    for variant in product_doc.get('variants', []):
-                        if isinstance(variant, dict):
-                            total_stock += int(variant.get('stock', 0))
-                
-                all_products.append({
-                    'name': p['product_name'],
-                    'category': category,
-                    'revenue': float(p['total_revenue']),
-                    'units_sold': int(p['units_sold']),
-                    'stock': total_stock
-                })
-            except:
-                continue
+            total_stock = 0
+            for variant in p.get('variants', []):
+                if isinstance(variant, dict):
+                    total_stock += int(variant.get('stock', 0))
+            
+            all_products.append({
+                'name': p.get('product_name', 'Unknown'),
+                'category': p.get('category', 'Other'),
+                'revenue': float(p.get('total_revenue', 0)),
+                'units_sold': int(p.get('units_sold', 0)),
+                'stock': total_stock
+            })
         
         # Category sales (with filters) - Optimized with aggregation
         category_sales_pipeline = [
             {'$match': base_match},
+            {'$addFields': {
+                'product_object_id': {'$toObjectId': '$product_id'}
+            }},
             {'$lookup': {
                 'from': 'products_update',
-                'localField': 'product_id',
+                'localField': 'product_object_id',
                 'foreignField': '_id',
                 'as': 'product'
             }},
@@ -1394,7 +1414,7 @@ def analytics_api():
             }},
             {'$sort': {'revenue': -1}}
         ]
-        category_sales_result = list(products_sold.aggregate(category_sales_pipeline))
+        category_sales_result = list(products_sold.aggregate(category_sales_pipeline, allowDiskUse=True))
         
         category_sales_list = [
             {'category': c['_id'], 'revenue': float(c['revenue'])}
@@ -1414,9 +1434,12 @@ def analytics_api():
             }},
             {'$sort': {'total_spent': -1}},
             {'$limit': 100},
+            {'$addFields': {
+                'user_object_id': {'$toObjectId': '$_id'}
+            }},
             {'$lookup': {
                 'from': 'users',
-                'localField': '_id',
+                'localField': 'user_object_id',
                 'foreignField': '_id',
                 'as': 'user'
             }},
@@ -1428,7 +1451,7 @@ def analytics_api():
                 'total_spent': 1
             }}
         ]
-        top_customers_result = list(products_sold.aggregate(top_customers_pipeline))
+        top_customers_result = list(products_sold.aggregate(top_customers_pipeline, allowDiskUse=True))
         
         top_customers = [
             {
@@ -1451,7 +1474,7 @@ def analytics_api():
             }},
             {'$sort': {'_id': 1}}
         ]
-        sales_trend_result = list(products_sold.aggregate(sales_trend_pipeline))
+        sales_trend_result = list(products_sold.aggregate(sales_trend_pipeline, allowDiskUse=True))
         
         # Create a map for quick lookup
         sales_map = {r['_id']: float(r['total']) for r in sales_trend_result}
