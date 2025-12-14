@@ -162,6 +162,120 @@
         </div>
     </div>
 
+    <!-- Intelligent Business Intelligence Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb"></i> Smart Business Intelligence
+                    </h5>
+                    <button class="btn btn-light btn-sm" onclick="loadNotifications()" id="refreshNotificationsBtn">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Notifications Summary -->
+                        <div class="col-md-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0"><i class="bi bi-bell"></i> Smart Alerts</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-danger"><i class="bi bi-exclamation-triangle"></i> High Priority</span>
+                                        <span class="badge bg-danger" id="highPriorityCount">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-warning"><i class="bi bi-info-circle"></i> Medium Priority</span>
+                                        <span class="badge bg-warning" id="mediumPriorityCount">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="text-info"><i class="bi bi-check-circle"></i> Low Priority</span>
+                                        <span class="badge bg-info" id="lowPriorityCount">0</span>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm w-100" onclick="showAllNotifications()">
+                                        <i class="bi bi-list"></i> View All Alerts
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Performance Insights -->
+                        <div class="col-md-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0"><i class="bi bi-graph-up"></i> Product Insights</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Top Performers</small>
+                                        <div class="badge bg-success" id="topPerformersCount">Loading...</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Low Performers</small>
+                                        <div class="badge bg-danger" id="lowPerformersCount">Loading...</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Analysis Period</small>
+                                        <div class="text-primary fw-bold">Last 3 Months</div>
+                                    </div>
+                                    <button class="btn btn-success btn-sm w-100" onclick="showProductInsights()">
+                                        <i class="bi bi-bar-chart"></i> Detailed Analysis
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Festival Calendar -->
+                        <div class="col-md-4">
+                            <div class="card h-100 border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="bi bi-calendar-event"></i> Festival Calendar</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Upcoming Festivals</small>
+                                        <div class="badge bg-info" id="upcomingFestivalsCount">Loading...</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Recommended Promotions</small>
+                                        <div class="badge bg-primary" id="recommendedPromotionsCount">Loading...</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted">Current Month</small>
+                                        <div class="text-info fw-bold" id="currentMonthName">December</div>
+                                    </div>
+                                    <button class="btn btn-info btn-sm w-100" onclick="showFestivalCalendar()">
+                                        <i class="bi bi-calendar3"></i> View Calendar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="loadNotifications()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh Intelligence
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" onclick="exportInsights()">
+                                    <i class="bi bi-download"></i> Export Insights
+                                </button>
+                                <button class="btn btn-outline-info btn-sm" onclick="window.location.href='/analytics'">
+                                    <i class="bi bi-graph-up-arrow"></i> Full Analytics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Access Panels -->
     <div class="row mb-5">
         <div class="col-md-12">
@@ -553,6 +667,378 @@ function exportBusinessSummaryPDF() {
             showError('Failed to export PDF. Please try again.');
         });
 }
+
+// ===== INTELLIGENT NOTIFICATIONS FUNCTIONS =====
+
+let notificationsData = [];
+let productInsightsData = [];
+let festivalCalendarData = [];
+
+function loadNotifications() {
+    const btn = document.getElementById('refreshNotificationsBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-spinner bi-spin"></i> Loading...';
+    
+    fetch('/api/notifications')
+        .then(response => response.json())
+        .then(data => {
+            notificationsData = data.notifications || [];
+            updateNotificationCounts(notificationsData);
+            showSuccess(`Loaded ${notificationsData.length} intelligent notifications`);
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+            showError('Failed to load intelligent notifications');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh';
+        });
+
+    // Load product insights
+    fetch('/api/product-insights')
+        .then(response => response.json())
+        .then(data => {
+            productInsightsData = data;
+            updateProductInsightCounts(data);
+        })
+        .catch(error => {
+            console.error('Error loading product insights:', error);
+        });
+
+    // Load festival calendar
+    fetch('/api/festival-calendar')
+        .then(response => response.json())
+        .then(data => {
+            festivalCalendarData = data;
+            updateFestivalCounts(data);
+        })
+        .catch(error => {
+            console.error('Error loading festival calendar:', error);
+        });
+}
+
+function updateNotificationCounts(notifications) {
+    const counts = notifications.reduce((acc, notif) => {
+        acc[notif.priority] = (acc[notif.priority] || 0) + 1;
+        return acc;
+    }, {});
+    
+    document.getElementById('highPriorityCount').textContent = counts.high || 0;
+    document.getElementById('mediumPriorityCount').textContent = counts.medium || 0;
+    document.getElementById('lowPriorityCount').textContent = counts.low || 0;
+}
+
+function updateProductInsightCounts(data) {
+    document.getElementById('topPerformersCount').textContent = data.top_performers?.length || 0;
+    document.getElementById('lowPerformersCount').textContent = data.poor_performers?.length || 0;
+}
+
+function updateFestivalCounts(data) {
+    document.getElementById('upcomingFestivalsCount').textContent = data.upcoming_festivals?.length || 0;
+    document.getElementById('recommendedPromotionsCount').textContent = data.recommendations?.length || 0;
+    
+    const currentDate = new Date();
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+    document.getElementById('currentMonthName').textContent = monthNames[currentDate.getMonth()];
+}
+
+function showAllNotifications() {
+    if (!notificationsData || notificationsData.length === 0) {
+        showError('No notifications available. Please refresh first.');
+        return;
+    }
+
+    const modalContent = `
+        <div class="modal fade" id="notificationsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-bell"></i> Smart Business Alerts (${notificationsData.length})
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${notificationsData.map(notif => `
+                            <div class="alert alert-${notif.priority === 'high' ? 'danger' : notif.priority === 'medium' ? 'warning' : 'info'}" role="alert">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="alert-heading">
+                                            <i class="bi bi-${notif.priority === 'high' ? 'exclamation-triangle' : notif.priority === 'medium' ? 'info-circle' : 'check-circle'}"></i>
+                                            ${notif.type.replace('_', ' ').toUpperCase()}
+                                        </h6>
+                                        <p class="mb-1">${notif.message}</p>
+                                        <small class="text-muted">Recommendation: ${notif.recommendation}</small>
+                                    </div>
+                                    <span class="badge bg-${notif.priority === 'high' ? 'danger' : notif.priority === 'medium' ? 'warning' : 'info'}">${notif.priority.toUpperCase()}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="exportNotifications()">
+                            <i class="bi bi-download"></i> Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+    const modal = new bootstrap.Modal(document.getElementById('notificationsModal'));
+    modal.show();
+
+    modal._element.addEventListener('hidden.bs.modal', () => {
+        modal._element.remove();
+    });
+}
+
+function showProductInsights() {
+    if (!productInsightsData) {
+        showError('No product insights available. Please refresh first.');
+        return;
+    }
+
+    const modalContent = `
+        <div class="modal fade" id="productInsightsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-graph-up"></i> Product Performance Insights
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success"><i class="bi bi-trophy"></i> Top Performers</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Customers</th>
+                                                <th>Revenue</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${(productInsightsData.top_performers || []).map(p => `
+                                                <tr>
+                                                    <td><strong>${p.name}</strong></td>
+                                                    <td><span class="badge bg-success">${p.customer_count}</span></td>
+                                                    <td>₹${(p.revenue * 83.5).toFixed(2)}</td>
+                                                    <td><small class="text-success">${p.action}</small></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-danger"><i class="bi bi-arrow-down-circle"></i> Poor Performers</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Customers</th>
+                                                <th>Revenue</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${(productInsightsData.poor_performers || []).map(p => `
+                                                <tr>
+                                                    <td><strong>${p.name}</strong></td>
+                                                    <td><span class="badge bg-danger">${p.customer_count}</span></td>
+                                                    <td>₹${(p.revenue * 83.5).toFixed(2)}</td>
+                                                    <td><small class="text-danger">${p.action}</small></td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="exportProductInsights()">
+                            <i class="bi bi-download"></i> Export Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+    const modal = new bootstrap.Modal(document.getElementById('productInsightsModal'));
+    modal.show();
+
+    modal._element.addEventListener('hidden.bs.modal', () => {
+        modal._element.remove();
+    });
+}
+
+function showFestivalCalendar() {
+    if (!festivalCalendarData) {
+        showError('No festival calendar data available. Please refresh first.');
+        return;
+    }
+
+    const modalContent = `
+        <div class="modal fade" id="festivalCalendarModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-calendar-event"></i> Indian Festival Business Calendar
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-info"><i class="bi bi-calendar2-event"></i> Upcoming Festivals</h6>
+                                ${(festivalCalendarData.upcoming_festivals || []).map(f => `
+                                    <div class="alert alert-info">
+                                        <div class="fw-bold">${f.name}</div>
+                                        <small>Month: ${f.month} | Recommended Products: ${f.recommended_products.join(', ')}</small>
+                                        <br><small class="text-muted">Suggested Discount: ${f.discount_range}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary"><i class="bi bi-lightbulb"></i> Festival Recommendations</h6>
+                                ${(festivalCalendarData.recommendations || []).map(r => `
+                                    <div class="alert alert-primary">
+                                        <div class="fw-bold">${r.festival}</div>
+                                        <small>${r.message}</small>
+                                        <br><small class="text-muted">Priority: ${r.priority}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-info" onclick="exportFestivalCalendar()">
+                            <i class="bi bi-download"></i> Export Calendar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+    const modal = new bootstrap.Modal(document.getElementById('festivalCalendarModal'));
+    modal.show();
+
+    modal._element.addEventListener('hidden.bs.modal', () => {
+        modal._element.remove();
+    });
+}
+
+function exportNotifications() {
+    if (!notificationsData || notificationsData.length === 0) {
+        showError('No notifications to export');
+        return;
+    }
+
+    let csv = 'Type,Priority,Message,Recommendation\n';
+    notificationsData.forEach(notif => {
+        csv += `"${notif.type}","${notif.priority}","${notif.message}","${notif.recommendation}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `notifications_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showSuccess('Notifications exported successfully!');
+}
+
+function exportProductInsights() {
+    if (!productInsightsData) {
+        showError('No product insights to export');
+        return;
+    }
+
+    let csv = 'Product,Type,Customers,Revenue,Action\n';
+    (productInsightsData.top_performers || []).forEach(p => {
+        csv += `"${p.name}","Top Performer","${p.customer_count}","${p.revenue}","${p.action}"\n`;
+    });
+    (productInsightsData.poor_performers || []).forEach(p => {
+        csv += `"${p.name}","Poor Performer","${p.customer_count}","${p.revenue}","${p.action}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `product_insights_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showSuccess('Product insights exported successfully!');
+}
+
+function exportFestivalCalendar() {
+    if (!festivalCalendarData) {
+        showError('No festival calendar to export');
+        return;
+    }
+
+    let csv = 'Festival,Month,Recommended Products,Discount Range,Recommendations\n';
+    (festivalCalendarData.upcoming_festivals || []).forEach(f => {
+        const recommendations = (festivalCalendarData.recommendations || [])
+            .filter(r => r.festival === f.name)
+            .map(r => r.message)
+            .join('; ');
+        csv += `"${f.name}","${f.month}","${f.recommended_products.join(', ')}","${f.discount_range}","${recommendations}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `festival_calendar_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showSuccess('Festival calendar exported successfully!');
+}
+
+function exportInsights() {
+    showInfo('Preparing comprehensive insights export...');
+    
+    Promise.all([
+        exportNotifications(),
+        exportProductInsights(),
+        exportFestivalCalendar()
+    ]).then(() => {
+        showSuccess('All insights exported successfully!');
+    }).catch(() => {
+        showError('Some exports failed. Please try again.');
+    });
+}
+
+// Auto-load notifications when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Load business stats first, then load intelligent notifications
+    setTimeout(() => {
+        loadNotifications();
+    }, 2000);
+});
+
 </script>
 
     <!-- Additional Features Section -->

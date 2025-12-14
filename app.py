@@ -25,6 +25,54 @@ app = Flask(__name__)
 # Use environment variable for SECRET_KEY, fallback to random for development
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
 
+# ===== INTELLIGENT ADMIN NOTIFICATION SYSTEM =====
+
+# Indian Festivals Configuration with Product Recommendations
+INDIAN_FESTIVALS = {
+    'Pongal': {
+        'month': 'January',
+        'products': ['Rice', 'Milk', 'Coconut', 'Jaggery'],
+        'categories': ['Food & Beverages', 'Traditional Foods'],
+        'discount_range': '10-25%',
+        'boost_percentage': 40
+    },
+    'Holi': {
+        'month': 'March', 
+        'products': ['Sweets', 'Colors', 'Snacks', 'Traditional Sweets'],
+        'categories': ['Food & Beverages', 'Festival Items'],
+        'discount_range': '15-30%',
+        'boost_percentage': 35
+    },
+    'Diwali': {
+        'month': 'October',
+        'products': ['Sweets', 'Nuts', 'Lamps', 'Traditional Sweets', 'Dry Fruits'],
+        'categories': ['Food & Beverages', 'Festival Items', 'Traditional Foods'],
+        'discount_range': '20-40%',
+        'boost_percentage': 50
+    },
+    'Christmas': {
+        'month': 'December',
+        'products': ['Cake', 'Chocolate', 'Wine', 'Gifts', 'Plum Cake'],
+        'categories': ['Food & Beverages', 'Gifts & Occasions'],
+        'discount_range': '15-35%',
+        'boost_percentage': 30
+    },
+    'New Year': {
+        'month': 'January',
+        'products': ['Party Snacks', 'Beverages', 'Champagne', 'Cake'],
+        'categories': ['Food & Beverages', 'Party Supplies'],
+        'discount_range': '20-30%',
+        'boost_percentage': 25
+    },
+    'Ganesh Chaturthi': {
+        'month': 'August',
+        'products': ['Modak', 'Fruits', 'Flowers', 'Traditional Sweets'],
+        'categories': ['Food & Beverages', 'Festival Items', 'Traditional Foods'],
+        'discount_range': '15-25%',
+        'boost_percentage': 35
+    }
+}
+
 # Custom Jinja2 filters
 @app.template_filter('strftime')
 def datetime_filter(date, format='%Y-%m-%d'):
@@ -119,6 +167,304 @@ try:
 except Exception as e:
     print("Failed to establish MongoDB connection. Starting with limited functionality.")
     db = None  # We'll handle this case in our routes
+
+# ===== INTELLIGENT NOTIFICATION FUNCTIONS =====
+
+def get_upcoming_festivals():
+    """Get festivals in the next 2 months"""
+    current_month = datetime.datetime.now().month
+    next_month = (current_month % 12) + 1
+    
+    month_names = {
+        1: 'January', 2: 'February', 3: 'March', 4: 'April',
+        5: 'May', 6: 'June', 7: 'July', 8: 'August', 
+        9: 'September', 10: 'October', 11: 'November', 12: 'December'
+    }
+    
+    upcoming = []
+    for festival, data in INDIAN_FESTIVALS.items():
+        festival_month = data['month']
+        current_month_name = month_names.get(current_month, '')
+        next_month_name = month_names.get(next_month, '')
+        
+        if festival_month in [current_month_name, next_month_name]:
+            upcoming.append({
+                'name': festival,
+                'month': festival_month,
+                'recommended_products': data['products'],
+                'categories': data['categories'],
+                'discount_range': data['discount_range']
+            })
+    
+    return upcoming
+
+def analyze_product_performance():
+    """Analyze product performance over the last 3 months"""
+    try:
+        if db is None:
+            return {'top_performers': [], 'poor_performers': [], 'error': 'Database not connected'}
+        
+        three_months_ago = datetime.datetime.now() - datetime.timedelta(days=90)
+        
+        # First, let's get all sales data from the last 3 months
+        sales_data = list(db.products_sold.find({
+            'date': {'$gte': three_months_ago}
+        }))
+        
+        print(f"Found {len(sales_data)} sales records in last 90 days")
+        
+        if not sales_data:
+            # If no recent data, use all available data
+            sales_data = list(db.products_sold.find({}).limit(100))  # Get some data for analysis
+            print(f"No recent sales, using {len(sales_data)} historical records")
+        
+        if not sales_data:
+            return {'top_performers': [], 'poor_performers': [], 'error': 'No sales data found'}
+        
+        # Group sales by product
+        product_stats = {}
+        for sale in sales_data:
+            product_id = str(sale.get('product_id', ''))
+            if not product_id:
+                continue
+                
+            if product_id not in product_stats:
+                product_stats[product_id] = {
+                    'total_revenue': 0,
+                    'total_quantity': 0,
+                    'customers': set(),
+                    'order_count': 0
+                }
+            
+            # Add sale data
+            product_stats[product_id]['total_revenue'] += float(sale.get('total', 0))
+            product_stats[product_id]['total_quantity'] += int(sale.get('quantity', 0))
+            product_stats[product_id]['customers'].add(str(sale.get('user_id', '')))
+            product_stats[product_id]['order_count'] += 1
+        
+        # Get product details and create final results
+        results = []
+        for product_id, stats in product_stats.items():
+            try:
+                # Get product info
+                if len(product_id) == 24:  # ObjectId length
+                    product_info = db.products_update.find_one({'_id': ObjectId(product_id)})
+                else:
+                    product_info = db.products_update.find_one({'_id': product_id})
+                
+                if not product_info:
+                    continue
+                
+                customer_count = len(stats['customers'])
+                
+                results.append({
+                    'product_id': product_id,
+                    'name': product_info.get('name', 'Unknown Product'),
+                    'category': product_info.get('category', 'Unknown'),
+                    'revenue': stats['total_revenue'],
+                    'quantity_sold': stats['total_quantity'],
+                    'customer_count': customer_count,
+                    'order_count': stats['order_count'],
+                    'avg_order_value': stats['total_revenue'] / stats['order_count'] if stats['order_count'] > 0 else 0
+                })
+            except Exception as e:
+                print(f"Error processing product {product_id}: {e}")
+                continue
+        
+        if not results:
+            return {'top_performers': [], 'poor_performers': [], 'error': 'No valid product data found'}
+        
+        # Sort by customer engagement (customer count is priority, then revenue)
+        results.sort(key=lambda x: (x['customer_count'], x['revenue']), reverse=True)
+        
+        print(f"Analyzed {len(results)} products")
+        
+        # Calculate performance thresholds
+        total_products = len(results)
+        top_20_percent = max(1, total_products // 5)
+        bottom_20_percent = max(1, total_products // 5)
+        
+        # Identify high performers (top 20% by customer engagement)
+        top_performers = results[:top_20_percent]
+        for product in top_performers:
+            if product['customer_count'] >= 3:  # Lower threshold for more results
+                recommended_increase = 30 + (product['customer_count'] * 2)
+                recommended_increase = min(recommended_increase, 50)
+                product['action'] = f"Increase stock by {recommended_increase}% - High demand product"
+            else:
+                product['action'] = "Monitor closely - Growing popularity"
+        
+        # Identify poor performers (bottom 20% by customer engagement and revenue)
+        poor_performers = results[-bottom_20_percent:]
+        for product in poor_performers:
+            if product['customer_count'] <= 1 and product['revenue'] < 50:
+                product['action'] = "Consider reducing stock by 50% - Low demand"
+            elif product['customer_count'] <= 1:
+                product['action'] = "Reduce stock by 30% and consider promotion"
+            else:
+                product['action'] = "Review pricing strategy"
+        
+        print(f"Top performers: {len(top_performers)}, Poor performers: {len(poor_performers)}")
+        
+        return {
+            'top_performers': top_performers,
+            'poor_performers': poor_performers,
+            'analysis_period': '90 days',
+            'total_products_analyzed': total_products
+        }
+        
+    except Exception as e:
+        print(f"Error in product performance analysis: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'top_performers': [],
+            'poor_performers': [],
+            'error': str(e),
+            'analysis_period': '90 days',
+            'total_products_analyzed': 0
+        }
+
+def generate_festival_recommendations():
+    """Generate festival-specific product recommendations"""
+    recommendations = []
+    upcoming_festivals = get_upcoming_festivals()
+    
+    try:
+        # Get current product inventory status
+        products = list(db.products_update.find({}, {'name': 1, 'category': 1, 'price': 1}))
+        
+        for festival in upcoming_festivals:
+            festival_name = festival['name']
+            recommended_products = festival['recommended_products']
+            
+            # Find matching products in inventory
+            matching_products = []
+            for product in products:
+                product_name = product['name'].lower()
+                for rec_product in recommended_products:
+                    if rec_product.lower() in product_name:
+                        matching_products.append(product['name'])
+                        break
+            
+            if matching_products:
+                recommendation = {
+                    'festival': festival_name,
+                    'message': f"Prepare for {festival_name} ({festival['month']}) - Stock up on: {', '.join(matching_products[:3])}. Suggested discount: {festival['discount_range']}",
+                    'products': matching_products,
+                    'discount_range': festival['discount_range'],
+                    'priority': 'high' if festival['month'] == datetime.datetime.now().strftime('%B') else 'medium'
+                }
+                recommendations.append(recommendation)
+    
+    except Exception as e:
+        print(f"Error generating festival recommendations: {e}")
+    
+    return recommendations
+
+def get_admin_notifications():
+    """Get all intelligent admin notifications"""
+    notifications = []
+    
+    try:
+        # Product performance notifications
+        performance_data = analyze_product_performance()
+        
+        # High performers notifications
+        for product in performance_data['top_performers'][:5]:  # Top 5
+            notifications.append({
+                'type': 'high_performer',
+                'priority': 'high',
+                'message': f"🔥 '{product['name']}' is trending! {product['customer_count']} customers bought this product.",
+                'recommendation': product['action'],
+                'product': product['name']
+            })
+        
+        # Poor performers notifications  
+        for product in performance_data['poor_performers'][:3]:  # Bottom 3
+            notifications.append({
+                'type': 'poor_performer',
+                'priority': 'medium',
+                'message': f"⚠️ '{product['name']}' has low demand. Only {product['customer_count']} customers interested.",
+                'recommendation': product['action'],
+                'product': product['name']
+            })
+        
+        # Festival recommendations
+        festival_recs = generate_festival_recommendations()
+        for rec in festival_recs:
+            notifications.append({
+                'type': 'festival_recommendation',
+                'priority': rec['priority'],
+                'message': f"🎉 {rec['message']}",
+                'recommendation': f"Prepare inventory and marketing for {rec['festival']}",
+                'festival': rec['festival']
+            })
+        
+        # Inventory alerts based on recent sales trends
+        notifications.extend(get_inventory_alerts())
+        
+    except Exception as e:
+        print(f"Error getting admin notifications: {e}")
+    
+    return {'notifications': notifications, 'count': len(notifications)}
+
+def get_inventory_alerts():
+    """Generate inventory management alerts"""
+    alerts = []
+    
+    try:
+        # Check for products with sudden sales spikes
+        seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+        thirty_days_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        
+        recent_pipeline = [
+            {'$match': {'date': {'$gte': seven_days_ago}}},
+            {'$group': {
+                '_id': '$product_id',
+                'recent_sales': {'$sum': '$quantity'},
+                'recent_revenue': {'$sum': '$total'}
+            }}
+        ]
+        
+        historical_pipeline = [
+            {'$match': {'date': {'$gte': thirty_days_ago, '$lt': seven_days_ago}}},
+            {'$group': {
+                '_id': '$product_id',
+                'historical_sales': {'$sum': '$quantity'},
+                'historical_revenue': {'$sum': '$total'}
+            }}
+        ]
+        
+        recent_data = {item['_id']: item for item in db.products_sold.aggregate(recent_pipeline)}
+        historical_data = {item['_id']: item for item in db.products_sold.aggregate(historical_pipeline)}
+        
+        # Detect sudden spikes
+        for product_id, recent in recent_data.items():
+            historical = historical_data.get(product_id, {'historical_sales': 0})
+            
+            # Calculate weekly average from historical data
+            weekly_avg = historical['historical_sales'] / 3 if historical['historical_sales'] > 0 else 0
+            
+            # If recent sales are significantly higher than average
+            if weekly_avg > 0 and recent['recent_sales'] > weekly_avg * 2:
+                try:
+                    product_info = db.products_update.find_one({'_id': ObjectId(product_id)})
+                    if product_info:
+                        alerts.append({
+                            'type': 'sales_spike',
+                            'priority': 'high',
+                            'message': f"📈 Sales spike detected for '{product_info['name']}' - {recent['recent_sales']} units this week vs {weekly_avg:.1f} weekly average",
+                            'recommendation': f"Consider increasing stock by 40% for '{product_info['name']}' due to high demand",
+                            'product': product_info['name']
+                        })
+                except:
+                    pass
+    
+    except Exception as e:
+        print(f"Error in inventory alerts: {e}")
+    
+    return alerts
 
 # Email configuration
 def send_welcome_email(user_email, user_name):
@@ -1236,6 +1582,48 @@ def business_stats_api():
             'sales_trend': [],
             'avg_order_value': 0
         })
+
+@app.route('/api/notifications')
+def public_notifications_api():
+    """Get intelligent notifications for home page (public access)"""
+    try:
+        notifications_data = get_admin_notifications()
+        return jsonify(notifications_data)
+    except Exception as e:
+        print(f"Error in public notifications API: {e}")
+        return jsonify({'error': str(e), 'notifications': []}), 500
+
+@app.route('/api/product-insights')
+def public_product_insights():
+    """Get product performance insights for home page (public access)"""
+    try:
+        performance_data = analyze_product_performance()
+        return jsonify(performance_data)
+    except Exception as e:
+        print(f"Error in public product insights API: {e}")
+        return jsonify({'error': str(e), 'top_performers': [], 'poor_performers': []}), 500
+
+@app.route('/api/festival-calendar')
+def public_festival_calendar():
+    """Get festival calendar for home page (public access)"""
+    try:
+        festivals = get_upcoming_festivals()
+        recommendations = generate_festival_recommendations()
+        
+        return jsonify({
+            'upcoming_festivals': festivals,
+            'recommendations': recommendations,
+            'current_month': datetime.datetime.now().month,
+            'festival_config': INDIAN_FESTIVALS
+        })
+    except Exception as e:
+        print(f"Error in public festival calendar API: {e}")
+        return jsonify({
+            'error': str(e), 
+            'upcoming_festivals': [], 
+            'recommendations': [], 
+            'current_month': datetime.datetime.now().month
+        }), 500
 
 @app.route('/api/products-list')
 def products_list_api():
