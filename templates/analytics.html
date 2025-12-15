@@ -514,6 +514,8 @@ async function loadAnalytics() {
         const response = await fetch(url);
         const data = await response.json();
         
+        console.log('Analytics API Response:', data); // Debug log
+        
         updateSummaryCards(data);
         updateSalesChart(data.sales_trend);
         updateCategoryChart(data.category_sales);
@@ -527,14 +529,16 @@ async function loadAnalytics() {
 }
 
 function updateSummaryCards(data) {
+    console.log('Updating summary cards with data:', data); // Debug log
+    
     const fmt = (num) => num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
-    document.getElementById('periodRevenue').textContent = '$' + fmt(data.total_revenue);
-    document.getElementById('periodOrders').textContent = `${data.total_orders.toLocaleString()} orders`;
-    document.getElementById('periodCustomers').textContent = data.active_customers.toLocaleString();
-    document.getElementById('periodNewCustomers').textContent = `${data.new_customers} new`;
-    document.getElementById('periodAvgOrder').textContent = '$' + fmt(data.avg_order_value);
-    document.getElementById('periodProductsSold').textContent = `${data.total_units_sold.toLocaleString()} units sold`;
+    document.getElementById('periodRevenue').textContent = '$' + fmt(data.total_revenue || 0);
+    document.getElementById('periodOrders').textContent = `${(data.total_orders || 0).toLocaleString()} orders`;
+    document.getElementById('periodCustomers').textContent = (data.active_customers || 0).toLocaleString();
+    document.getElementById('periodNewCustomers').textContent = `${data.new_customers || 0} new`;
+    document.getElementById('periodAvgOrder').textContent = '$' + fmt(data.avg_order_value || 0);
+    document.getElementById('periodProductsSold').textContent = `${(data.total_units_sold || 0).toLocaleString()} units sold`;
     document.getElementById('periodTopCategory').textContent = data.top_category || '--';
     document.getElementById('periodCategoryRevenue').textContent = data.top_category_revenue ? '$' + fmt(data.top_category_revenue) : '$0.00';
 }

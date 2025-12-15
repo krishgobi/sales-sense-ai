@@ -1879,7 +1879,7 @@ def analytics_api():
             current_date += datetime.timedelta(days=1)
         
         return jsonify({
-            'period_sales': total_revenue,
+            'total_revenue': total_revenue,  # Changed from 'period_sales'
             'total_orders': total_orders,
             'total_units_sold': total_units,
             'avg_order_value': avg_order_value,
@@ -1902,7 +1902,7 @@ def analytics_api():
 
 @app.route('/analytics')
 def analytics_page():
-    return render_template('analytics_simple.html')
+    return render_template('analytics.html')
 
 @app.route('/api/export-analytics-pdf')
 def export_analytics_pdf():
