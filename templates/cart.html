@@ -29,8 +29,8 @@
                                 <tr>
                                     <td>{{ item.product_name }} ({{ item.variant_quantity }})</td>
                                     <td>{{ item.quantity }}</td>
-                                    <td>${{ item.price }}</td>
-                                    <td>${{ item.price * item.quantity }}</td>
+                                    <td>₹{{ item.price }}</td>
+                                    <td>₹{{ item.price * item.quantity }}</td>
                                     <td>
                                         <button class="btn btn-danger btn-sm remove-item"
                                                 data-cart-key="{{ cart_key }}">
@@ -52,7 +52,7 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Total:</span>
-                        <span>${{ cart_total }}</span>
+                        <span>₹{{ cart_total }}</span>
                     </div>
                     <div class="mb-3">
                         <label for="payment_method" class="form-label">Payment Method</label>

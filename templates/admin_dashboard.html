@@ -34,6 +34,11 @@
                             <i class="bi bi-envelope"></i> Email Marketing
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('admin_festival_notifications') }}">
+                            <i class="bi bi-calendar-event"></i> Festival Notifications
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -43,7 +48,14 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1>Admin Dashboard</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
+                    <button onclick="testEmail()" class="btn btn-outline-primary me-2" title="Test Email System">
+                        <i class="bi bi-envelope-check"></i> Test Email
+                    </button>
+                    {% if not demo_mode %}
                     <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">Logout</a>
+                    {% else %}
+                    <span class="badge bg-secondary">Demo Mode</span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -65,7 +77,7 @@
                         <div class="card bg-success text-white">
                             <div class="card-body text-center">
                                 <h6>Total Revenue</h6>
-                                <h3>${{ "%.2f"|format(stats.total_sales) }}</h3>
+                                <h3>₹{{ "%.2f"|format(stats.total_sales) }}</h3>
                                 <small>All time</small>
                             </div>
                         </div>
@@ -74,16 +86,16 @@
                         <div class="card bg-info text-white">
                             <div class="card-body text-center">
                                 <h6>Today's Sales</h6>
-                                <h3>${{ "%.2f"|format(stats.sales_today) }}</h3>
+                                <h3>₹{{ "%.2f"|format(stats.sales_today) }}</h3>
                                 <small class="text-muted">Today</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card bg-warning text-dark">
+                        <div class="card bg-warning text-white">
                             <div class="card-body text-center">
                                 <h6>Avg Order Value</h6>
-                                <h3>${{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users > 0 else 0) }}</h3>
+                                <h3>₹{{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users > 0 else 0) }}</h3>
                                 <small>Per customer</small>
                             </div>
                         </div>
@@ -118,8 +130,8 @@
                                     <tr>
                                         <td>{{ loop.index }}</td>
                                         <td>{{ product.name }}</td>
-                                        <td>{{ product.units_sold }}</td>
-                                        <td>${{ "%.2f"|format(product.revenue) }}</td>
+                                        <td>{{ product.quantity_sold }}</td>
+                                        <td>₹{{ "%.2f"|format(product.revenue) }}</td>
                                         <td>
                                             <div class="progress" style="height: 20px;">
                                                 <div class="progress-bar bg-success" role="progressbar" 
@@ -145,10 +157,16 @@
             <!-- Users Section -->
             <section id="users" class="mb-4">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h3>User Management</h3>
+                        <span class="badge bg-primary fs-5">Total Users: {{ pagination.total if pagination else stats.total_users }}</span>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-info">
+                            <strong>📊 Statistics:</strong> 
+                            Showing {{ recent_users|length }} of {{ pagination.total if pagination else stats.total_users }} total users
+                            {% if pagination %}(Page {{ pagination.page }} of {{ pagination.pages }}){% endif %}
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -225,7 +243,7 @@
                                 <div class="card bg-light">
                                     <div class="card-body text-center">
                                         <h6>Stock Value</h6>
-                                        <h2>${{ "%.2f"|format(product_summary.total_stock_value) }}</h2>
+                                        <h2>₹{{ "%.2f"|format(product_summary.total_stock_value) }}</h2>
                                     </div>
                                 </div>
                             </div>
@@ -255,9 +273,13 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3>Workers</h3>
+                        {% if not demo_mode %}
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWorkerModal">
                             <i class="bi bi-person-plus"></i> Add Worker
                         </button>
+                        {% else %}
+                        <button class="btn btn-primary" disabled title="Disabled in demo"> <i class="bi bi-person-plus"></i> Add Worker</button>
+                        {% endif %}
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -277,8 +299,13 @@
                                         <td>{{ worker.email }}</td>
                                         <td>{{ worker.total_products_added or 0 }}</td>
                                         <td>
+                                            {% if not demo_mode %}
                                             <button class="btn btn-sm btn-warning" onclick="resetWorkerPassword('{{ worker._id }}')">Reset Password</button>
                                             <button class="btn btn-sm btn-danger" onclick="deactivateWorker('{{ worker._id }}')">Deactivate</button>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-warning" disabled title="Disabled in demo">Reset Password</button>
+                                            <button class="btn btn-sm btn-danger" disabled title="Disabled in demo">Deactivate</button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -367,7 +394,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                {% if not demo_mode %}
                 <button type="button" class="btn btn-primary" onclick="exportData()">Export</button>
+                {% else %}
+                <button type="button" class="btn btn-primary" disabled title="Disabled in demo">Export</button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -405,9 +436,6 @@
         </div>
     </div>
 </div>
-
-<!-- Include Chatbot -->
-{% include 'chatbot.html' %}
 
 <style>
 .sidebar {
@@ -677,6 +705,247 @@ function deleteProduct(productId) {
 // User details function
 function viewUserDetails(userId) {
     window.location.href = `/admin/user-details/${userId}`;
+}
+
+// Email test function
+function testEmail() {
+    const email = prompt('Enter email address to send test email:', '');
+    
+    if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Show loading
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    btn.disabled = true;
+    
+    fetch('/api/test-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(result => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        
+        if (result.success) {
+            alert('✅ Test email sent successfully to ' + email + '!\n\nCheck your inbox (and spam folder) to confirm delivery.');
+        } else {
+            alert('❌ Failed to send email: ' + result.error);
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        alert('❌ Error: ' + error);
+    });
+}
+
+// ============ PROJECT ASSISTANT CHATBOT ============
+const chatWidget = document.createElement('div');
+chatWidget.innerHTML = `
+    <!-- Chat Button -->
+    <button id="chatButton" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; transition: transform 0.3s;">
+        <i class="bi bi-chat-dots-fill" style="font-size: 24px; color: white;"></i>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chatWindow" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 380px; height: 550px; background: white; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1001; overflow: hidden; flex-direction: column;">
+        <!-- Chat Header -->
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h5 style="margin: 0; font-weight: 600;">🤖 Project Assistant</h5>
+                <small style="opacity: 0.9;">Ask me anything about Sales Sense AI</small>
+            </div>
+            <button id="closeChat" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Predefined Questions -->
+        <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <p style="margin: 0 0 10px 0; font-size: 13px; color: #6c757d; font-weight: 500;">Quick Questions:</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <button class="predefined-question" data-question="What is Sales Sense AI?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    What is this?
+                </button>
+                <button class="predefined-question" data-question="How many users do we have?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    User count
+                </button>
+                <button class="predefined-question" data-question="What features are available?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Features
+                </button>
+                <button class="predefined-question" data-question="How does festival notification work?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Festival alerts
+                </button>
+                <button class="predefined-question" data-question="Tell me about the analytics" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Analytics
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; background: #ffffff;">
+            <div class="bot-message" style="margin-bottom: 15px;">
+                <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
+                    <p style="margin: 0; font-size: 14px; line-height: 1.5;">👋 Hi! I'm your Sales Sense AI assistant. Ask me anything about the project, or click a quick question above!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div style="padding: 15px; background: white; border-top: 1px solid #dee2e6; display: flex; gap: 10px;">
+            <input type="text" id="chatInput" placeholder="Type your question..." style="flex: 1; padding: 10px 15px; border: 1px solid #dee2e6; border-radius: 20px; outline: none; font-size: 14px;">
+            <button id="sendMessage" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+`;
+document.body.appendChild(chatWidget);
+
+// Chat functionality
+const chatButton = document.getElementById('chatButton');
+const chatWindow = document.getElementById('chatWindow');
+const closeChat = document.getElementById('closeChat');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendMessage = document.getElementById('sendMessage');
+const predefinedQuestions = document.querySelectorAll('.predefined-question');
+
+chatButton.addEventListener('click', () => {
+    chatWindow.style.display = 'flex';
+    chatButton.style.transform = 'scale(0)';
+});
+
+closeChat.addEventListener('click', () => {
+    chatWindow.style.display = 'none';
+    chatButton.style.transform = 'scale(1)';
+});
+
+// Predefined question click
+predefinedQuestions.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const question = btn.getAttribute('data-question');
+        askQuestion(question);
+    });
+    
+    btn.addEventListener('mouseenter', function() {
+        this.style.background = '#667eea';
+        this.style.color = 'white';
+        this.style.borderColor = '#667eea';
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+        this.style.background = 'white';
+        this.style.color = 'black';
+        this.style.borderColor = '#dee2e6';
+    });
+});
+
+// Send message
+sendMessage.addEventListener('click', () => {
+    const question = chatInput.value.trim();
+    if (question) {
+        askQuestion(question);
+        chatInput.value = '';
+    }
+});
+
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const question = chatInput.value.trim();
+        if (question) {
+            askQuestion(question);
+            chatInput.value = '';
+        }
+    }
+});
+
+function askQuestion(question) {
+    // Add user message
+    const userMsg = document.createElement('div');
+    userMsg.style.marginBottom = '15px';
+    userMsg.style.textAlign = 'right';
+    userMsg.innerHTML = `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 16px; border-radius: 18px 18px 4px 18px; max-width: 85%; display: inline-block; text-align: left;">
+            <p style="margin: 0; font-size: 14px; line-height: 1.5;">${question}</p>
+        </div>
+    `;
+    chatMessages.appendChild(userMsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Show typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typingIndicator';
+    typingIndicator.style.marginBottom = '15px';
+    typingIndicator.innerHTML = `
+        <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
+            <div style="display: flex; gap: 4px;">
+                <div style="width: 8px; height: 8px; background: #999; border-radius: 50%; animation: typing 1.4s infinite;"></div>
+                <div style="width: 8px; height: 8px; background: #999; border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></div>
+                <div style="width: 8px; height: 8px; background: #999; border-radius: 50%; animation: typing 1.4s infinite 0.4s;"></div>
+            </div>
+        </div>
+    `;
+    chatMessages.appendChild(typingIndicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Add typing animation CSS
+    if (!document.getElementById('typingAnimation')) {
+        const style = document.createElement('style');
+        style.id = 'typingAnimation';
+        style.textContent = `
+            @keyframes typing {
+                0%, 60%, 100% { transform: translateY(0); }
+                30% { transform: translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Send to backend
+    fetch('/api/project-assistant', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question: question })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove typing indicator
+        document.getElementById('typingIndicator').remove();
+
+        // Add bot response
+        const botMsg = document.createElement('div');
+        botMsg.style.marginBottom = '15px';
+        botMsg.innerHTML = `
+            <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
+                <p style="margin: 0; font-size: 14px; line-height: 1.5;">${data.answer}</p>
+            </div>
+        `;
+        chatMessages.appendChild(botMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    })
+    .catch(error => {
+        document.getElementById('typingIndicator').remove();
+        const errorMsg = document.createElement('div');
+        errorMsg.style.marginBottom = '15px';
+        errorMsg.innerHTML = `
+            <div style="background: #ffe5e5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
+                <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #c00;">Sorry, I encountered an error. Please try again.</p>
+            </div>
+        `;
+        chatMessages.appendChild(errorMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
 }
 </script>
 {% endblock %}

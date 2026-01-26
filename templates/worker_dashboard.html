@@ -67,7 +67,7 @@
                                 <td>{{ product.category }}</td>
                                 <td>
                                     {% for variant in product.variants %}
-                                    <small class="d-block">{{ variant.quantity }} - ${{ variant.price }} (Stock: {{ variant.stock }})</small>
+                                    <small class="d-block">{{ variant.quantity }} - ₹{{ variant.price }} (Stock: {{ variant.stock }})</small>
                                     {% endfor %}
                                 </td>
                                 <td>{{ product.variants|sum(attribute='stock') }}</td>

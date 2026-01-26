@@ -5,70 +5,63 @@
 {% block content %}
 <div class="home-container">
     <!-- Hero Section -->
-    <div class="hero-section text-center mb-5">
-        <h1 class="display-4 mb-4">Sales Sense AI</h1>
+    <div class="hero-section">
+        <h1>📊 Sales Sense AI</h1>
         <p class="lead">Your Complete Business Intelligence Platform</p>
         <p class="text-muted">Real-time analytics, smart insights, and automated reporting</p>
-    </div>
-
-    <!-- Analytics Button -->
-    <div class="row mb-4">
-        <div class="col-md-12 text-center">
-            <a href="/analytics" class="btn btn-primary btn-lg shadow me-2">
-                <i class="bi bi-graph-up-arrow"></i> Open Advanced Analytics Dashboard
+        <div class="mt-4">
+            <a href="/analytics" class="btn btn-primary btn-lg me-2">
+                <i class="bi bi-graph-up-arrow"></i> Advanced Analytics
             </a>
-            <button onclick="exportBusinessSummaryPDF()" class="btn btn-danger btn-lg shadow">
-                <i class="bi bi-file-pdf"></i> Export Business Summary PDF
+            <button onclick="exportBusinessSummaryPDF()" class="btn btn-danger btn-lg">
+                <i class="bi bi-file-pdf"></i> Export PDF
             </button>
         </div>
     </div>
 
     <!-- Quick Stats Section -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h3 class="text-center mb-4">📊 Real-Time Business Overview</h3>
+    <div class="row mb-4">
+        <div class="col-md-12 mb-3">
+            <h3 class="text-center" style="color: white; font-weight: 700;">� Real-Time Business Overview</h3>
         </div>
         <div class="col-md-4">
-            <div class="card bg-gradient-success text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-cash-stack mb-2" style="font-size: 2rem;"></i>
-                    <h4 id="totalRevenue">Loading...</h4>
-                    <p class="mb-0">Total Revenue</p>
-                    <small id="totalOrders">...</small>
+            <div class="stat-card success">
+                <div class="text-center">
+                    <i class="bi bi-cash-stack stat-icon" style="color: #10B981;"></i>
+                    <div class="stat-value" id="totalRevenue">Loading...</div>
+                    <div class="stat-label">Total Revenue</div>
+                    <small class="text-muted" id="totalOrders">...</small>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-gradient-info text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-box-seam mb-2" style="font-size: 2rem;"></i>
-                    <h4 id="totalProducts">Loading...</h4>
-                    <p class="mb-0">Products</p>
-                    <small id="activeUsers">...</small>
+            <div class="stat-card warning">
+                <div class="text-center">
+                    <i class="bi bi-box-seam stat-icon" style="color: #F59E0B;"></i>
+                    <div class="stat-value" id="totalProducts">Loading...</div>
+                    <div class="stat-label">Products</div>
+                    <small class="text-muted" id="activeUsers">...</small>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-gradient-warning text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-graph-up-arrow mb-2" style="font-size: 2rem;"></i>
-                    <h4 id="todaySales">Loading...</h4>
-                    <p class="mb-0">Today's Sales</p>
-                    <small id="todayOrders">...</small>
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="bi bi-graph-up-arrow stat-icon" style="color: #4F46E5;"></i>
+                    <div class="stat-value" id="todaySales">Loading...</div>
+                    <div class="stat-label">Today's Sales</div>
+                    <small class="text-muted" id="todayOrders">...</small>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Quick Reports Section -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h3 class="text-center mb-4">📈 Quick Reports</h3>
-        </div>
+    <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Sales Trend (Last 7 Days)</h5>
+                <div class="card-header">
+                    <i class="bi bi-graph-up"></i> Sales Trend (Last 7 Days)
                 </div>
                 <div class="card-body">
                     <canvas id="salesTrendChart" height="100"></canvas>
@@ -77,8 +70,8 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Top Selling Products (Last 30 Days)</h5>
+                <div class="card-header">
+                    <i class="bi bi-trophy"></i> Top Selling Products (Last 30 Days)
                 </div>
                 <div class="card-body">
                     <div id="topProductsList">
@@ -88,16 +81,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Weekly Summary Report -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-calendar-week"></i> This Week's Summary</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
                         <div class="col-md-3">
                             <div class="p-3 bg-light rounded text-center">
                                 <small class="text-muted">Weekly Sales</small>

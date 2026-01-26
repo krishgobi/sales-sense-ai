@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-calendar-alt"></i> Festival Notification System</h2>
+            <p class="text-muted">Automated email notifications for upcoming Indian festivals</p>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5><i class="fas fa-info-circle"></i> System Status</h5>
+                    <p class="mb-2">✅ Festival notification system is active and running</p>
+                    <p class="mb-2">📧 Emails are sent 7 days before each festival to all active users</p>
+                    <p class="mb-0">🔄 System checks daily for upcoming festivals</p>
+                    <button class="btn btn-light mt-3" onclick="triggerNotifications()">
+                        <i class="fas fa-paper-plane"></i> Send Test Notifications Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Festivals (within 30 days) -->
+    {% if upcoming_festivals %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-bell"></i> Upcoming Festivals (Next 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for festival in upcoming_festivals %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-left-primary shadow h-100">
+                                <div class="card-body">
+                                    <h4>{{ festival.emoji }} {{ festival.name }}</h4>
+                                    <p class="text-muted mb-2">{{ festival.description }}</p>
+                                    <div class="mb-2">
+                                        <strong>📅 Date:</strong> {{ festival.date.strftime('%B %d, %Y') }}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>⏰ Days Until:</strong> 
+                                        <span class="badge {% if festival.days_until <= 7 %}bg-danger{% elif festival.days_until <= 14 %}bg-warning{% else %}bg-info{% endif %}">
+                                            {{ festival.days_until }} days
+                                        </span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>💰 Discount:</strong> <span class="text-success">{{ festival.discount }}</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>🛍️ Featured Products:</strong>
+                                        <div class="mt-1">
+                                            {% for product in festival.products[:5] %}
+                                            <span class="badge bg-primary me-1">{{ product }}</span>
+                                            {% endfor %}
+                                            {% if festival.products|length > 5 %}
+                                            <span class="badge bg-secondary">+{{ festival.products|length - 5 }} more</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <strong>📦 Categories:</strong>
+                                        <div class="mt-1">
+                                            {% for category in festival.categories[:3] %}
+                                            <span class="badge bg-info me-1">{{ category }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Festivals Calendar -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar"></i> Complete Festival Calendar 2026</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Festival</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Discount</th>
+                                    <th>Featured Products</th>
+                                    <th>Categories</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for festival in all_festivals %}
+                                <tr {% if festival.days_until >= 0 and festival.days_until <= 7 %}class="table-danger"{% elif festival.days_until > 7 and festival.days_until <= 30 %}class="table-warning"{% endif %}>
+                                    <td>
+                                        <strong>{{ festival.emoji }} {{ festival.name }}</strong>
+                                        <br><small class="text-muted">{{ festival.description }}</small>
+                                    </td>
+                                    <td>{{ festival.date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        {% if festival.days_until < 0 %}
+                                        <span class="badge bg-secondary">Past</span>
+                                        {% elif festival.days_until == 0 %}
+                                        <span class="badge bg-success">Today!</span>
+                                        {% elif festival.days_until <= 7 %}
+                                        <span class="badge bg-danger">{{ festival.days_until }} days</span>
+                                        {% elif festival.days_until <= 30 %}
+                                        <span class="badge bg-warning">{{ festival.days_until }} days</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ festival.days_until }} days</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="text-success fw-bold">{{ festival.discount }}</span></td>
+                                    <td>
+                                        <small>
+                                            {% for product in festival.products[:3] %}
+                                            {{ product }}{% if not loop.last %}, {% endif %}
+                                            {% endfor %}
+                                            {% if festival.products|length > 3 %}
+                                            <span class="text-muted">+{{ festival.products|length - 3 }} more</span>
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {% for category in festival.categories[:2] %}
+                                            <span class="badge bg-light text-dark">{{ category }}</span>
+                                            {% endfor %}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> How It Works</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li><strong>Automated Checks:</strong> The system automatically checks daily for festivals coming up in the next 7 days.</li>
+                        <li><strong>User Selection:</strong> All active users with email notifications enabled will receive promotional emails.</li>
+                        <li><strong>Smart Product Matching:</strong> Products are automatically matched based on festival categories and product names.</li>
+                        <li><strong>Email Delivery:</strong> Beautiful HTML emails with festival greetings, product recommendations, and discount information are sent.</li>
+                        <li><strong>Real-time Updates:</strong> The system runs continuously in the background without manual intervention.</li>
+                    </ol>
+                    
+                    <div class="alert alert-info mt-3">
+                        <strong><i class="fas fa-lightbulb"></i> Pro Tip:</strong> Make sure to configure your SMTP email settings in the .env file for email delivery to work properly!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function triggerNotifications() {
+    if (confirm('This will check for upcoming festivals and send test notifications. Continue?')) {
+        fetch('/admin/send-festival-notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('❌ Error: ' + error);
+        });
+    }
+}
+</script>
+
+<style>
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fc;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+</style>
+{% endblock %}

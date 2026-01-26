@@ -181,8 +181,8 @@
                                         <td>{{ order.date }}</td>
                                         <td>{{ order.product_name or 'Unknown Product' }}</td>
                                         <td>{{ order.quantity }}</td>
-                                        <td>${{ "%.2f"|format(order.price|float) }}</td>
-                                        <td>${{ "%.2f"|format(order.total) }}</td>
+                                        <td>₹{{ "%.2f"|format(order.price|float) }}</td>
+                                        <td>₹{{ "%.2f"|format(order.total) }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
