@@ -18,8 +18,11 @@
                     <p class="mb-2">✅ Festival notification system is active and running</p>
                     <p class="mb-2">📧 Emails are sent 7 days before each festival to all active users</p>
                     <p class="mb-0">🔄 System checks daily for upcoming festivals</p>
-                    <button class="btn btn-light mt-3" onclick="triggerNotifications()">
+                    <button class="btn btn-light mt-3 me-2" onclick="triggerNotifications()">
                         <i class="fas fa-paper-plane"></i> Send Test Notifications Now
+                    </button>
+                    <button class="btn btn-success mt-3" onclick="sendToAllUsers()">
+                        <i class="fas fa-envelope-open-text"></i> Send Festival Offers to All Users
                     </button>
                 </div>
             </div>
@@ -197,6 +200,40 @@ function triggerNotifications() {
             }
         })
         .catch(error => {
+            alert('❌ Error: ' + error);
+        });
+    }
+}
+
+function sendToAllUsers() {
+    if (confirm('⚠️ This will send festival offer emails to ALL registered users!\n\nThis may take a few moments depending on the number of users.\n\nContinue?')) {
+        // Show loading state
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        btn.disabled = true;
+        
+        fetch('/admin/send-test-notifications-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if (data.success) {
+                alert(`✅ ${data.message}\n\nTotal Users: ${data.total_users}\n✅ Successful: ${data.success_count}\n❌ Failed: ${data.failed_count}`);
+                location.reload();
+            } else {
+                alert('❌ Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
             alert('❌ Error: ' + error);
         });
     }

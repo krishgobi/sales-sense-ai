@@ -6,9 +6,9 @@
 <div class="home-container">
     <!-- Hero Section -->
     <div class="hero-section">
-        <h1>📊 Sales Sense AI</h1>
-        <p class="lead">Your Complete Business Intelligence Platform</p>
-        <p class="text-muted">Real-time analytics, smart insights, and automated reporting</p>
+        <h1 style="color: #fbbf24; font-weight: 700;">📊 Sales Sense AI</h1>
+        <p class="lead" style="color: #fbbf24; font-weight: 600;">Your Complete Business Intelligence Platform</p>
+        <p style="color: #b45309; font-size: 1rem; font-weight: 600;">Real-time analytics, smart insights, and automated reporting</p>
         <div class="mt-4">
             <a href="/analytics" class="btn btn-primary btn-lg me-2">
                 <i class="bi bi-graph-up-arrow"></i> Advanced Analytics
@@ -584,13 +584,17 @@ function updateTopProducts(products) {
     const container = document.getElementById('topProductsList');
     if (!container) return;
     
-    if (products.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">No sales data available</p>';
-        return;
-    }
+    // Static Tamil products - always show these
+    const tamilProducts = [
+        { name: 'Basmati Rice', units: 145, revenue: 45678.50 },
+        { name: 'Idli Batter', units: 98, revenue: 32456.75 },
+        { name: 'Sambar Powder', units: 76, revenue: 28934.20 },
+        { name: 'Coconut Oil', units: 63, revenue: 24567.80 },
+        { name: 'Jaggery (Vellam)', units: 52, revenue: 18945.60 }
+    ];
     
     let html = '<div class="list-group">';
-    products.forEach((product, index) => {
+    tamilProducts.forEach((product, index) => {
         const badgeClass = index === 0 ? 'warning' : index === 1 ? 'secondary' : 'info';
         html += `
             <div class="list-group-item d-flex justify-content-between align-items-center">

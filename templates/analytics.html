@@ -126,7 +126,7 @@
         <div class="col-md-3">
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
-                    <h3 id="periodRevenue">$0.00</h3>
+                    <h3 id="periodRevenue">₹0.00</h3>
                     <p class="mb-0">Total Revenue</p>
                     <small id="periodOrders">0 orders</small>
                 </div>
@@ -144,7 +144,7 @@
         <div class="col-md-3">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
-                    <h3 id="periodAvgOrder">$0.00</h3>
+                    <h3 id="periodAvgOrder">₹0.00</h3>
                     <p class="mb-0">Avg Order Value</p>
                     <small id="periodProductsSold">0 products sold</small>
                 </div>
@@ -155,7 +155,7 @@
                 <div class="card-body text-center">
                     <h3 id="periodTopCategory">--</h3>
                     <p class="mb-0">Top Category</p>
-                    <small id="periodCategoryRevenue">$0.00</small>
+                    <small id="periodCategoryRevenue">₹0.00</small>
                 </div>
             </div>
         </div>
@@ -533,14 +533,14 @@ function updateSummaryCards(data) {
     
     const fmt = (num) => num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
-    document.getElementById('periodRevenue').textContent = '$' + fmt(data.total_revenue || 0);
+    document.getElementById('periodRevenue').textContent = '₹' + fmt(data.total_revenue || 0);
     document.getElementById('periodOrders').textContent = `${(data.total_orders || 0).toLocaleString()} orders`;
     document.getElementById('periodCustomers').textContent = (data.active_customers || 0).toLocaleString();
     document.getElementById('periodNewCustomers').textContent = `${data.new_customers || 0} new`;
-    document.getElementById('periodAvgOrder').textContent = '$' + fmt(data.avg_order_value || 0);
+    document.getElementById('periodAvgOrder').textContent = '₹' + fmt(data.avg_order_value || 0);
     document.getElementById('periodProductsSold').textContent = `${(data.total_units_sold || 0).toLocaleString()} units sold`;
     document.getElementById('periodTopCategory').textContent = data.top_category || '--';
-    document.getElementById('periodCategoryRevenue').textContent = data.top_category_revenue ? '$' + fmt(data.top_category_revenue) : '$0.00';
+    document.getElementById('periodCategoryRevenue').textContent = data.top_category_revenue ? '₹' + fmt(data.top_category_revenue) : '₹0.00';
 }
 
 function updateSalesChart(trendData) {
@@ -565,7 +565,7 @@ function updateSalesChart(trendData) {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: (context) => '$' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2})
+                        label: (context) => '₹' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2})
                     }
                 }
             },
@@ -573,7 +573,7 @@ function updateSalesChart(trendData) {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: (value) => '$' + value.toLocaleString()
+                        callback: (value) => '₹' + value.toLocaleString()
                     }
                 }
             }
@@ -606,7 +606,7 @@ function updateCategoryChart(categoryData) {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: (context) => context.label + ': $' + context.parsed.toLocaleString('en-US', {minimumFractionDigits: 2})
+                        label: (context) => context.label + ': ₹' + context.parsed.toLocaleString('en-US', {minimumFractionDigits: 2})
                     }
                 }
             }
@@ -626,8 +626,8 @@ function updateTopProducts(products) {
             <td><span class="badge bg-${i === 0 ? 'warning' : i === 1 ? 'secondary' : 'info'}">#${i + 1}</span></td>
             <td><strong>${p.name}</strong></td>
             <td>${p.units.toLocaleString()}</td>
-            <td>$${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-            <td>$${(p.revenue / p.units).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>₹${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>₹${(p.revenue / p.units).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
         </tr>
     `).join('');
 }
@@ -644,7 +644,7 @@ function updateAllProducts(products) {
             <td>${p.name}</td>
             <td><span class="badge bg-secondary">${p.category}</span></td>
             <td>${p.units_sold.toLocaleString()}</td>
-            <td>$${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>₹${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
             <td><span class="badge bg-${p.stock > 10 ? 'success' : p.stock > 0 ? 'warning' : 'danger'}">${p.stock} units</span></td>
         </tr>
     `).join('');
@@ -663,7 +663,7 @@ function updateTopCustomers(customers) {
             <td>${c.name}</td>
             <td>${c.email}</td>
             <td>${c.orders}</td>
-            <td>$${c.total_spent.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>₹${c.total_spent.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
         </tr>
     `).join('');
 }

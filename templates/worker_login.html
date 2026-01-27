@@ -144,6 +144,12 @@
             <h2>Worker Login</h2>
             <p>Access your worker dashboard</p>
         </div>
+        
+        <!-- Worker Credentials Info -->
+        <div class="alert alert-info" style="background: #E0F2FE; color: #075985; border-left: 4px solid #0EA5E9;">
+            <strong><i class="bi bi-info-circle"></i> Worker Credentials:</strong><br>
+            <small>Use the email and password provided by the administrator to log in.</small>
+        </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

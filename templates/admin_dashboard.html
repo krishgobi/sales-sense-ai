@@ -46,7 +46,11 @@
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1>Admin Dashboard</h1>
+                <div>
+                    <h1 style="color: #fbbf24; font-weight: 700; margin-bottom: 0.25rem;">📊 Sales Sense AI</h1>
+                    <p style="color: #fbbf24; font-size: 0.9rem; margin: 0;">Your Complete Business Intelligence Platform</p>
+                    <small style="color: #d97706;">Real-time analytics, smart insights, and automated reporting</small>
+                </div>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <button onclick="testEmail()" class="btn btn-outline-primary me-2" title="Test Email System">
                         <i class="bi bi-envelope-check"></i> Test Email
@@ -167,6 +171,16 @@
                             Showing {{ recent_users|length }} of {{ pagination.total if pagination else stats.total_users }} total users
                             {% if pagination %}(Page {{ pagination.page }} of {{ pagination.pages }}){% endif %}
                         </div>
+                        
+                        <!-- User Search -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="userSearchInput" placeholder="Search by name, email, or phone..." onkeyup="filterUsers()">
+                            </div>
+                            <small class="text-muted">Start typing to filter users in the current page</small>
+                        </div>
+                        
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -177,10 +191,10 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="userTableBody">
                                     {% for user in recent_users %}
-                                    <tr>
-                                        <td>{{ user.name }}</td>
+                                    <tr data-name="{{ user.name|lower }}" data-email="{{ user.email|lower }}" data-phone="{{ user.phone|default('')|lower }}">
+                                        <td><strong>{{ user.name }}</strong></td>
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.join_date }}</td>
                                         <td>
@@ -320,9 +334,31 @@
             <section id="email" class="mb-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Send Email</h3>
+                        <h3>📧 Email Marketing</h3>
                     </div>
                     <div class="card-body">
+                        <!-- Quick Actions -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h5>🚀 Quick Email Campaigns</h5>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-success" onclick="sendPersonalizedOffers()">
+                                        <i class="bi bi-gift"></i> Send Personalized Offers to All Users
+                                    </button>
+                                    <a href="{{ url_for('admin_festival_notifications') }}" class="btn btn-warning">
+                                        <i class="bi bi-calendar-event"></i> Festival Email Campaigns
+                                    </a>
+                                </div>
+                                <p class="text-muted mt-2">
+                                    <small>Personalized offers are based on each user's purchase history and preferences.</small>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Custom Email Form -->
+                        <h5>✉️ Send Custom Email</h5>
                         <form id="emailForm">
                             <div class="mb-3">
                                 <label for="recipients" class="form-label">Recipients</label>
@@ -707,6 +743,42 @@ function viewUserDetails(userId) {
     window.location.href = `/admin/user-details/${userId}`;
 }
 
+// User search function
+function filterUsers() {
+    const input = document.getElementById('userSearchInput');
+    const filter = input.value.toLowerCase();
+    const tbody = document.getElementById('userTableBody');
+    const rows = tbody.getElementsByTagName('tr');
+    
+    let visibleCount = 0;
+    
+    for (let i = 0; i < rows.length; i++) {
+        const name = rows[i].getAttribute('data-name') || '';
+        const email = rows[i].getAttribute('data-email') || '';
+        const phone = rows[i].getAttribute('data-phone') || '';
+        
+        if (name.includes(filter) || email.includes(filter) || phone.includes(filter)) {
+            rows[i].style.display = '';
+            visibleCount++;
+        } else {
+            rows[i].style.display = 'none';
+        }
+    }
+    
+    // Show "no results" message if needed
+    const noResults = document.getElementById('noResultsMessage');
+    if (visibleCount === 0) {
+        if (!noResults) {
+            const tr = document.createElement('tr');
+            tr.id = 'noResultsMessage';
+            tr.innerHTML = '<td colspan="4" class="text-center text-muted py-4">No users found matching your search</td>';
+            tbody.appendChild(tr);
+        }
+    } else if (noResults) {
+        noResults.remove();
+    }
+}
+
 // Email test function
 function testEmail() {
     const email = prompt('Enter email address to send test email:', '');
@@ -747,7 +819,7 @@ function testEmail() {
     });
 }
 
-// ============ PROJECT ASSISTANT CHATBOT ============
+// ============ SALES ASSISTANT CHATBOT ============
 const chatWidget = document.createElement('div');
 chatWidget.innerHTML = `
     <!-- Chat Button -->
@@ -760,7 +832,7 @@ chatWidget.innerHTML = `
         <!-- Chat Header -->
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h5 style="margin: 0; font-weight: 600;">🤖 Project Assistant</h5>
+                <h5 style="margin: 0; font-weight: 600;">🤖 Sales Assistant</h5>
                 <small style="opacity: 0.9;">Ask me anything about Sales Sense AI</small>
             </div>
             <button id="closeChat" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
@@ -781,11 +853,44 @@ chatWidget.innerHTML = `
                 <button class="predefined-question" data-question="What features are available?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
                     Features
                 </button>
+                <button class="predefined-question" data-question="Tell me about top products" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Top Products
+                </button>
+                <button class="predefined-question" data-question="Show me sales trends" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Sales Trends
+                </button>
+                <button class="predefined-question" data-question="What is the inventory status?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Inventory Status
+                </button>
+                <button class="predefined-question" data-question="Tell me about revenue insights" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Revenue Insights
+                </button>
+                <button class="predefined-question" data-question="Show customer analytics" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Customer Analytics
+                </button>
+                <button class="predefined-question" data-question="Tell me about low stock alerts" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Low Stock Alerts
+                </button>
+                <button class="predefined-question" data-question="What payment methods are available?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Payment Methods
+                </button>
                 <button class="predefined-question" data-question="How does festival notification work?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Festival alerts
+                    Festival Alerts
+                </button>
+                <button class="predefined-question" data-question="Tell me about seasonal trends" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Seasonal Trends
+                </button>
+                <button class="predefined-question" data-question="Show worker performance" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Worker Performance
+                </button>
+                <button class="predefined-question" data-question="Tell me about categories" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Categories
                 </button>
                 <button class="predefined-question" data-question="Tell me about the analytics" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
                     Analytics
+                </button>
+                <button class="predefined-question" data-question="How does the shopping cart work?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                    Shopping Cart
                 </button>
             </div>
         </div>
@@ -946,6 +1051,42 @@ function askQuestion(question) {
         chatMessages.appendChild(errorMsg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     });
+}
+
+// Personalized offers function
+function sendPersonalizedOffers() {
+    if (confirm('🎯 This will send personalized offers to all users based on their purchase history.\n\nThis may take a few moments. Continue?')) {
+        const btn = event.target;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sending...';
+        btn.disabled = true;
+        
+        fetch('/admin/send-personalized-offers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_ids: []  // Empty array means send to all users
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            
+            if (data.success) {
+                alert(`✅ ${data.message}\n\n✅ Successful: ${data.success_count}\n❌ Failed: ${data.failed_count}`);
+            } else {
+                alert('❌ Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            alert('❌ Error: ' + error);
+        });
+    }
 }
 </script>
 {% endblock %}

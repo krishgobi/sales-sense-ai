@@ -60,8 +60,8 @@ body {
 }
 
 .navbar-dark .navbar-nav .nav-link {
-    color: var(--dark-color) !important;
-    font-weight: 500;
+    color: #1F2937 !important;
+    font-weight: 600;
     padding: 0.5rem 1rem;
     margin: 0 0.25rem;
     border-radius: 8px;
@@ -110,6 +110,16 @@ body {
     padding: 1.5rem;
 }
 
+.card-text {
+    color: #1F2937;
+    font-weight: 500;
+}
+
+.card-title {
+    color: #111827;
+    font-weight: 700;
+}
+
 /* Stats Cards */
 .stat-card {
     background: white;
@@ -149,8 +159,9 @@ body {
 }
 
 .stat-label {
-    color: #6B7280;
+    color: #374151;
     font-size: 0.875rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -163,6 +174,7 @@ body {
     border: none;
     transition: var(--transition);
     text-transform: none;
+    color: white;
 }
 
 .btn-primary {
@@ -208,8 +220,8 @@ body {
 }
 
 .form-label {
-    font-weight: 600;
-    color: var(--dark-color);
+    font-weight: 700;
+    color: #111827;
     margin-bottom: 0.5rem;
 }
 
@@ -269,7 +281,7 @@ body {
 .table thead th {
     background: var(--primary-color);
     color: white;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     font-size: 0.875rem;
     letter-spacing: 0.5px;
@@ -278,6 +290,8 @@ body {
 
 .table tbody tr {
     transition: var(--transition);
+    color: #1F2937;
+    font-weight: 500;
 }
 
 .table tbody tr:hover {
@@ -311,6 +325,100 @@ body {
 .shadow-sm { box-shadow: var(--shadow-sm); }
 .shadow-md { box-shadow: var(--shadow-md); }
 .shadow-lg { box-shadow: var(--shadow-lg); }
+
+/* Product specific styles */
+.products-container {
+    padding: 2rem 1rem;
+}
+
+.product-card .card-title {
+    color: #111827;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.product-card .card-text {
+    color: #374151;
+    font-weight: 500;
+}
+
+/* Admin Dashboard Improvements */
+.sidebar .nav-link {
+    font-weight: 600;
+    color: #E5E7EB !important;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF !important;
+}
+
+.card-header h3 {
+    color: #111827;
+    font-weight: 700;
+    margin: 0;
+}
+
+.table th {
+    color: #111827;
+    font-weight: 700;
+    background: #F3F4F6;
+}
+
+.table td {
+    color: #374151;
+    font-weight: 500;
+}
+
+.table td strong {
+    color: #111827;
+    font-weight: 700;
+}
+
+.input-group-text {
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+    color: #374151;
+    font-weight: 600;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.variant-item {
+    background-color: #f8f9fa;
+    transition: var(--transition);
+}
+
+.variant-item:hover {
+    background-color: #e9ecef;
+    border-color: var(--primary-color) !important;
+}
+
+.input-group .form-control {
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Price display */
+.price-display {
+    color: #059669;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+/* Toast notifications */
+.toast {
+    font-weight: 600;
+}
+
+.toast-body {
+    color: #1F2937;
+    font-weight: 500;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
