@@ -3,6 +3,7 @@
 {% block title %}Worker Dashboard{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="worker-dashboard">
     <!-- Header -->
     <div class="dashboard-header">
@@ -18,9 +19,349 @@
                 <a href="{{ url_for('worker_login') }}" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
+=======
+<style>
+    .worker-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card.primary { border-left-color: #667eea; }
+    .stat-card.success { border-left-color: #10b981; }
+    .stat-card.warning { border-left-color: #f59e0b; }
+    .stat-card.info { border-left-color: #3b82f6; }
+    
+    .stat-card .icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+    
+    .stat-card p {
+        color: #6b7280;
+        margin: 0;
+        font-weight: 500;
+    }
+    
+    .section-header {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .section-header h2 {
+        margin: 0;
+        color: #111827;
+        font-weight: 700;
+    }
+    
+    .product-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.2s;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .product-card h4 {
+        color: #111827;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .badge-stock {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    .badge-high { background: #d1fae5; color: #065f46; }
+    .badge-medium { background: #fed7aa; color: #92400e; }
+    .badge-low { background: #fecaca; color: #991b1b; }
+    
+    .variant-item {
+        background: #f9fafb;
+        padding: 0.75rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .add-product-card {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .variant-entry {
+        background: #f9fafb;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 2px dashed #d1d5db;
+    }
+    
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        transition: transform 0.2s;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .table-modern {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .table-modern thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .table-modern th {
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+    }
+    
+    .table-modern td {
+        padding: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .table-modern tbody tr:hover {
+        background: #f9fafb;
+    }
+</style>
+
+<div class="container-fluid">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Header -->
+    <div class="worker-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">👷 Welcome, {{ session.worker_name }}!</h1>
+                <p class="mb-0" style="opacity: 0.9;">Manage products and track your performance</p>
+            </div>
+            <a href="{{ url_for('worker_login') }}" class="btn btn-light btn-lg">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stat-card primary">
+                <div class="icon">📦</div>
+                <h3>{{ products|length }}</h3>
+                <p>Total Products</p>
+>>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card success">
+                <div class="icon">✅</div>
+                <h3>{{ products|selectattr('variants')|map(attribute='variants')|sum(start=[])|sum(attribute='stock') }}</h3>
+                <p>Total Stock Units</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card warning">
+                <div class="icon">⚠️</div>
+                <h3>{{ products|selectattr('variants')|map(attribute='variants')|sum(start=[])|selectattr('stock', 'lt', 10)|list|length }}</h3>
+                <p>Low Stock Items</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card info">
+                <div class="icon">🏷️</div>
+                <h3>{{ products|map(attribute='category')|unique|list|length }}</h3>
+                <p>Categories</p>
             </div>
         </div>
     </div>
+
+    <!-- Add Product Section -->
+    <div class="section-header">
+        <h2>➕ Add New Product</h2>
+    </div>
+    
+    <div class="add-product-card mb-5">
+        <form id="addProductForm">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="productName" class="form-label fw-bold">Product Name</label>
+                    <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="category" class="form-label fw-bold">Category</label>
+                    <input type="text" class="form-control" id="category" placeholder="e.g. Electronics, Clothing" required>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Product Variants</h4>
+                    <button type="button" class="btn btn-outline-primary" id="addVariant">
+                        <i class="bi bi-plus-circle"></i> Add Variant
+                    </button>
+                </div>
+                
+                <div id="variants">
+                    <div class="variant-entry">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Variant Name</label>
+                                <input type="text" class="form-control variant-quantity" placeholder="e.g. Medium, Red, 500ml" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Price (₹)</label>
+                                <input type="number" step="0.01" class="form-control variant-price" placeholder="0.00" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Stock</label>
+                                <input type="number" class="form-control variant-stock" placeholder="0" required>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label fw-bold">&nbsp;</label>
+                                <button type="button" class="btn btn-outline-danger w-100 remove-variant" style="display: none;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn btn-gradient">
+                    <i class="bi bi-check-circle"></i> Add Product
+                </button>
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Clear Form
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Section -->
+    <div class="section-header">
+        <h2>📦 Current Products</h2>
+    </div>
+    
+    <div class="table-responsive mb-5">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Variants</th>
+                    <th>Total Stock</th>
+                    <th>Status</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                {% set total_stock = product.variants|sum(attribute='stock') %}
+                <tr>
+                    <td>
+                        <strong style="color: #111827;">{{ product.name }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge bg-primary">{{ product.category }}</span>
+                    </td>
+                    <td>
+                        {% for variant in product.variants %}
+                        <div class="variant-item">
+                            <strong>{{ variant.quantity }}</strong> - ₹{{ variant.price }}
+                            <span class="badge {% if variant.stock < 10 %}bg-danger{% elif variant.stock < 50 %}bg-warning{% else %}bg-success{% endif %} ms-2">
+                                {{ variant.stock }} units
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <strong style="font-size: 1.1rem;">{{ total_stock }}</strong>
+                    </td>
+                    <td>
+                        {% if total_stock < 10 %}
+                        <span class="badge-stock badge-low">🔴 Low Stock</span>
+                        {% elif total_stock < 50 %}
+                        <span class="badge-stock badge-medium">🟡 Medium Stock</span>
+                        {% else %}
+                        <span class="badge-stock badge-high">🟢 High Stock</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.added_by_name if product.added_by_name else 'System' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<<<<<<< HEAD
     
     <!-- Quick Stats -->
     <div class="stats-grid">
@@ -247,6 +588,54 @@
     max-width: 1400px;
     margin: 0 auto;
 }
+=======
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const variantsContainer = document.getElementById('variants');
+    const addVariantBtn = document.getElementById('addVariant');
+    const addProductForm = document.getElementById('addProductForm');
+    let variantCount = 1;
+
+    // Add variant button click handler
+    addVariantBtn.addEventListener('click', function() {
+        variantCount++;
+        const variantHtml = `
+            <div class="variant-entry">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Variant Name</label>
+                        <input type="text" class="form-control variant-quantity" placeholder="e.g. Medium, Red, 500ml" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Price (₹)</label>
+                        <input type="number" step="0.01" class="form-control variant-price" placeholder="0.00" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Stock</label>
+                        <input type="number" class="form-control variant-stock" placeholder="0" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">&nbsp;</label>
+                        <button type="button" class="btn btn-outline-danger w-100 remove-variant">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        variantsContainer.insertAdjacentHTML('beforeend', variantHtml);
+    });
+
+    // Remove variant button click handler (using event delegation)
+    variantsContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-variant')) {
+            e.target.closest('.variant-entry').remove();
+            variantCount--;
+        }
+    });
+>>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
 
 .dashboard-header {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -904,6 +1293,7 @@ document.getElementById('productSearch').addEventListener('input', function(e) {
     
     searchTimeout = setTimeout(async () => {
         try {
+<<<<<<< HEAD
             const response = await fetch(`/api/search-products?q=${encodeURIComponent(query)}`);
             const products = await response.json();
             
@@ -930,6 +1320,35 @@ document.getElementById('productSearch').addEventListener('input', function(e) {
                     `;
                 }).join('');
                 resultsDiv.classList.add('active');
+=======
+            const response = await fetch('/worker/add-product', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(productData)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <strong>✅ Success!</strong> Product "${productData.name}" has been added successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.worker-header'));
+                
+                // Reset form and scroll to top
+                addProductForm.reset();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Reload page after 2 seconds to show new product
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+>>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
             } else {
                 resultsDiv.innerHTML = `
                     <div style="padding: 2rem; text-align: center; color: #9ca3af;">

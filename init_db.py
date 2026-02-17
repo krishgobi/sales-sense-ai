@@ -12,83 +12,236 @@ db = client[os.getenv('MONGODB_DATABASE')]
 
 # Sample product categories
 categories = [
-    "Groceries",
-    "Beverages",
-    "Snacks",
-    "Dairy",
-    "Fruits & Vegetables",
-    "Personal Care",
-    "Household",
-    "Bakery"
+    "மளிகை (Groceries)",
+    "பானங்கள் (Beverages)",
+    "தின்பண்டங்கள் (Snacks)",
+    "பால் பொருட்கள் (Dairy)",
+    "காய்கறிகள் & பழங்கள் (Vegetables & Fruits)",
+    "தனிப்பட்ட பராமரிப்பு (Personal Care)",
+    "வீட்டுப் பொருட்கள் (Household)",
+    "பேக்கரி (Bakery)"
 ]
 
-# Sample products with variants
+# Sample products with variants - All Tamil/Indian products
 products = [
-    # Groceries
+    # மளிகை (Groceries)
     {
-        "name": "Rice - Premium Quality",
-        "category": "Groceries",
+        "name": "பாசுமதி அரிசி (Basmati Rice)",
+        "category": "மளிகை (Groceries)",
         "variants": [
-            {"quantity": "1kg", "price": 15.99, "stock": 100},
-            {"quantity": "5kg", "price": 75.99, "stock": 50},
-            {"quantity": "10kg", "price": 145.99, "stock": 25}
+            {"quantity": "1kg", "price": 120.00, "stock": 100},
+            {"quantity": "5kg", "price": 580.00, "stock": 50},
+            {"quantity": "10kg", "price": 1150.00, "stock": 25}
         ]
     },
     {
-        "name": "Wheat Flour",
-        "category": "Groceries",
+        "name": "இட்லி அரிசி (Idli Rice)",
+        "category": "மளிகை (Groceries)",
         "variants": [
-            {"quantity": "500g", "price": 3.99, "stock": 150},
-            {"quantity": "1kg", "price": 5.99, "stock": 100},
-            {"quantity": "2kg", "price": 10.99, "stock": 75}
+            {"quantity": "1kg", "price": 85.00, "stock": 150},
+            {"quantity": "5kg", "price": 410.00, "stock": 100},
+            {"quantity": "10kg", "price": 800.00, "stock": 75}
         ]
     },
     {
-        "name": "Cola",
-        "category": "Beverages",
+        "name": "கோதுமை மாவு (Wheat Flour)",
+        "category": "மளிகை (Groceries)",
         "variants": [
-            {"quantity": "500ml", "price": 1.99, "stock": 200},
-            {"quantity": "1L", "price": 2.99, "stock": 150},
-            {"quantity": "2L", "price": 4.99, "stock": 100}
+            {"quantity": "500g", "price": 35.00, "stock": 150},
+            {"quantity": "1kg", "price": 65.00, "stock": 100},
+            {"quantity": "2kg", "price": 125.00, "stock": 75}
+        ]
+    },
+    {
+        "name": "பருப்பு - துவரம் (Toor Dal)",
+        "category": "மளிகை (Groceries)",
+        "variants": [
+            {"quantity": "500g", "price": 75.00, "stock": 120},
+            {"quantity": "1kg", "price": 145.00, "stock": 80},
+            {"quantity": "2kg", "price": 280.00, "stock": 40}
+        ]
+    },
+    {
+        "name": "தேங்காய் எண்ணெய் (Coconut Oil)",
+        "category": "மளிகை (Groceries)",
+        "variants": [
+            {"quantity": "500ml", "price": 180.00, "stock": 90},
+            {"quantity": "1L", "price": 340.00, "stock": 60},
+            {"quantity": "2L", "price": 650.00, "stock": 30}
+        ]
+    },
+    {
+        "name": "சாம்பார் பொடி (Sambar Powder)",
+        "category": "மளிகை (Groceries)",
+        "variants": [
+            {"quantity": "100g", "price": 45.00, "stock": 150},
+            {"quantity": "250g", "price": 105.00, "stock": 100},
+            {"quantity": "500g", "price": 195.00, "stock": 60}
+        ]
+    },
+    {
+        "name": "ரசம் பொடி (Rasam Powder)",
+        "category": "மளிகை (Groceries)",
+        "variants": [
+            {"quantity": "100g", "price": 40.00, "stock": 140},
+            {"quantity": "250g", "price": 95.00, "stock": 90},
+            {"quantity": "500g", "price": 180.00, "stock": 50}
+        ]
+    },
+    {
+        "name": "வெல்லம் (Jaggery)",
+        "category": "மளிகை (Groceries)",
+        "variants": [
+            {"quantity": "500g", "price": 65.00, "stock": 110},
+            {"quantity": "1kg", "price": 125.00, "stock": 70},
+            {"quantity": "2kg", "price": 240.00, "stock": 35}
         ]
     },
     
-    # Add more products for each category...
+    # பானங்கள் (Beverages)
+    {
+        "name": "பால் (Milk)",
+        "category": "பானங்கள் (Beverages)",
+        "variants": [
+            {"quantity": "500ml", "price": 28.00, "stock": 200},
+            {"quantity": "1L", "price": 54.00, "stock": 150},
+            {"quantity": "2L", "price": 105.00, "stock": 100}
+        ]
+    },
+    {
+        "name": "தயிர் (Curd/Yogurt)",
+        "category": "பானங்கள் (Beverages)",
+        "variants": [
+            {"quantity": "200g", "price": 25.00, "stock": 180},
+            {"quantity": "400g", "price": 48.00, "stock": 120},
+            {"quantity": "1kg", "price": 110.00, "stock": 80}
+        ]
+    },
+    {
+        "name": "பட்டர்மில்க் (Buttermilk)",
+        "category": "பானங்கள் (Beverages)",
+        "variants": [
+            {"quantity": "500ml", "price": 20.00, "stock": 150},
+            {"quantity": "1L", "price": 38.00, "stock": 100}
+        ]
+    },
+    {
+        "name": "வடாம் (Papad/Appalam)",
+        "category": "தின்பண்டங்கள் (Snacks)",
+        "variants": [
+            {"quantity": "100g", "price": 35.00, "stock": 120},
+            {"quantity": "200g", "price": 65.00, "stock": 80},
+            {"quantity": "500g", "price": 155.00, "stock": 40}
+        ]
+    },
+    {
+        "name": "முறுக்கு (Murukku)",
+        "category": "தின்பண்டங்கள் (Snacks)",
+        "variants": [
+            {"quantity": "100g", "price": 45.00, "stock": 100},
+            {"quantity": "250g", "price": 105.00, "stock": 70},
+            {"quantity": "500g", "price": 195.00, "stock": 40}
+        ]
+    },
+    {
+        "name": "மிக்சர் (Mixture)",
+        "category": "தின்பண்டங்கள் (Snacks)",
+        "variants": [
+            {"quantity": "100g", "price": 40.00, "stock": 110},
+            {"quantity": "250g", "price": 95.00, "stock": 75},
+            {"quantity": "500g", "price": 180.00, "stock": 45}
+        ]
+    }
 ]
 
 # Add more sample products programmatically
 def generate_more_products():
     additional_products = []
     
-    # Groceries
+    # மளிகை (Groceries)
     groceries = [
-        ("Pasta", 2.99), ("Cooking Oil", 8.99), ("Lentils", 3.99),
-        ("Beans", 2.99), ("Chickpeas", 2.49), ("Tomato Sauce", 1.99)
+        ("மஞ்சள் பொடி (Turmeric Powder)", 85.00),
+        ("மிளகாய் பொடி (Chilli Powder)", 95.00),
+        ("கொத்தமல்லி பொடி (Coriander Powder)", 75.00),
+        ("சீரகம் (Cumin Seeds)", 180.00),
+        ("ஏலக்காய் (Cardamom)", 850.00),
+        ("புளி (Tamarind)", 65.00),
+        ("கடுகு (Mustard Seeds)", 95.00),
+        ("மிளகு (Black Pepper)", 420.00),
+        ("தேங்காய் துருவல் (Coconut Powder)", 125.00),
+        ("உப்பு (Salt)", 25.00)
     ]
     
     for name, price in groceries:
         additional_products.append({
             "name": name,
-            "category": "Groceries",
-            "price": price,
-            "stock": 100 + (hash(name) % 100)  # Random stock between 100-199
+            "category": "மளிகை (Groceries)",
+            "variants": [
+                {"quantity": "100g", "price": price * 0.4, "stock": 100 + (hash(name) % 100)},
+                {"quantity": "250g", "price": price, "stock": 80 + (hash(name) % 80)},
+                {"quantity": "500g", "price": price * 1.9, "stock": 50 + (hash(name) % 50)}
+            ]
         })
     
-    # Snacks
+    # தின்பண்டங்கள் (Snacks)
     snacks = [
-        ("Potato Chips", 3.99), ("Popcorn", 2.99), ("Pretzels", 2.49),
-        ("Chocolate Bar", 1.99), ("Cookies", 3.49), ("Nuts Mix", 5.99)
+        ("சீடை (Seedai)", 95.00),
+        ("லட்டு (Laddu)", 180.00),
+        ("ஜாங்கிரி (Jangri)", 220.00),
+        ("அதிரசம் (Adhirasam)", 165.00),
+        ("தட்டை (Thattai)", 75.00),
+        ("கடலை மிட்டாய் (Peanut Candy)", 85.00)
     ]
     
     for name, price in snacks:
         additional_products.append({
             "name": name,
-            "category": "Snacks",
-            "price": price,
-            "stock": 50 + (hash(name) % 100)  # Random stock between 50-149
+            "category": "தின்பண்டங்கள் (Snacks)",
+            "variants": [
+                {"quantity": "100g", "price": price * 0.5, "stock": 50 + (hash(name) % 100)},
+                {"quantity": "250g", "price": price, "stock": 40 + (hash(name) % 80)},
+                {"quantity": "500g", "price": price * 1.85, "stock": 25 + (hash(name) % 50)}
+            ]
         })
     
-    # Add more categories...
+    # காய்கறிகள் (Vegetables)
+    vegetables = [
+        ("உருளைக்கிழங்கு (Potato)", 35.00),
+        ("தக்காளி (Tomato)", 28.00),
+        ("வெங்காயம் (Onion)", 32.00),
+        ("பூண்டு (Garlic)", 125.00),
+        ("பச்சை மிளகாய் (Green Chilli)", 45.00),
+        ("கேரட் (Carrot)", 42.00)
+    ]
+    
+    for name, price in vegetables:
+        additional_products.append({
+            "name": name,
+            "category": "காய்கறிகள் & பழங்கள் (Vegetables & Fruits)",
+            "variants": [
+                {"quantity": "500g", "price": price, "stock": 150 + (hash(name) % 100)},
+                {"quantity": "1kg", "price": price * 1.8, "stock": 100 + (hash(name) % 80)}
+            ]
+        })
+    
+    # தனிப்பட்ட பராமரிப்பு (Personal Care)
+    personal_care = [
+        ("சீயக்காய் பொடி (Shikakai Powder)", 95.00),
+        ("நெல்லிக்காய் பொடி (Amla Powder)", 110.00),
+        ("சந்தனம் (Sandalwood)", 580.00),
+        ("வேப்பிலை சோப்பு (Neem Soap)", 45.00),
+        ("தேங்காய் எண்ணெய் - தலைக்கு (Coconut Hair Oil)", 125.00)
+    ]
+    
+    for name, price in personal_care:
+        additional_products.append({
+            "name": name,
+            "category": "தனிப்பட்ட பராமரிப்பு (Personal Care)",
+            "variants": [
+                {"quantity": "100g/100ml", "price": price, "stock": 80 + (hash(name) % 70)},
+                {"quantity": "200g/200ml", "price": price * 1.85, "stock": 60 + (hash(name) % 50)}
+            ]
+        })
     
     return additional_products
 

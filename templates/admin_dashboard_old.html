@@ -69,8 +69,8 @@
                         <div class="card bg-success text-white">
                             <div class="card-body">
                                 <h5 class="card-title">Total Sales</h5>
-                                <p class="display-4">${{ stats.total_sales }}</p>
-                                <small>${{ stats.sales_today }} today</small>
+                                <p class="display-4">₹{{ stats.total_sales }}</p>
+                                <small>₹{{ stats.sales_today }} today</small>
                             </div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.join_date|format_date }}</td>
                                         <td>{{ user.get('orders', [])|length }}</td>
-                                        <td>${{ user.get('total_spent', 0)|round(2) }}</td>
+                                        <td>₹{{ user.get('total_spent', 0)|round(2) }}</td>
                                         <td>
                                             <button class="btn btn-sm btn-info" onclick="viewUserDetails('{{ user._id }}')">View</button>
                                         </td>
@@ -174,7 +174,7 @@
                                                 {% if variant is mapping %}
                                                 <small class="d-block">
                                                     {{ variant|safe_get('quantity', 'N/A') }} - 
-                                                    ${{ variant|safe_get('price', '0.00') }} 
+                                                    ₹{{ variant|safe_get('price', '0.00') }} 
                                                     (Stock: {{ variant|safe_get('stock', 0) }})
                                                 </small>
                                                 {% endif %}
@@ -275,7 +275,7 @@
                                                 <td>{{ product.name }}</td>
                                                 <td>{{ product.category }}</td>
                                                 <td>{{ product.units_sold }}</td>
-                                                <td>${{ product.revenue }}</td>
+                                                <td>₹{{ product.revenue }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
