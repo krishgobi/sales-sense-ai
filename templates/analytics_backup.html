@@ -1,0 +1,720 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Sales Sense AI{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-graph-up"></i> Advanced Analytics Dashboard</h2>
+            <p class="text-muted">Comprehensive real-time analytics with custom date range filtering</p>
+            <div id="demoAlert" class="mt-2"></div>
+            <small class="text-muted d-block mt-2">
+                <i class="bi bi-lightbulb"></i> <strong>Tip:</strong> If your database is empty, enable "Use demo data" to see sample analytics with realistic data patterns.
+            </small>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Analytics Filters</h5>
+        </div>
+        <div class="card-body">
+            <!-- Date Range Filter -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h6 class="border-bottom pb-2"><i class="bi bi-calendar-range"></i> Date Range</h6>
+                </div>
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quick Select</label>
+                    <select class="form-select" id="quickSelect" onchange="applyQuickSelect()">
+                        <option value="">Custom Range</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="7days" selected>Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="90days">Last 90 Days</option>
+                        <option value="thisMonth">This Month</option>
+                        <option value="lastMonth">Last Month</option>
+                        <option value="thisYear">This Year</option>
+                        <option value="allTime">All Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Filter -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h6 class="border-bottom pb-2"><i class="bi bi-box-seam"></i> Product Filter</h6>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Select Products (leave empty for all)</label>
+                    <select class="form-select" id="productFilter" multiple size="5">
+                        <option value="">Loading products...</option>
+                    </select>
+                    <small class="text-muted">Hold Ctrl/Cmd to select multiple products</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Quick Product Selection</label>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllProducts()">
+                            <i class="bi bi-check-all"></i> Select All Products
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearProductSelection()">
+                            <i class="bi bi-x-circle"></i> Clear Selection
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="selectTopProducts()">
+                            <i class="bi bi-trophy"></i> Select Top 5 Products Only
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-info" id="selectedProductCount">0 products selected</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Filter -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h6 class="border-bottom pb-2"><i class="bi bi-people"></i> User Filter</h6>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Select Users (leave empty for all)</label>
+                    <input type="text" class="form-control mb-2" id="userSearch" placeholder="Search users by name or email...">
+                    <select class="form-select" id="userFilter" multiple size="5">
+                        <option value="">Loading users...</option>
+                    </select>
+                    <small class="text-muted">Hold Ctrl/Cmd to select multiple users</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Quick User Selection</label>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllUsers()">
+                            <i class="bi bi-check-all"></i> Select All Users
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearUserSelection()">
+                            <i class="bi bi-x-circle"></i> Clear Selection
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="selectTopUsers()">
+                            <i class="bi bi-star"></i> Select Top 10 Customers Only
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-warning" id="selectedUserCount">0 users selected</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apply Button -->
+            <div class="row">
+                <div class="col-md-9">
+                    <button class="btn btn-primary btn-lg w-100" onclick="loadAnalytics()">
+                        <i class="bi bi-search"></i> Apply Filters & Load Analytics
+                    </button>
+                </div>
+                <div class="col-md-3 d-flex align-items-center">
+                    <div class="form-check ms-3">
+                        <input class="form-check-input" type="checkbox" value="" id="demoDataToggle">
+                        <label class="form-check-label small text-muted" for="demoDataToggle">
+                            Use demo data
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 id="periodRevenue">$0.00</h3>
+                    <p class="mb-0">Total Revenue</p>
+                    <small id="periodOrders">0 orders</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 id="periodCustomers">0</h3>
+                    <p class="mb-0">Active Customers</p>
+                    <small id="periodNewCustomers">0 new</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 id="periodAvgOrder">$0.00</h3>
+                    <p class="mb-0">Avg Order Value</p>
+                    <small id="periodProductsSold">0 products sold</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 id="periodTopCategory">--</h3>
+                    <p class="mb-0">Top Category</p>
+                    <small id="periodCategoryRevenue">$0.00</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Sales Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Sales by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Products Table -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Top Selling Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="topProductsTable">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Product Name</th>
+                                    <th>Units Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Avg Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topProductsBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Products Performance -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-box-seam"></i> All Products Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="allProductsTable">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Units Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Stock Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allProductsBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Analytics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Top Customers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="topCustomersTable">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Customer Name</th>
+                                    <th>Email</th>
+                                    <th>Orders</th>
+                                    <th>Total Spent</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topCustomersBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let salesChart = null;
+let categoryChart = null;
+let allProducts = [];
+let allUsers = [];
+let filteredUsers = [];
+
+// Initialize with last 7 days
+document.addEventListener('DOMContentLoaded', function() {
+    applyQuickSelect();
+    loadProducts();
+    loadUsers();
+    loadAnalytics();
+    
+    // Auto-refresh every 2 minutes
+    setInterval(loadAnalytics, 120000);
+    
+    // User search functionality
+    document.getElementById('userSearch').addEventListener('input', filterUsers);
+});
+
+function applyQuickSelect() {
+    const quickSelect = document.getElementById('quickSelect').value;
+    const today = new Date();
+    let startDate, endDate = new Date();
+    
+    switch(quickSelect) {
+        case 'today':
+            startDate = new Date();
+            break;
+        case 'yesterday':
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 1);
+            endDate = new Date(today);
+            endDate.setDate(endDate.getDate() - 1);
+            break;
+        case '7days':
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+        case '30days':
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 30);
+            break;
+        case '90days':
+            startDate = new Date(today);
+            startDate.setDate(startDate.getDate() - 90);
+            break;
+        case 'thisMonth':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            break;
+        case 'lastMonth':
+            startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+            break;
+        case 'thisYear':
+            startDate = new Date(today.getFullYear(), 0, 1);
+            break;
+        case 'allTime':
+            startDate = new Date(2020, 0, 1);
+            break;
+        default:
+            return;
+    }
+    
+    document.getElementById('startDate').valueAsDate = startDate;
+    document.getElementById('endDate').valueAsDate = endDate;
+}
+
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/products-list');
+        const products = await response.json();
+        allProducts = products;
+        
+        const select = document.getElementById('productFilter');
+        select.innerHTML = products.map(p => 
+            `<option value="${p._id}">${p.name} (${p.category})</option>`
+        ).join('');
+        
+        updateProductCount();
+    } catch (error) {
+        console.error('Error loading products:', error);
+    }
+}
+
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/users-list');
+        const users = await response.json();
+        allUsers = users;
+        filteredUsers = users;
+        
+        displayUsers(users);
+        updateUserCount();
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+function displayUsers(users) {
+    const select = document.getElementById('userFilter');
+    select.innerHTML = users.map(u => 
+        `<option value="${u._id}">${u.name} (${u.email})</option>`
+    ).join('');
+}
+
+function filterUsers() {
+    const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+    if (!searchTerm) {
+        filteredUsers = allUsers;
+    } else {
+        filteredUsers = allUsers.filter(u => 
+            u.name.toLowerCase().includes(searchTerm) || 
+            u.email.toLowerCase().includes(searchTerm)
+        );
+    }
+    displayUsers(filteredUsers);
+}
+
+function selectAllProducts() {
+    const select = document.getElementById('productFilter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = true;
+    }
+    updateProductCount();
+}
+
+function clearProductSelection() {
+    const select = document.getElementById('productFilter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = false;
+    }
+    updateProductCount();
+}
+
+function selectTopProducts() {
+    const select = document.getElementById('productFilter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = i < 5;
+    }
+    updateProductCount();
+}
+
+function selectAllUsers() {
+    const select = document.getElementById('userFilter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = true;
+    }
+    updateUserCount();
+}
+
+function clearUserSelection() {
+    const select = document.getElementById('userFilter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = false;
+    }
+    updateUserCount();
+}
+
+function selectTopUsers() {
+    const select = document.getElementById('userFilter');
+    for (let i = 0; i < select.options.length && i < 10; i++) {
+        select.options[i].selected = true;
+    }
+    updateUserCount();
+}
+
+function updateProductCount() {
+    const select = document.getElementById('productFilter');
+    const selectedCount = Array.from(select.selectedOptions).length;
+    const totalCount = select.options.length;
+    const badge = document.getElementById('selectedProductCount');
+    
+    if (selectedCount === 0) {
+        badge.textContent = `All ${totalCount} products`;
+        badge.className = 'badge bg-info';
+    } else {
+        badge.textContent = `${selectedCount} of ${totalCount} products selected`;
+        badge.className = 'badge bg-success';
+    }
+}
+
+function updateUserCount() {
+    const select = document.getElementById('userFilter');
+    const selectedCount = Array.from(select.selectedOptions).length;
+    const totalCount = allUsers.length;
+    const badge = document.getElementById('selectedUserCount');
+    
+    if (selectedCount === 0) {
+        badge.textContent = `All ${totalCount} users`;
+        badge.className = 'badge bg-warning';
+    } else {
+        badge.textContent = `${selectedCount} of ${totalCount} users selected`;
+        badge.className = 'badge bg-success';
+    }
+}
+
+// Update selection counts on change
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        document.getElementById('productFilter').addEventListener('change', updateProductCount);
+        document.getElementById('userFilter').addEventListener('change', updateUserCount);
+    }, 1000);
+});
+
+async function loadAnalytics() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    // Get selected products
+    const productSelect = document.getElementById('productFilter');
+    const selectedProducts = Array.from(productSelect.selectedOptions).map(o => o.value);
+    
+    // Get selected users
+    const userSelect = document.getElementById('userFilter');
+    const selectedUsers = Array.from(userSelect.selectedOptions).map(o => o.value);
+    
+    try {
+        let url = `/api/analytics?start=${startDate}&end=${endDate}`;
+        if (selectedProducts.length > 0) {
+            url += '&products=' + selectedProducts.join(',');
+        }
+        if (selectedUsers.length > 0) {
+            url += '&users=' + selectedUsers.join(',');
+        }
+        // Demo data toggle
+        try {
+            const useDemo = document.getElementById('demoDataToggle').checked;
+            if (useDemo) url += '&demo=true';
+        } catch (e) {
+            // ignore if element not present
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        console.log('Analytics API Response:', data); // Debug log
+        
+        // Show demo alert if using demo data
+        if (data.demo) {
+            const demoAlert = document.getElementById('demoAlert');
+            demoAlert.innerHTML = '<div class="alert alert-info mb-0"><i class="bi bi-info-circle"></i> Showing sample data for demonstration</div>';
+        } else {
+            const demoAlert = document.getElementById('demoAlert');
+            demoAlert.innerHTML = '';
+        }
+        
+        updateSummaryCards(data);
+        updateSalesChart(data.sales_trend);
+        updateCategoryChart(data.category_sales);
+        updateTopProducts(data.top_products);
+        updateAllProducts(data.all_products);
+        updateTopCustomers(data.top_customers);
+
+        // Show demo alert if backend used demo data
+        if (data.demo) {
+            showDemoAlert(true);
+        } else {
+            showDemoAlert(false);
+        }
+        
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+    }
+}
+
+function updateSummaryCards(data) {
+    console.log('Updating summary cards with data:', data); // Debug log
+    
+    const fmt = (num) => num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    document.getElementById('periodRevenue').textContent = '$' + fmt(data.total_revenue || 0);
+    document.getElementById('periodOrders').textContent = `${(data.total_orders || 0).toLocaleString()} orders`;
+    document.getElementById('periodCustomers').textContent = (data.active_customers || 0).toLocaleString();
+    document.getElementById('periodNewCustomers').textContent = `${data.new_customers || 0} new`;
+    document.getElementById('periodAvgOrder').textContent = '$' + fmt(data.avg_order_value || 0);
+    document.getElementById('periodProductsSold').textContent = `${(data.total_units_sold || 0).toLocaleString()} units sold`;
+    document.getElementById('periodTopCategory').textContent = data.top_category || '--';
+    document.getElementById('periodCategoryRevenue').textContent = data.top_category_revenue ? '$' + fmt(data.top_category_revenue) : '$0.00';
+}
+
+function updateSalesChart(trendData) {
+    const ctx = document.getElementById('salesChart');
+    if (salesChart) salesChart.destroy();
+    
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: trendData.map(d => d.date),
+            datasets: [{
+                label: 'Daily Sales',
+                data: trendData.map(d => d.sales),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => '$' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2})
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: (value) => '$' + value.toLocaleString()
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateCategoryChart(categoryData) {
+    const ctx = document.getElementById('categoryChart');
+    if (categoryChart) categoryChart.destroy();
+    
+    categoryChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: categoryData.map(c => c.category),
+            datasets: [{
+                data: categoryData.map(c => c.revenue),
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => context.label + ': $' + context.parsed.toLocaleString('en-US', {minimumFractionDigits: 2})
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateTopProducts(products) {
+    const tbody = document.getElementById('topProductsBody');
+    if (!products || products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = products.map((p, i) => `
+        <tr>
+            <td><span class="badge bg-${i === 0 ? 'warning' : i === 1 ? 'secondary' : 'info'}">#${i + 1}</span></td>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.units.toLocaleString()}</td>
+            <td>$${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td>$${(p.revenue / p.units).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+        </tr>
+    `).join('');
+}
+
+function updateAllProducts(products) {
+    const tbody = document.getElementById('allProductsBody');
+    if (!products || products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = products.map(p => `
+        <tr>
+            <td>${p.name}</td>
+            <td><span class="badge bg-secondary">${p.category}</span></td>
+            <td>${p.units_sold.toLocaleString()}</td>
+            <td>$${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+            <td><span class="badge bg-${p.stock > 10 ? 'success' : p.stock > 0 ? 'warning' : 'danger'}">${p.stock} units</span></td>
+        </tr>
+    `).join('');
+}
+
+function updateTopCustomers(customers) {
+    const tbody = document.getElementById('topCustomersBody');
+    if (!customers || customers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = customers.map((c, i) => `
+        <tr>
+            <td><span class="badge bg-primary">#${i + 1}</span></td>
+            <td>${c.name}</td>
+            <td>${c.email}</td>
+            <td>${c.orders}</td>
+            <td>$${c.total_spent.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+        </tr>
+    `).join('');
+}
+</script>
+
+{% if session.get('admin_logged_in') %}
+    {% include 'chatbot.html' %}
+{% endif %}
+
+<style>
+.analytics-container {
+    padding: 20px;
+}
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

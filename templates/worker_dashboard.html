@@ -1,214 +1,1239 @@
 {% extends "base.html" %}
 
+{% block title %}Worker Dashboard{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="row">
-        <!-- Sidebar -->
-        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Worker Dashboard</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#products-section">
-                            <i class="bi bi-box"></i> Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#add-product-section">
-                            <i class="bi bi-plus-circle"></i> Add Product
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#statistics-section">
-                            <i class="bi bi-graph-up"></i> Statistics
-                        </a>
-                    </li>
-                </ul>
+<div class="worker-dashboard">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div>
+                <h1>Worker Dashboard</h1>
+                <p>Welcome, {{ session.worker_name }}!</p>
             </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1>Welcome, {{ session.worker_name }}!</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="{{ url_for('worker_login') }}" class="btn btn-outline-danger">Logout</a>
-                </div>
-            </div>
-
-            <!-- Products Section -->
-            <section id="products-section" class="mb-4">
-                <h2>Current Products</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Variants</th>
-                                <th>Total Stock</th>
-                                <th>Added By</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
-                            <tr>
-                                <td>{{ product.name }}</td>
-                                <td>{{ product.category }}</td>
-                                <td>
-                                    {% for variant in product.variants %}
-                                    <small class="d-block">{{ variant.quantity }} - ${{ variant.price }} (Stock: {{ variant.stock }})</small>
-                                    {% endfor %}
-                                </td>
-                                <td>{{ product.variants|sum(attribute='stock') }}</td>
-                                <td>{{ product.added_by_name if product.added_by_name else 'System' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Add Product Section -->
-            <section id="add-product-section" class="mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Add New Product</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="addProductForm">
-                            <div class="row">
-                                <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Add New Product</h3>
-                </div>
-                <div class="card-body">
-                    <form id="addProductForm">
-                        <div class="mb-3">
-                            <label for="productName" class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="productName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="category" class="form-label">Category</label>
-                            <input type="text" class="form-control" id="category" required>
-                        </div>
-                        
-                        <div id="variants">
-                            <h4>Variants</h4>
-                            <div class="variant-entry mb-3">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Quantity</label>
-                                        <input type="text" class="form-control variant-quantity" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Price</label>
-                                        <input type="number" step="0.01" class="form-control variant-price" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Stock</label>
-                                        <input type="number" class="form-control variant-stock" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="button" class="btn btn-secondary mb-3" id="addVariant">Add Another Variant</button>
-                        <button type="submit" class="btn btn-primary">Add Product</button>
-                    </form>
-                </div>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ url_for('worker_sales') }}" class="btn-sales">
+                    <i class="fas fa-shopping-cart"></i> Make Sales
+                </a>
+                <a href="{{ url_for('worker_login') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const variantsContainer = document.getElementById('variants');
-    const addVariantBtn = document.getElementById('addVariant');
-    const addProductForm = document.getElementById('addProductForm');
-
-    // Add variant button click handler
-    addVariantBtn.addEventListener('click', function() {
-        const variantHtml = `
-            <div class="variant-entry mb-3">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Quantity</label>
-                        <input type="text" class="form-control variant-quantity" required>
+    
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ unique_product_count }}</h3>
+                <p>Unique Products</p>
+            </div>
+        </div>
+        
+        <div class="stat-card green">
+            <div class="stat-icon">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>₹{{ "%.2f"|format(today_sales) }}</h3>
+                <p>Today's Sales</p>
+            </div>
+        </div>
+        
+        <div class="stat-card purple">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ today_orders }}</h3>
+                <p>Orders Today</p>
+            </div>
+        </div>
+        
+        <div class="stat-card orange">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+                <h3>₹{{ "%.2f"|format(total_sales) }}</h3>
+                <p>Total Sales</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Product Section -->
+    <div class="section">
+        <h2><i class="fas fa-plus-circle"></i> Add New Product</h2>
+        <div class="form-card">
+            <form id="addProductForm">
+                <!-- Product Search -->
+                <div class="form-group">
+                    <label for="productSearch">Search Existing Product (Optional)</label>
+                    <input type="text" id="productSearch" class="form-input" placeholder="Type product name to search...">
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productName">Product Name *</label>
+                        <input type="text" id="productName" required class="form-input" placeholder="Enter product name">
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Price</label>
-                        <input type="number" step="0.01" class="form-control variant-price" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Stock</label>
-                        <input type="number" class="form-control variant-stock" required>
+                    
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required class="form-input">
+                            <option value="">-- Select Category --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}">{{ cat }}</option>
+                            {% endfor %}
+                            <option value="__new__">+ Add New Category</option>
+                        </select>
+                        <input type="text" id="newCategory" class="form-input" style="display: none; margin-top: 0.5rem;" placeholder="Enter new category">
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm mt-2 remove-variant">Remove</button>
-            </div>
-        `;
-        variantsContainer.insertAdjacentHTML('beforeend', variantHtml);
-    });
+                
+                <div class="variants-section">
+                    <div class="variants-header">
+                        <h3>Product Variants</h3>
+                        <div>
+                            <span id="existingPriceInfo" class="price-info"></span>
+                            <button type="button" class="btn-add-variant" id="addVariant">
+                                <i class="fas fa-plus"></i> Add Variant
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="variants">
+<div class="variant-entry">
+                            <div class="variant-grid">
+                                <div class="form-group">
+                                    <label>Quantity/Size</label>
+                                    <input type="text" class="form-input variant-quantity" required placeholder="e.g., 1kg, 500g">
+                                </div>
+                                <div class="form-group">
+                                    <label>Price (₹)</label>
+                                    <div class="price-input-group">
+                                        <input type="number" step="0.01" class="form-input variant-price" required placeholder="0.00">
+                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -10)">-10</button>
+                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -5)">-5</button>
+                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 5)">+5</button>
+                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 10)">+10</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Stock</label>
+                                    <input type="number" class="form-input variant-stock" required placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="reset" class="btn-cancel" onclick="clearForm()">Clear Form</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check"></i> Add Product
+                    </button>
+                </div>
+            </form>
+            <div id="formMessage" class="form-message"></div>
+        </div>
+    </div>
+    
+    <!-- Products List -->
+    <div class="section">
+        <h2><i class="fas fa-box-open"></i> Your Added Products (Page {{ page }} of {{ total_pages }})</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Variants</th>
+                        <th>Total Stock</th>
+                        <th>Added By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    {% if product.name %}
+                    <tr id="product-row-{{ product._id }}">
+                        <td>
+                            <strong>{{ product.name|default('Unnamed Product') }}</strong>
+                        </td>
+                        <td>
+                            <span class="category-badge">{{ product.category|default('Uncategorized') }}</span>
+                        </td>
+                        <td>
+                            <div class="variants-list">
+                                {% if product.variants and product.variants|length > 0 %}
+                                    {% for variant in product.variants %}
+                                    <div class="variant-item">
+                                        <span class="variant-qty">{{ variant.quantity|default('N/A') }}</span>
+                                        <span class="variant-price">₹{{ "%.2f"|format(variant.price|default(0)) }}</span>
+                                        <span class="variant-stock">Stock: {{ variant.stock|default(0) }}</span>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: #9ca3af;">No variants</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="stock-badge">
+                                {% set product_stock = namespace(value=0) %}
+                                {% if product.variants %}
+                                    {% for variant in product.variants %}
+                                        {% set product_stock.value = product_stock.value + (variant.stock|default(0)) %}
+                                    {% endfor %}
+                                {% endif %}
+                                {{ product_stock.value }}
+                            </span>
+                        </td>
+                        <td>{{ product.added_by_name|default('System') }}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteProduct('{{ product._id }}', '{{ product.name|default('Unknown Product') }}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #9ca3af;">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                            <strong>No products added yet</strong><br>
+                            <small>Use the form above to add your first product</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="?page={{ page - 1 }}" class="page-btn">← Previous</a>
+            {% endif %}
+            
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                <span class="page-btn active">{{ p }}</span>
+                {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                <a href="?page={{ p }}" class="page-btn">{{ p }}</a>
+                {% elif p == page - 3 or p == page + 3 %}
+                <span class="page-btn">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}" class="page-btn">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
 
-    // Remove variant button click handler
-    variantsContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-variant')) {
-            e.target.closest('.variant-entry').remove();
-        }
-    });
+<style>
+.worker-dashboard {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-    // Form submit handler
-    addProductForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+.dashboard-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
 
-        const variants = [];
-        document.querySelectorAll('.variant-entry').forEach(entry => {
-            variants.push({
-                quantity: entry.querySelector('.variant-quantity').value,
-                price: parseFloat(entry.querySelector('.variant-price').value),
-                stock: parseInt(entry.querySelector('.variant-stock').value)
-            });
-        });
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        const productData = {
-            name: document.getElementById('productName').value,
-            category: document.getElementById('category').value,
-            variants: variants
-        };
+.header-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+}
 
+.header-content p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.btn-sales {
+    background: rgba(255, 255, 255, 0.95);
+    color: #10b981;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-sales:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-logout {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-logout:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.stat-card.blue { border-left: 4px solid #3b82f6; }
+.stat-card.green { border-left: 4px solid #10b981; }
+.stat-card.purple { border-left: 4px solid #8b5cf6; }
+.stat-card.orange { border-left: 4px solid #f59e0b; }
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-card.blue .stat-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.stat-card.green .stat-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.stat-card.purple .stat-icon {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.stat-card.orange .stat-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.stat-info h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+    color: #111827;
+}
+
+.stat-info p {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #111827;
+}
+
+.section h2 i {
+    color: #10b981;
+    margin-right: 0.5rem;
+}
+
+.form-card {
+    background: #f9fafb;
+    padding: 2rem;
+    border-radius: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.search-results {
+    position: relative;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s;
+}
+
+.search-result-item:hover {
+    background: #f0fdf4;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.result-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 1rem;
+}
+
+.result-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.result-info {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.result-category {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.result-price {
+    font-size: 0.875rem;
+    color: #10b981;
+    font-weight: 600;
+}
+
+.result-stock {
+    font-size: 0.875rem;
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.result-variants {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+}
+
+.search-loading {
+    padding: 1rem;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.price-info {
+    color: #10b981;
+    font-weight: 600;
+    margin-right: 1rem;
+    font-size: 0.875rem;
+}
+
+.variants-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.variants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.variants-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: #111827;
+}
+
+.btn-add-variant {
+    background: #10b981;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-variant:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.variant-entry {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.variant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.price-input-group {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.price-input-group input {
+    flex: 1;
+    min-width: 100px;
+}
+
+.btn-price-adjust {
+    padding: 0.5rem 0.75rem;
+    background: #e5e7eb;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-price-adjust:hover {
+    background: #d1d5db;
+}
+
+.btn-remove-variant {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-remove-variant:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    padding: 0.75rem 1.5rem;
+    background: #f3f4f6;
+    color: #374151;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #e5e7eb;
+}
+
+.btn-submit {
+    padding: 0.75rem 1.5rem;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-submit:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.form-message {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+    display: none;
+}
+
+.form-message.success {
+    display: block;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.form-message.error {
+    display: block;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: #f9fafb;
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.category-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.variants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.variant-item {
+    background: #f9fafb;
+    padding: 0.5rem;
+    border-radius: 6px;
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.variant-qty {
+    font-weight: 600;
+    color: #111827;
+}
+
+.variant-price {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.variant-stock {
+    color: #6b7280;
+}
+
+.stock-badge {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    background: white;
+    color: #374151;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.page-btn:hover {
+    background: #f9fafb;
+    border-color: #10b981;
+}
+
+.page-btn.active {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.btn-delete:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .worker-dashboard {
+        padding: 1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .variant-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-input-group {
+        flex-direction: column;
+    }
+    
+    .price-input-group input {
+        min-width: 100%;
+    }
+}
+</style>
+
+<script>
+let searchTimeout;
+let selectedProduct = null;
+
+// Category dropdown change
+document.getElementById('category').addEventListener('change', function() {
+    const newCategoryInput = document.getElementById('newCategory');
+    if (this.value === '__new__') {
+        newCategoryInput.style.display = 'block';
+        newCategoryInput.required = true;
+    } else {
+        newCategoryInput.style.display = 'none';
+        newCategoryInput.required = false;
+    }
+});
+
+// Product search
+document.getElementById('productSearch').addEventListener('input', function(e) {
+    const query = e.target.value.trim();
+    const resultsDiv = document.getElementById('searchResults');
+    
+    clearTimeout(searchTimeout);
+    
+    if (query.length < 2) {
+        resultsDiv.classList.remove('active');
+        return;
+    }
+    
+    // Show loading
+    resultsDiv.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+    resultsDiv.classList.add('active');
+    
+    searchTimeout = setTimeout(async () => {
         try {
-            const response = await fetch('/worker/add-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(productData)
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                alert('Product added successfully!');
-                addProductForm.reset();
+            const response = await fetch(`/api/search-products?q=${encodeURIComponent(query)}`);
+            const products = await response.json();
+            
+            if (products.length > 0) {
+                resultsDiv.innerHTML = products.map(product => {
+                    const stockText = product.stock > 0 ? `Stock: ${product.stock}` : 'Out of Stock';
+                    const variantsText = product.variants && product.variants.length > 0 
+                        ? `${product.variants.length} variant(s)` 
+                        : 'No variants';
+                    
+                    return `
+                        <div class="search-result-item" onclick='selectProduct(${JSON.stringify(product).replace(/'/g, "&#39;")})'>
+                            <div class="result-header">
+                                <div class="result-name">${product.name}</div>
+                                <span class="result-badge">${product.source || 'DB'}</span>
+                            </div>
+                            <div class="result-info">
+                                <span class="result-category"><i class="fas fa-tag"></i> ${product.category}</span>
+                                ${product.price ? `<span class="result-price"><i class="fas fa-rupee-sign"></i> ₹${product.price.toFixed(2)}</span>` : '<span class="result-price">Price not set</span>'}
+                                <span class="result-stock"><i class="fas fa-box"></i> ${stockText}</span>
+                            </div>
+                            <div class="result-variants">${variantsText}</div>
+                        </div>
+                    `;
+                }).join('');
+                resultsDiv.classList.add('active');
             } else {
-                alert('Error: ' + result.error);
+                resultsDiv.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: #9ca3af;">
+                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                        <div>No products found for "${query}"</div>
+                        <small>Try a different search term</small>
+                    </div>
+                `;
+                resultsDiv.classList.add('active');
             }
         } catch (error) {
-            alert('Error adding product: ' + error);
+            console.error('Search error:', error);
+            resultsDiv.innerHTML = `
+                <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                    <i class="fas fa-exclamation-circle"></i> Error searching products
+                </div>
+            `;
         }
-    });
+    }, 300);
 });
+
+// Select product from search
+function selectProduct(product) {
+    selectedProduct = product;
+    document.getElementById('productName').value = product.name;
+    document.getElementById('category').value = product.category;
+    document.getElementById('searchResults').classList.remove('active');
+    document.getElementById('productSearch').value = product.name;
+    
+    // Show message that this will update existing product
+    const messageDiv = document.getElementById('formMessage');
+    messageDiv.className = 'form-message';
+    messageDiv.style.display = 'block';
+    messageDiv.style.background = '#dbeafe';
+    messageDiv.style.color = '#1e40af';
+    messageDiv.style.borderColor = '#93c5fd';
+    
+    let priceInfo = '';
+    let stockInfo = '';
+    
+    // Show existing stock and price info
+    if (product.stock && product.stock > 0) {
+        stockInfo = ` | Current Stock: ${product.stock}`;
+    }
+    
+    if (product.price) {
+        priceInfo = `Existing Price: ₹${product.price.toFixed(2)}`;
+        // Set the first variant price to existing price
+        document.querySelector('.variant-price').value = product.price.toFixed(2);
+    } else if (product.variants && product.variants.length > 0) {
+        const prices = product.variants.filter(v => v.price).map(v => v.price);
+        if (prices.length > 0) {
+            const avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+            priceInfo = `Avg Price: ₹${avgPrice.toFixed(2)}`;
+            document.querySelector('.variant-price').value = avgPrice.toFixed(2);
+        }
+    }
+    
+    messageDiv.innerHTML = `
+        <div style="margin-bottom: 0.5rem;">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Existing Product Selected!</strong>
+        </div>
+        <div style="font-size: 0.875rem;">
+            ${priceInfo}${stockInfo}<br>
+            <strong>Actions:</strong> Use +/- buttons to adjust price | Add new variants to increase stock
+        </div>
+    `;
+    
+    document.getElementById('existingPriceInfo').innerHTML = `
+        <i class="fas fa-arrow-right"></i> ${priceInfo} 
+        <span style="color: #6b7280; font-weight: normal;">(Adjust with +/- buttons or enter new price)</span>
+    `;
+    
+    // Update submit button text
+    const submitBtn = document.querySelector('#addProductForm button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add More Stock / Update Price';
+    submitBtn.style.background = '#3b82f6'; // Blue color for update
+}
+
+// Adjust price
+function adjustPrice(btn, amount) {
+    const priceInput = btn.closest('.price-input-group').querySelector('.variant-price');
+    const currentPrice = parseFloat(priceInput.value) || 0;
+    const newPrice = Math.max(0, currentPrice + amount);
+    priceInput.value = newPrice.toFixed(2);
+}
+
+// Add variant
+document.getElementById('addVariant').addEventListener('click', function() {
+    const variantHtml = `
+        <div class="variant-entry">
+            <button type="button" class="btn-remove-variant remove-variant">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="variant-grid">
+                <div class="form-group">
+                    <label>Quantity/Size</label>
+                    <input type="text" class="form-input variant-quantity" required placeholder="e.g., 1kg, 500g">
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <div class="price-input-group">
+                        <input type="number" step="0.01" class="form-input variant-price" required placeholder="0.00">
+                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -10)">-10</button>
+                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -5)">-5</button>
+                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 5)">+5</button>
+                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 10)">+10</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Stock</label>
+                    <input type="number" class="form-input variant-stock" required placeholder="0">
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('variants').insertAdjacentHTML('beforeend', variantHtml);
+});
+
+// Remove variant
+document.getElementById('variants').addEventListener('click', function(e) {
+    if (e.target.closest('.remove-variant')) {
+        const variants = document.querySelectorAll('.variant-entry');
+        if (variants.length > 1) {
+            e.target.closest('.variant-entry').remove();
+        } else {
+            showMessage('error', 'You must have at least one variant!');
+        }
+    }
+});
+
+// Clear form
+function clearForm() {
+    selectedProduct = null;
+    document.getElementById('productSearch').value = '';
+    document.getElementById('existingPriceInfo').innerHTML = ''; 
+    document.getElementById('searchResults').classList.remove('active');
+    document.getElementById('newCategory').style.display = 'none';
+    
+    // Reset submit button text and style
+    const submitBtn = document.querySelector('#addProductForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> Add Product';
+        submitBtn.style.background = '#10b981'; // Green color for add
+    }
+    
+    // Hide message div
+    const messageDiv = document.getElementById('formMessage');
+    if (messageDiv) {
+        messageDiv.className = 'form-message';
+        messageDiv.style.display = 'none';
+    }
+}
+
+// Form submit
+document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const messageDiv = document.getElementById('formMessage');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    
+    messageDiv.className = 'form-message';
+    messageDiv.textContent = '';
+
+    const variants = [];
+    document.querySelectorAll('.variant-entry').forEach(entry => {
+        variants.push({
+            quantity: entry.querySelector('.variant-quantity').value,
+            price: parseFloat(entry.querySelector('.variant-price').value),
+            stock: parseInt(entry.querySelector('.variant-stock').value)
+        });
+    });
+
+    let category = document.getElementById('category').value;
+    if (category === '__new__') {
+        category = document.getElementById('newCategory').value;
+    }
+
+    const productData = {
+        name: document.getElementById('productName').value,
+        category: category,
+        variants: variants
+    };
+
+    try {
+        const response = await fetch('/worker/add-product', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(productData)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            let message = result.message || 'Operation completed successfully!';
+            if (result.updated) {
+                message = `✓ Product stock increased! ${variants.length} new variant(s) added to "${productData.name}"`;
+            } else {
+                message = `✓ New product "${productData.name}" added successfully with ${variants.length} variant(s)!`;
+            }
+            showMessage('success', message);
+            clearForm();
+            this.reset();
+            
+            // Reload page after 1.5 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showMessage('error', 'Error: ' + result.error);
+        }
+    } catch (error) {
+        showMessage('error', 'Error adding product: ' + error);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> Add Product';
+    }
+});
+
+function showMessage(type, message) {
+    const messageDiv = document.getElementById('formMessage');
+    messageDiv.className = 'form-message ' + type;
+    messageDiv.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + message;
+}
+
+// Close search results when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#productSearch') && !e.target.closest('#searchResults')) {
+        document.getElementById('searchResults').classList.remove('active');
+    }
+});
+
+// Delete product function
+async function deleteProduct(productId, productName) {
+    if (!confirm('Are you sure you want to delete "' + productName + '"? This action cannot be undone.')) {
+        return;
+    }
+    
+    const deleteBtn = event.target.closest('.btn-delete');
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+    }
+    
+    try {
+        const response = await fetch(`/worker/delete-product/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Remove the row with animation
+            const row = document.getElementById(`product-row-${productId}`);
+            if (row) {
+                row.style.transition = 'opacity 0.3s, transform 0.3s';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    row.remove();
+                    
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'form-message success';
+                    messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> Product deleted successfully!';
+                    messageDiv.style.position = 'fixed';
+                    messageDiv.style.top = '20px';
+                    messageDiv.style.right = '20px';
+                    messageDiv.style.zIndex = '9999';
+                    messageDiv.style.minWidth = '300px';
+                    document.body.appendChild(messageDiv);
+                    
+                    setTimeout(() => {
+                        messageDiv.remove();
+                        // Reload to update pagination and counts
+                        window.location.reload();
+                    }, 2000);
+                }, 300);
+            }
+        } else {
+            alert('Error deleting product: ' + result.error);
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+            }
+        }
+    } catch (error) {
+        alert('Error deleting product: ' + error);
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        }
+    }
+}
+
 </script>
 {% endblock %}

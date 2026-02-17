@@ -3,205 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="900"> <!-- Auto refresh every 15 minutes -->
-    <title>{% block title %}Sales Sense AI - Business Intelligence Platform{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <meta http-equiv="refresh" content="900">
+    <title>{% block title %}Sales Sense AI{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-graph-up-arrow me-2"></i>Sales Sense AI
+    <!-- Modern Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <i class="fas fa-chart-line"></i>
+                <span>Sales Sense AI</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin">
-                            <i class="bi bi-shield-check"></i> Admin
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/worker">
-                            <i class="bi bi-person-workspace"></i> Worker
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/labor">
-                            <i class="bi bi-gear-wide-connected"></i> Labor
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/products">
-                            <i class="bi bi-shop"></i> Products
-                        </a>
-                    </li>
-                </ul>
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/products" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+                <a href="/analytics" class="nav-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/admin" class="nav-link">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin</span>
+                </a>
+                <a href="/worker" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Worker</span>
+                </a>
             </div>
+            <button class="nav-toggle" id="navToggle">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </nav>
 
-    <!-- Notification toasts -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1070;">
-        <!-- Success notification -->
-        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <span id="successMessage"></span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        
-        <!-- Error notification -->
-        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <span id="errorMessage"></span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        
-        <!-- Info notification -->
-        <div id="infoToast" class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    <span id="infoMessage"></span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        
-        <!-- Auto-refresh notification -->
-        <div id="refreshToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <i class="bi bi-arrow-clockwise me-2"></i>
-                <strong class="me-auto">Auto Refresh</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                Page will refresh in <span id="refreshCountdown">30</span> seconds
-                <div class="mt-2">
-                    <button class="btn btn-sm btn-primary" onclick="dismissRefresh()">Stay on page</button>
-                </div>
-            </div>
-        </div>
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer">
+        <!-- Notifications will be added here dynamically -->
     </div>
 
-    <div class="container mt-4">
-        {% block content %}{% endblock %}
-    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Sales Sense AI. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
-    <!-- Auto-refresh functionality -->
-    <script>
-        let refreshTimer;
-        let countdownTimer;
-        let userActivity = false;
-        let refreshCountdown = 30;
-        
-        // Track user activity
-        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(function(event) {
-            document.addEventListener(event, function() {
-                userActivity = true;
-            }, { capture: true, passive: true });
-        });
-        
-        function startRefreshTimer() {
-            // Clear any existing timers
-            clearTimeout(refreshTimer);
-            clearInterval(countdownTimer);
-            
-            // Set 15-minute timer (900 seconds)
-            refreshTimer = setTimeout(function() {
-                if (!userActivity) {
-                    // Show notification 30 seconds before refresh
-                    showRefreshNotification();
-                } else {
-                    // Reset if user was active
-                    userActivity = false;
-                    startRefreshTimer();
-                }
-            }, 870000); // 14.5 minutes
-        }
-        
-        function showRefreshNotification() {
-            const toast = new bootstrap.Toast(document.getElementById('refreshToast'));
-            toast.show();
-            
-            refreshCountdown = 30;
-            document.getElementById('refreshCountdown').textContent = refreshCountdown;
-            
-            countdownTimer = setInterval(function() {
-                refreshCountdown--;
-                document.getElementById('refreshCountdown').textContent = refreshCountdown;
-                
-                if (refreshCountdown <= 0) {
-                    // Save scroll position
-                    sessionStorage.setItem('scrollPosition', window.scrollY);
-                    location.reload();
-                }
-            }, 1000);
-        }
-        
-        function dismissRefresh() {
-            clearTimeout(refreshTimer);
-            clearInterval(countdownTimer);
-            userActivity = false;
-            startRefreshTimer();
-            
-            const toast = bootstrap.Toast.getInstance(document.getElementById('refreshToast'));
-            toast.hide();
-        }
-        
-        // Start auto-refresh when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            startRefreshTimer();
-            
-            // Restore scroll position after refresh
-            const scrollPosition = sessionStorage.getItem('scrollPosition');
-            if (scrollPosition) {
-                window.scrollTo(0, parseInt(scrollPosition));
-                sessionStorage.removeItem('scrollPosition');
-            }
-        });
-        
-        // Notification helper functions
-        function showNotification(type, message) {
-            const toastId = type + 'Toast';
-            const messageId = type + 'Message';
-            
-            document.getElementById(messageId).textContent = message;
-            const toastEl = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastEl, {
-                autohide: true,
-                delay: 4000
-            });
-            toast.show();
-        }
-        
-        function showSuccess(message) {
-            showNotification('success', message);
-        }
-        
-        function showError(message) {
-            showNotification('error', message);
-        }
-        
-        function showInfo(message) {
-            showNotification('info', message);
-        }
-    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

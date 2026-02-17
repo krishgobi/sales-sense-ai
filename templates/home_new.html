@@ -55,13 +55,22 @@
     </button>
 </div>
 
-<!-- Top Products Section -->
-<div class="card mb-4">
-    <div class="card-header">
-        <i class="fas fa-trophy"></i> Top Products (30 Days)
+<!-- Charts Section -->
+<div class="grid grid-2 mb-4">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-chart-area"></i> Sales Trend (7 Days)
+        </div>
+        <canvas id="salesTrendChart" height="200"></canvas>
     </div>
-    <div id="topProductsList" style="padding: 1rem;">
-        <div class="text-center text-muted">Loading...</div>
+    
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-trophy"></i> Top Products (30 Days)
+        </div>
+        <div id="topProductsList" style="padding: 1rem;">
+            <div class="text-center text-muted">Loading...</div>
+        </div>
     </div>
 </div>
 
@@ -88,46 +97,66 @@
         <a href="/products" class="btn btn-outline mt-2">View Products</a>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
-// Format currency helper
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount);
-}
-
 // Load business stats
 async function loadBusinessStats() {
     try {
         const response = await fetch('/api/business-stats');
-        if (!response.ok) {
-            throw new Error('Failed to fetch data');
-        }
         const data = await response.json();
-        
-        console.log('Business stats loaded:', data);
         
         // Update stats
         document.getElementById('totalRevenue').textContent = formatCurrency(data.total_sales || 0);
-        document.getElementById('totalOrders').textContent = (data.total_orders || 0).toLocaleString() + ' orders';
+        document.getElementById('totalOrders').textContent = `${data.total_orders || 0} orders`;
         document.getElementById('totalProducts').textContent = data.total_products || 0;
-        document.getElementById('activeUsers').textContent = (data.active_users || 0) + ' active users';
+        document.getElementById('activeUsers').textContent = `${data.active_users || 0} active users`;
         document.getElementById('todaySales').textContent = formatCurrency(data.sales_today || 0);
-        document.getElementById('todayOrders').textContent = (data.orders_today || 0) + ' orders today';
+        document.getElementById('todayOrders').textContent = `${data.orders_today || 0} orders today`;
         
-        // Load top products
+        // Load chart
+        loadSalesChart(data.sales_trend || []);
         loadTopProducts(data.top_products || []);
     } catch (error) {
         console.error('Error loading stats:', error);
-        document.getElementById('topProductsList').innerHTML = 
-            '<div class="text-center text-danger">Failed to load data. Please refresh the page.</div>';
     }
+}
+
+// Load sales chart
+function loadSalesChart(salesData) {
+    const ctx = document.getElementById('salesTrendChart');
+    if (!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: salesData.map(d => d.date),
+            datasets: [{
+                label: 'Sales',
+                data: salesData.map(d => d.sales),
+                borderColor: 'rgb(79, 70, 229)',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 // Load top products
@@ -143,27 +172,20 @@ function loadTopProducts(products) {
     container.innerHTML = products.map((p, i) => `
         <div class="flex justify-between items-center p-2 mb-2" style="background: var(--gray-50); border-radius: var(--border-radius-sm);">
             <div>
-                <div class="fw-semibold">${i + 1}. ${p.name || 'Unknown Product'}</div>
-                <small class="text-muted">${p.units || 0} units sold</small>
+                <div class="fw-semibold">${i + 1}. ${p.name}</div>
+                <small class="text-muted">${p.units} units sold</small>
             </div>
-            <div class="fw-bold text-primary">${formatCurrency(p.revenue || 0)}</div>
+            <div class="fw-bold text-primary">${formatCurrency(p.revenue)}</div>
         </div>
     `).join('');
 }
 
 // Export business summary (stub)
 function exportBusinessSummaryPDF() {
-    if (window.showInfo) {
-        window.showInfo('PDF export feature coming soon!');
-    } else {
-        alert('PDF export feature coming soon!');
-    }
+    showInfo('PDF export feature coming soon!');
 }
 
 // Load stats on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, fetching business stats...');
-    loadBusinessStats();
-});
+document.addEventListener('DOMContentLoaded', loadBusinessStats);
 </script>
 {% endblock %}

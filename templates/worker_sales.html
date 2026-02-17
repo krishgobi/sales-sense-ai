@@ -1,0 +1,1123 @@
+{% extends "base.html" %}
+
+{% block title %}Sales - Worker Dashboard{% endblock %}
+
+{% block content %}
+<div class="worker-sales">
+    <!-- Header -->
+    <div class="sales-header">
+        <div class="header-content">
+            <div>
+                <h1><i class="fas fa-shopping-cart"></i> Sales & Purchases</h1>
+                <p>Process customer purchases and manage sales</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('worker_dashboard') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="{{ url_for('worker_login') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Search Section -->
+    <div class="section">
+        <h2><i class="fas fa-user"></i> Customer Information</h2>
+        <div class="customer-search-card">
+            <!-- Customer Type Selection -->
+            <div class="customer-type-selector">
+                <label style="display: block; margin-bottom: 1rem; font-weight: 600; color: #374151;">
+                    <i class="fas fa-user-tag"></i> Customer Type
+                </label>
+                <div class="radio-group">
+                    <label class="radio-option" id="existingOption">
+                        <input type="radio" name="customerType" id="existingRadio" value="existing" checked onclick="toggleCustomerForm()">
+                        <span class="radio-label">
+                            <i class="fas fa-user-check"></i> Existing Customer
+                        </span>
+                    </label>
+                    <label class="radio-option" id="newOption">
+                        <input type="radio" name="customerType" id="newRadio" value="new" onclick="toggleCustomerForm()">
+                        <span class="radio-label">
+                            <i class="fas fa-user-plus"></i> New Customer
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Existing Customer Form -->
+            <div id="existingCustomerForm" class="customer-form-section">
+                <div class="form-group">
+                    <label>Search Customer Email *</label>
+                    <input type="email" id="existingCustomerEmail" class="form-input" placeholder="Enter customer email to search">
+                    <button type="button" class="btn-search-customer" onclick="searchExistingCustomer()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div id="existingCustomerDetails" class="customer-details-box" style="display: none;">
+                    <h4><i class="fas fa-info-circle"></i> Customer Details</h4>
+                    <div class="detail-row">
+                        <strong>Name:</strong> <span id="existingName"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Email:</strong> <span id="existingEmail"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Mobile:</strong> <span id="existingMobile"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New Customer Form -->
+            <div id="newCustomerForm" class="customer-form-section" style="display: none;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" id="newCustomerName" class="form-input" placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Email *</label>
+                        <input type="email" id="newCustomerEmail" class="form-input" placeholder="customer@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile (Optional)</label>
+                        <input type="tel" id="newCustomerMobile" class="form-input" placeholder="Enter mobile number">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Selection -->
+    <div class="section">
+        <h2><i class="fas fa-box-open"></i> Select Products</h2>
+        <div class="products-search">
+            <input type="text" id="productSearchInput" class="form-input" placeholder="Search products...">
+        </div>
+        
+        <div class="products-grid" id="productsGrid">
+            {% for product in products %}
+            {% if product.total_stock > 0 %}
+            <div class="product-card" data-product-id="{{ product._id }}" data-product-name="{{ product.name }}">
+                <div class="product-header">
+                    <h3>{{ product.name }}</h3>
+                    <span class="category-badge">{{ product.category }}</span>
+                </div>
+                <div class="product-info">
+                    <div class="stock-info">
+                        <i class="fas fa-box"></i> Stock: {{ product.total_stock }}
+                    </div>
+                </div>
+                <div class="product-variants">
+                    {% for variant in product.variants %}
+                    {% if variant.stock > 0 %}
+                    <div class="variant-option">
+                        <label>
+                            <input type="radio" name="variant_{{ product._id }}" 
+                                   value="{{ loop.index0 }}"
+                                   data-price="{{ variant.price }}"
+                                   data-stock="{{ variant.stock }}"
+                                   data-quantity="{{ variant.quantity }}">
+                            <span class="variant-details">
+                                <span class="variant-qty">{{ variant.quantity }}</span>
+                                <span class="variant-price">₹{{ "%.2f"|format(variant.price) }}</span>
+                                <span class="variant-stock">({{ variant.stock }} available)</span>
+                            </span>
+                        </label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="product-actions">
+                    <div class="quantity-selector">
+                        <label>Qty:</label>
+                        <input type="number" class="qty-input" min="1" value="1" data-product-id="{{ product._id }}">
+                    </div>
+                    <button class="btn-add-to-cart" onclick="addToCart('{{ product._id }}')">
+                        <i class="fas fa-cart-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Shopping Cart -->
+    <div class="section cart-section">
+        <div class="cart-header">
+            <h2><i class="fas fa-shopping-bag"></i> Shopping Cart</h2>
+            <button class="btn-clear-cart" onclick="clearCart()">
+                <i class="fas fa-trash"></i> Clear Cart
+            </button>
+        </div>
+        
+        <div id="cartItems" class="cart-items">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #d1d5db;"></i>
+                <p>Cart is empty. Add products to continue.</p>
+            </div>
+        </div>
+        
+        <div class="cart-summary" id="cartSummary" style="display: none;">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="subtotal">₹0.00</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total Amount:</span>
+                <span id="totalAmount">₹0.00</span>
+            </div>
+            <button class="btn-checkout" onclick="processCheckout()">
+                <i class="fas fa-check-circle"></i> Complete Purchase
+            </button>
+        </div>
+    </div>
+
+    <!-- Recent Sales -->
+    <div class="section">
+        <h2><i class="fas fa-history"></i> Recent Sales</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                    <tr>
+                        <td>{{ sale.purchase_date.strftime('%Y-%m-%d %H:%M') if sale.purchase_date else 'N/A' }}</td>
+                        <td>
+                            <strong>{{ sale.user_name }}</strong><br>
+                            <small>{{ sale.user_email }}</small>
+                        </td>
+                        <td>
+                            {{ sale.product_name }}<br>
+                            <small>{{ sale.variant }}</small>
+                        </td>
+                        <td>{{ sale.quantity }}</td>
+                        <td><strong>₹{{ "%.2f"|format(sale.total) }}</strong></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem;">
+                            No sales yet
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.worker-sales {
+    padding: 2rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.sales-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-content h1 {
+    font-size: 2rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.header-content p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.btn-logout {
+    background: rgba(239, 68, 68, 0.8);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-logout:hover {
+    background: rgba(220, 38, 38, 0.9);
+}
+
+.section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #111827;
+}
+
+.customer-search-card {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.customer-type-selector {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.radio-option {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radio-option:hover {
+    border-color: #3b82f6;
+    background: #f0f9ff;
+}
+
+.radio-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked + .radio-label {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.radio-option:has(input[type="radio"]:checked) {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.radio-label {
+    font-size: 1rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.customer-form-section {
+    margin-top: 1.5rem;
+}
+
+.btn-search-customer {
+    margin-top: 0.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-search-customer:hover {
+    background: #2563eb;
+}
+
+.customer-details-box {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border: 2px solid #10b981;
+    border-radius: 8px;
+}
+
+.customer-details-box h4 {
+    margin: 0 0 1rem 0;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-row {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row strong {
+    color: #374151;
+    margin-right: 0.5rem;
+}
+
+.detail-row span {
+    color: #6b7280;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-results {
+    position: relative;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s;
+}
+
+.search-result-item:hover {
+    background: #f0fdf4;
+}
+
+.products-search {
+    margin-bottom: 1.5rem;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.product-card {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+}
+
+.product-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+.product-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    color: #111827;
+}
+
+.category-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.stock-info {
+    font-size: 0.875rem;
+    color: #059669;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.product-variants {
+    margin-bottom: 1rem;
+}
+
+.variant-option {
+    margin-bottom: 0.5rem;
+}
+
+.variant-option label {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.variant-option label:hover {
+    background: #eff6ff;
+}
+
+.variant-option input[type="radio"] {
+    margin-right: 0.75rem;
+}
+
+.variant-details {
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+    gap: 0.5rem;
+}
+
+.variant-qty {
+    font-weight: 600;
+}
+
+.variant-price {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.variant-stock {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.product-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qty-input {
+    width: 60px;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.btn-add-to-cart {
+    flex: 1;
+    background: #10b981;
+    color: white;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-to-cart:hover {
+    background: #059669;
+}
+
+.cart-section {
+    position: sticky;
+    top: 100px;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-clear-cart {
+    background: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-clear-cart:hover {
+    background: #dc2626;
+}
+
+.cart-items {
+    min-height: 200px;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 3rem;
+    color: #9ca3af;
+}
+
+.cart-item {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-item-info {
+    flex: 1;
+}
+
+.cart-item-name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.cart-item-details {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.cart-item-price {
+    font-weight: 600;
+    color: #10b981;
+    margin-left: 1rem;
+}
+
+.btn-remove-item {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+}
+
+.cart-summary {
+    border-top: 2px solid #e5e7eb;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.summary-row.total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.btn-checkout {
+    width: 100%;
+    background: #3b82f6;
+    color: white;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 1rem;
+}
+
+.btn-checkout:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: #f9fafb;
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+    .worker-sales {
+        padding: 1rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+let cart = [];
+let searchTimeout;
+let selectedCustomer = null;
+
+// Toggle customer form based on type selection - defined first so onclick works
+function toggleCustomerForm() {
+    try {
+        const existingRadio = document.getElementById('existingRadio');
+        const newRadio = document.getElementById('newRadio');
+        const existingForm = document.getElementById('existingCustomerForm');
+        const newForm = document.getElementById('newCustomerForm');
+        const existingOption = document.getElementById('existingOption');
+        const newOption = document.getElementById('newOption');
+        
+        // Determine which is checked
+        const isExisting = existingRadio && existingRadio.checked;
+        const isNew = newRadio && newRadio.checked;
+        
+        console.log('Toggle called - Existing:', isExisting, 'New:', isNew);
+        
+        if (isNew) {
+            // New customer selected
+            console.log('Showing new customer form');
+            if (existingForm) existingForm.style.cssText = 'display: none !important;';
+            if (newForm) newForm.style.cssText = 'display: block !important; margin-top: 1.5rem;';
+            selectedCustomer = null;
+            
+            // Update option styling
+            if (newOption) {
+                newOption.style.borderColor = '#3b82f6';
+                newOption.style.background = '#eff6ff';
+            }
+            if (existingOption) {
+                existingOption.style.borderColor = '#e5e7eb';
+                existingOption.style.background = 'white';
+            }
+        } else {
+            // Existing customer selected (default)
+            console.log('Showing existing customer form');
+            if (existingForm) existingForm.style.cssText = 'display: block !important; margin-top: 1.5rem;';
+            if (newForm) newForm.style.cssText = 'display: none !important;';
+            selectedCustomer = null;
+            const detailsBox = document.getElementById('existingCustomerDetails');
+            if (detailsBox) detailsBox.style.display = 'none';
+            
+            // Update option styling
+            if (existingOption) {
+                existingOption.style.borderColor = '#3b82f6';
+                existingOption.style.background = '#eff6ff';
+            }
+            if (newOption) {
+                newOption.style.borderColor = '#e5e7eb';
+                newOption.style.background = 'white';
+            }
+        }
+    } catch (error) {
+        console.error('Error in toggleCustomerForm:', error);
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing...');
+    
+    // Add event listeners to radio buttons
+    const existingRadio = document.getElementById('existingRadio');
+    const newRadio = document.getElementById('newRadio');
+    
+    if (existingRadio) {
+        existingRadio.addEventListener('change', toggleCustomerForm);
+        console.log('Existing radio listener added');
+    }
+    if (newRadio) {
+        newRadio.addEventListener('change', toggleCustomerForm);
+        console.log('New radio listener added');
+    }
+    
+    // Initialize form visibility
+    toggleCustomerForm();
+});
+
+// Search existing customer by email
+async function searchExistingCustomer() {
+    const email = document.getElementById('existingCustomerEmail').value.trim();
+    
+    if (!email) {
+        alert('Please enter customer email!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/search-customers?q=${encodeURIComponent(email)}`);
+        const customers = await response.json();
+        
+        const customer = customers.find(c => c.email.toLowerCase() === email.toLowerCase());
+        
+        if (customer) {
+            // Show customer details
+            document.getElementById('existingName').textContent = customer.name;
+            document.getElementById('existingEmail').textContent = customer.email;
+            document.getElementById('existingMobile').textContent = customer.mobile || 'Not provided';
+            document.getElementById('existingCustomerDetails').style.display = 'block';
+            
+            selectedCustomer = customer;
+            
+            // Show success feedback
+            const btn = document.querySelector('.btn-search-customer');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Customer Found!';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.background = '#3b82f6';
+            }, 2000);
+        } else {
+            alert('Customer not found! Please check the email or register as new customer.');
+            document.getElementById('existingCustomerDetails').style.display = 'none';
+            selectedCustomer = null;
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        alert('Error searching customer. Please try again.');
+    }
+}
+
+// Product search filter
+document.getElementById('productSearchInput').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.product-card');
+    
+    cards.forEach(card => {
+        const name = card.dataset.productName.toLowerCase();
+        if (name.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Add to cart
+function addToCart(productId) {
+    const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+    const productName = productCard.dataset.productName;
+    
+    // Get selected variant
+    const selectedVariant = productCard.querySelector(`input[name="variant_${productId}"]:checked`);
+    if (!selectedVariant) {
+        alert('Please select a variant first!');
+        return;
+    }
+    
+    const variantIndex = parseInt(selectedVariant.value);
+    const price = parseFloat(selectedVariant.dataset.price);
+    const stock = parseInt(selectedVariant.dataset.stock);
+    const variantQty = selectedVariant.dataset.quantity;
+    
+    // Get quantity
+    const qtyInput = productCard.querySelector('.qty-input');
+    const quantity = parseInt(qtyInput.value);
+    
+    if (quantity < 1) {
+        alert('Quantity must be at least 1');
+        return;
+    }
+    
+    if (quantity > stock) {
+        alert(`Only ${stock} units available!`);
+        return;
+    }
+    
+    // Add to cart
+    const cartItem = {
+        product_id: productId,
+        product_name: productName,
+        variant_index: variantIndex,
+        variant: variantQty,
+        price: price,
+        quantity: quantity,
+        total: price * quantity
+    };
+    
+    cart.push(cartItem);
+    updateCartDisplay();
+    
+    // Reset selection
+    selectedVariant.checked = false;
+    qtyInput.value = 1;
+    
+    // Show feedback
+    const btn = productCard.querySelector('.btn-add-to-cart');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Added!';
+    btn.style.background = '#10b981';
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '#10b981';
+    }, 1500);
+}
+
+function updateCartDisplay() {
+    const cartItemsDiv = document.getElementById('cartItems');
+    const cartSummaryDiv = document.getElementById('cartSummary');
+    
+    if (cart.length === 0) {
+        cartItemsDiv.innerHTML = `
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #d1d5db;"></i>
+                <p>Cart is empty. Add products to continue.</p>
+            </div>
+        `;
+        cartSummaryDiv.style.display = 'none';
+        return;
+    }
+    
+    let total = 0;
+    cartItemsDiv.innerHTML = cart.map((item, index) => {
+        total += item.total;
+        return `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.product_name}</div>
+                    <div class="cart-item-details">
+                        ${item.variant} × ${item.quantity} = ₹${item.total.toFixed(2)}
+                    </div>
+                </div>
+                <div class="cart-item-price">₹${item.total.toFixed(2)}</div>
+                <button class="btn-remove-item" onclick="removeFromCart(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('subtotal').textContent = `₹${total.toFixed(2)}`;
+    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+    cartSummaryDiv.style.display = 'block';
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartDisplay();
+}
+
+function clearCart() {
+    if (cart.length > 0 && confirm('Clear all items from cart?')) {
+        cart = [];
+        updateCartDisplay();
+    }
+}
+
+async function processCheckout() {
+    const customerType = document.querySelector('input[name="customerType"]:checked').value;
+    let customerName, customerEmail, customerMobile;
+    
+    // Get customer details based on type
+    if (customerType === 'existing') {
+        if (!selectedCustomer) {
+            alert('Please search and select an existing customer first!');
+            return;
+        }
+        customerName = selectedCustomer.name;
+        customerEmail = selectedCustomer.email;
+        customerMobile = selectedCustomer.mobile || '';
+    } else {
+        // New customer
+        customerName = document.getElementById('newCustomerName').value.trim();
+        customerEmail = document.getElementById('newCustomerEmail').value.trim();
+        customerMobile = document.getElementById('newCustomerMobile').value.trim();
+        
+        if (!customerName || !customerEmail) {
+            alert('Please enter customer name and email!');
+            return;
+        }
+    }
+    
+    if (cart.length === 0) {
+        alert('Cart is empty!');
+        return;
+    }
+    
+    const checkoutBtn = document.querySelector('.btn-checkout');
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    try {
+        const response = await fetch('/worker/process-purchase', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                customer_name: customerName,
+                customer_email: customerEmail,
+                customer_mobile: customerMobile,
+                items: cart,
+                payment_status: 'completed'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`✓ Purchase Completed!\n\nTotal: ${result.message.split('Total: ')[1]}\nItems: ${result.items_count}\n\nConfirmation email sent to ${customerEmail}`);
+            
+            // Clear form and cart
+            cart = [];
+            updateCartDisplay();
+            selectedCustomer = null;
+            
+            // Clear existing customer form
+            document.getElementById('existingCustomerEmail').value = '';
+            document.getElementById('existingCustomerDetails').style.display = 'none';
+            
+            // Clear new customer form
+            document.getElementById('newCustomerName').value = '';
+            document.getElementById('newCustomerEmail').value = '';
+            document.getElementById('newCustomerMobile').value = '';
+            
+            // Reload page after 2 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            alert('Error: ' + result.error);
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Purchase';
+        }
+    } catch (error) {
+        alert('Error processing purchase: ' + error);
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Purchase';
+    }
+}
+</script>
+{% endblock %}
