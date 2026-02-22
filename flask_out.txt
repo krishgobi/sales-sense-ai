@@ -1,0 +1,1061 @@
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 19:48:52
+============================================================
+
+✅ Festival notification scheduler started!
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.101:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [22/Feb/2026 19:48:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:49:29] "GET /api/product-detail?name=test HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:49:29] "GET /api/user-detail?name=test HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:07] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:07] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:07] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:08] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 19:50:08] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:11] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:15] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:15] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:50:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:50:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:50:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:50:43] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:44] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:45] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:49] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:49] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:49] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:52] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:50:52] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:51:34] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:51:56] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:53:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:53:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:53:58] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:53:58] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:53:58] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:53:58] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 19:53:59] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:02] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:05] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:05] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:11] "GET /labor HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:11] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:11] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:12] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:12] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:12] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:13] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:14] "GET /analytics HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:14] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:14] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:16] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:16] "GET /api/business-stats?days=30 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:24] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:24] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:24] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:25] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1044: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1050: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 19:54:27] "GET /admin HTTP/1.1" 302 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1024: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1030: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 19:54:28] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:31] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:31] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:31] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:54:31] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:54:33] "GET /api/business-stats HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:55:21] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 19:55:21] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 19:55:43] "POST /admin/send-custom-email HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:55:45] "POST /admin/send-custom-email HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:55:54] "POST /admin/send-custom-email HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 19:55:57] "POST /admin/send-custom-email HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 19:48:54
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=30d, Revenue=₹344510.62, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+[Analytics] Period=30d, Revenue=₹344510.62, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8c622dsm7852775a91.11 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af71f9a3sm4394214a91.6 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e062sm64979855ad.48 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d80d3adsm8301296a91.2 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f637easm49113305ad.37 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e346sm62117395ad.49 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71814f8sm4546770a12.4 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2afe225sm3449224a91.8 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7243047sm4747025a12.17 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8c42basm8065580a91.10 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726eb92sm4656911a12.33 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af93b9ddsm4133069a91.14 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a1a2d315sm4957563a91.0 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e318sm46307105ad.43 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e350b4sm47558785ad.4 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e062sm64996085ad.48 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726eb92sm4657541a12.33 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5e0f2sm47100375ad.31 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e35093sm50427825ad.12 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd47c737sm4776775b3a.0 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e346sm62134985ad.49 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af93b9d1sm4207846a91.15 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e350a9sm47015985ad.15 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e3507csm50862065ad.8 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86ca41sm5177988b3a.36 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a1b1f84fsm3949882a91.2 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5df5asm48863135ad.25 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8a55d7sm4904098b3a.46 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2b72d69sm3485437a91.14 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af71e797sm4327123a91.5 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b72434e3sm4779785a12.18 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8fdb81sm4979203b3a.64 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2afe225sm3450335a91.8 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e28fsm49897575ad.53 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8fdf1csm7998841a91.17 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a1ad45f7sm3568760a91.1 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ecb2dsm4913536b3a.60 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e34452sm46668355ad.7 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75029f11sm47143595ad.69 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7503f4a4sm46289505ad.79 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2abf178sm4652848a91.5 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7503f9f5sm51993745ad.77 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86c93fsm5093549b3a.38 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8c40f6sm8138212a91.12 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ee244sm4902752b3a.63 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2afe225sm3450878a91.8 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5d2c1sm44193405ad.20 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7503fdc9sm50242925ad.80 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd68998bsm5313549b3a.16 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd68d450sm4899200b3a.18 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd87eea4sm5349445b3a.40 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726eb92sm4660458a12.33 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7243c24sm4882845a12.22 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8b961dsm4249329b3a.47 - gsmtp')
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 19:59:10
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [22/Feb/2026 20:04:36] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:30] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:05:30] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:05:30] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:05:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:31] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:05:31] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:31] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:31] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:05:31] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:32] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:34] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:35] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:38] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:38] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:05:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:05:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:05:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:05:43] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:44] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:45] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:49] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:49] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:49] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:52] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:05:52] "GET /api/festival-calendar HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1045: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1051: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:05:59] "GET /admin HTTP/1.1" 302 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1025: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1031: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:06:03] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:06:03] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:06:03] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:06:03] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:06:04] "GET /api/business-stats HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:44] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:44] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:44] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:44] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:44] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:07:46] "GET /api/business-stats HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:47] "GET /admin/user-details/697709416005788b8b00d2ae HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:47] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:07:47] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:07:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:52] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:07:52] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:07:53] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:56] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:59] "GET /admin HTTP/1.1" 302 -
+127.0.0.1 - - [22/Feb/2026 20:07:59] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:07:59] "GET /api/festival-calendar HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:01:09
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+[Analytics] Period=30d, Revenue=₹344510.62, Today=₹10948.00
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7256f32sm5267612a12.27 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71a73e1sm4729181a12.13 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2b39b66sm3565882a91.11 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d81ca29sm3262449a91.6 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358bf39ba25sm1352445a91.2 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af71e797sm4339677a91.5 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75044d1asm52381695ad.87 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e2b2sm46518945ad.52 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71a73e1sm4729910a12.13 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275basm59593555ad.65 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86ca41sm5194793b3a.36 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ee179sm4675053b3a.61 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd695a8fsm6145848b3a.23 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e2b2sm46525235ad.52 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7183c06sm4847147a12.2 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd693845sm5757160b3a.26 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e34e64sm49980175ad.1 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ee244sm4916515b3a.63 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750586e3sm50397355ad.90 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8baa34sm5423255b3a.51 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e34e9csm45810355ad.3 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e350a9sm47178295ad.15 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd87eea4sm5364038b3a.40 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726ac30sm5104059a12.32 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af93a7bfsm5436202a91.13 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a1b43cc9sm4173506a91.3 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75044c72sm47151915ad.86 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75029c7esm46747795ad.70 - gsmtp')
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+[Analytics] Period=30d, Revenue=₹344510.62, Today=₹10948.00
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275basm59610025ad.65 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2b5f3a6sm4079437a91.13 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71a78f1sm5056580a12.11 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7243c24sm4901724a12.22 - gsmtp')
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5e55dsm48310315ad.30 - gsmtp')
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2af412bsm4680239a91.6 - gsmtp')
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2af412bsm4680277a91.6 - gsmtp')
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1025: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1031: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:08:08] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:08:08] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:08:08] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:08:08] "GET /api/email-history HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:08:03
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Data cache refreshed successfully
+[Analytics] Period=30d, Revenue=₹344510.62, Today=₹10948.00
+127.0.0.1 - - [22/Feb/2026 20:08:10] "GET /api/business-stats HTTP/1.1" 200 -
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1025: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1031: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:10:05] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:10:05] "GET /static/css/style.css HTTP/1.1" 304 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:3290: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  'sent_at':         datetime.datetime.utcnow(),
+127.0.0.1 - - [22/Feb/2026 20:10:10] "POST /admin/send-custom-email HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:10:10] "GET /api/email-history HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:08:18
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd64367bsm4874837b3a.4 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af701af7sm4834133a91.4 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e062sm65291835ad.48 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af913a03sm4244746a91.12 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e189sm47815135ad.57 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d81ca29sm3267939a91.6 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e350c0sm45690265ad.17 - gsmtp')
+Error sending email: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8c7535sm5785741b3a.56 - gsmtp')
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1031: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1037: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:15:10] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:15:10] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:15:10] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:15:10] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:15:10] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:15:10] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:15:12] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:15:21] "GET /api/chart-data?from=2026-01-24&to=2026-02-19 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:15:33] "GET /api/chart-data?from=2025-12-29&to=2026-02-19 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:05] "GET /admin/festival-notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:05] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:17:05] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:17:05] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:17:06] "GET /admin/get-products-list HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:28] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:28] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:17:28] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:29] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:35] "GET /admin/festival-notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:35] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:17:35] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:17:35] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:17:35] "GET /admin/get-products-list HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:59] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:17:59] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:17:59] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:18:00] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:18:03] "GET /api/notifications HTTP/1.1" 200 -
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:14:00
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Error sending email to mahalakshmiperumal421@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726ac30sm5117520a12.32 - gsmtp')
+Error sending email to naresh.thangavel361@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd693845sm5779962b3a.26 - gsmtp')
+Error sending email to arun3459@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d81cdbfsm10996686a91.7 - gsmtp')
+Error sending email to kandan137@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd690f19sm4660212b3a.22 - gsmtp')
+Error sending email to sridevi.balakrishnan35@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd63f1b3sm4652234b3a.3 - gsmtp')
+Error sending email to aadhi.balan175@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8fdb81sm5009236b3a.64 - gsmtp')
+Error sending email to mahalakshmikarthikeyan207@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7256f32sm5284434a12.27 - gsmtp')
+Error sending email to surya.krishnan464@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5f026sm45724945ad.35 - gsmtp')
+Error sending email to madhumithakannan81@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ecc83sm4732968b3a.62 - gsmtp')
+Error sending email to bharath.shanmugam118@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2a32531sm5394959a91.3 - gsmtp')
+Error sending email to arjun.muthukumar334@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75173903sm44921575ad.81 - gsmtp')
+Error sending email to gayathri_balan362@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2a3c04csm4634609a91.3 - gsmtp')
+Error sending email to varun.venkatesh82@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275d0sm59687895ad.61 - gsmtp')
+Error sending email to sujathavenkatesh363@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af91336csm4446753a91.10 - gsmtp')
+Error sending email to anildhandapani422@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75029c7esm46883525ad.70 - gsmtp')
+Error sending email to jayanathan2@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75044c72sm47300815ad.86 - gsmtp')
+Error sending email to muthu.raj55@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5dc87sm49241515ad.22 - gsmtp')
+Error sending email to valli5669@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd89cda7sm4330305b3a.44 - gsmtp')
+Error sending email to aakash.dhandapani176@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e284sm57312385ad.42 - gsmtp')
+Error sending email to devikachinnadurai208@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5dae6sm50949135ad.21 - gsmtp')
+Error sending email to anirudh_moorthy3@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd695a8fsm6163995b3a.23 - gsmtp')
+Error sending email to manikandan5717@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af95863dsm4724668a91.17 - gsmtp')
+Error sending email to maheshbalakrishnan4@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74f5dc87sm49245605ad.22 - gsmtp')
+Error sending email to indira.annamalai36@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af913a03sm4254668a91.12 - gsmtp')
+Error sending email to vijayavelu364@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd6435c5sm5072037b3a.9 - gsmtp')
+Error sending email to bhavani.ganesan365@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd643df5sm5223348b3a.12 - gsmtp')
+Error sending email to vasuki.thangavel119@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86c5d7sm5018475b3a.41 - gsmtp')
+Error sending email to rajipandian235@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d81c288sm8170608a91.5 - gsmtp')
+Error sending email to thamarai.kumar423@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71a73e1sm4750933a12.13 - gsmtp')
+127.0.0.1 - - [22/Feb/2026 20:18:07] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:18:07] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:18:09] "GET /chatbot HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:18:09] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:18:12] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:18:12] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:18:12] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1051: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1057: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:18:15] "GET /admin HTTP/1.1" 302 -
+127.0.0.1 - - [22/Feb/2026 20:18:19] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:18:19] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:18:19] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:18:19] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:18:19] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:18:20] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:18:29] "GET /chatbot HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:18:29] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+Error sending email to jayasakthivel143@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275d0sm59703535ad.61 - gsmtp')
+Error sending email to ashwin.nagarajan391@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8e3e73sm8026756a91.15 - gsmtp')
+Error sending email to lakshmi.perumal177@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726b1d1sm4785577a12.31 - gsmtp')
+Error sending email to rohini39236@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ecb2dsm4965793b3a.60 - gsmtp')
+Error sending email to shruti_kannan144@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e346sm62548565ad.49 - gsmtp')
+Error sending email to kandan_murugan393@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e34fe7sm46168945ad.2 - gsmtp')
+Error sending email to kala.senthilkumar335@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75173903sm44938375ad.81 - gsmtp')
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Error sending email to lalitha.palani83@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b72603dfsm4804219a12.28 - gsmtp')
+Error sending email to deva.ramalingam145@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e3507csm51190285ad.8 - gsmtp')
+Error sending email to swathi.nathan366@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e35093sm50747645ad.12 - gsmtp')
+Error sending email to adithya.sakthivel84@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e284sm57331395ad.42 - gsmtp')
+Error sending email to shrutidhandapani5@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86c4a1sm5189016b3a.37 - gsmtp')
+Error sending email to kalaiarasan14640@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af91336csm4448573a91.10 - gsmtp')
+Error sending email to aadhi.balakrishnan1177@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75054aa3sm49579855ad.89 - gsmtp')
+Error sending email to ajay.manickam58@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275d0sm59714085ad.61 - gsmtp')
+Error sending email to aadhi.balan175@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b70b7612sm4909920a12.0 - gsmtp')
+Error sending email to surya27758@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e1e1sm50255235ad.55 - gsmtp')
+Error sending email to aadhi.muthuvel1133@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8c42basm8096010a91.10 - gsmtp')
+Error sending email to manoj.muthukumar394@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd899386sm4443872b3a.43 - gsmtp')
+Error sending email to aakash.balakrishnan1515@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8d5d18sm4754713b3a.59 - gsmtp')
+Error sending email to preethiramachandran37@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d8e3dc5sm7742580a91.14 - gsmtp')
+Error sending email to aakash.dhandapani176@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a1c31571sm4182016a91.6 - gsmtp')
+Error sending email to jayalakshmi.kumar178@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8b961dsm4277094b3a.47 - gsmtp')
+Error sending email to aakash.subramanian476@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e02asm45300575ad.56 - gsmtp')
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Error sending email to kavithabalan367@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7502abc2sm46759305ad.73 - gsmtp')
+Found 7434 sales records in last 90 days
+Error sending email to aakash138378@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af701c7bsm4548587a91.1 - gsmtp')
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Error sending email to sridhar.raj424@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af701c7bsm4548612a91.1 - gsmtp')
+Found 7434 sales records in last 90 days
+Error sending email to aakash94147@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b7253a70sm4710122a12.24 - gsmtp')
+Error sending email to anjali20936@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726cbf2sm5034416a12.34 - gsmtp')
+Error sending email to aakash98328@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b726b1d1sm4787725a12.31 - gsmtp')
+Analyzed 5 products
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Top performers: 1, Poor performers: 1
+Error sending email to prakash.manickam425@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358a2770dc2sm7089729a91.1 - gsmtp')
+Error sending email to aakash_kannan921@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e2bdsm46082415ad.54 - gsmtp')
+Error sending email to velu.annamalai236@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71bcddesm4906238a12.15 - gsmtp')
+Error sending email to aakash_kumar774@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e2bdsm46083515ad.54 - gsmtp')
+Error sending email to rakesh.karthikeyan6@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd689474sm4517348b3a.15 - gsmtp')
+Error sending email to aakash_velu152@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86c4a1sm5190356b3a.37 - gsmtp')
+Error sending email to hema.kumar85@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd89cda7sm4333115b3a.44 - gsmtp')
+Error sending email to aakashmuthuvel1302@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af701c7bsm4549045a91.1 - gsmtp')
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Error sending email to usha_dhandapani395@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b72603dfsm4805769a12.28 - gsmtp')
+Error sending email to aakashthangavel1664@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af71f9a3sm4425596a91.6 - gsmtp')
+Error sending email to anusha_nagarajan86@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd689474sm4517562b3a.15 - gsmtp')
+Error sending email to aarav.balan1075@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd68c0b8sm5278066b3a.17 - gsmtp')
+Error sending email to prabha8711@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b72603dfsm4805944a12.28 - gsmtp')
+Error sending email to aarav.nagarajan274@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af71fd04sm4351416a91.7 - gsmtp')
+Error sending email to chithra.muthuvel38@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af93b2bdsm4465654a91.16 - gsmtp')
+Error sending email to sindhu27815@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd640d16sm5314744b3a.13 - gsmtp')
+Error sending email to aarav.pandian701@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7503fdc9sm50567065ad.80 - gsmtp')
+Error sending email to aarav.ramachandran1725@yahoo.co.in: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275d0sm59729565ad.61 - gsmtp')
+Error sending email to karthika.sundaram147@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-c70b71a73e1sm4753494a12.13 - gsmtp')
+Error sending email to aarav123751@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75321543sm48198445ad.72 - gsmtp')
+Error sending email to ishwarya.perumal305@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad75042e3fsm47020525ad.82 - gsmtp')
+Error sending email to aarav163415@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7503f4a4sm46611665ad.79 - gsmtp')
+Error sending email to padma_subramanian426@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86c494sm4750108b3a.30 - gsmtp')
+Error sending email to aarav173893@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad7500e346sm62574305ad.49 - gsmtp')
+Error sending email to sudarshan14811@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-358af93a7bfsm5455087a91.13 - gsmtp')
+Error sending email to aarav_govindan1521@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d81cdbfsm11003505a91.7 - gsmtp')
+Error sending email to kalaiarasan42730@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ecb2dsm4969917b3a.60 - gsmtp')
+Error sending email to aarav_shanmugam1444@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad750275dbsm57268625ad.63 - gsmtp')
+Error sending email to lalitha_ramachandran210@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ee244sm4934644b3a.63 - gsmtp')
+Error sending email to aarav_thangavel553@outlook.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-3589d6e809esm8616199a91.0 - gsmtp')
+Error sending email to sowmyakrishnan336@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e350b4sm48042735ad.4 - gsmtp')
+Error sending email to aaravchinnadurai1629@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd86c5d7sm5021712b3a.41 - gsmtp')
+Error sending email to babu.subramanian279@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd901b59sm4273185b3a.65 - gsmtp')
+Error sending email to kathir.venkatesh120@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8ba11bsm4779976b3a.50 - gsmtp')
+Error sending email to aaravmurugan750@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd6c601esm4851786b3a.29 - gsmtp')
+Error sending email to jayakannan237@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-826dd8bc4desm5631195b3a.48 - gsmtp')
+Error sending email to aaravramasamy779@gmail.com: (550, b'5.4.5 Daily user sending limit exceeded. For more information on Gmail\n5.4.5 sending limits go to\n5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2ad74e34fdcsm47212065ad.19 - gsmtp')
+Error sending email to deepa.perumal238@gmail.com: Connection unexpectedly closed
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [22/Feb/2026 20:20:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:20:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:20:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:20:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:20:43] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:44] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:47] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:50] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:50] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:51] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:54] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:20:54] "GET /api/festival-calendar HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:19:02
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [22/Feb/2026 20:27:14] "GET /chatbot HTTP/1.1" 302 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1097: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1103: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:27:14] "GET /admin/ai-chat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:27:14] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:27:15] "GET /favicon.ico HTTP/1.1" 404 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:5907: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow()
+127.0.0.1 - - [22/Feb/2026 20:27:25] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1097: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1103: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:27:34] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:28:04] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:28:04] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:28:04] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:28:04] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:28:04] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:28:04] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:28:21] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 404 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:27:07
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1097: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1103: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:33:55] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:33:55] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:33:55] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:33:55] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:33:55] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:33:55] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:33:56] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:22] "GET /api/chart-data?from=2026-01-24&to=2026-01-29 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:32] "POST /admin/send-custom-email HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:33] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:35] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:36] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:38] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:39] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:41] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:792: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  'sent_at':         datetime.datetime.utcnow(),
+127.0.0.1 - - [22/Feb/2026 20:34:42] "GET /api/email-send-status/af64d10a HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:42] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:56] "GET /admin/ai-chat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:34:56] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:5910: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow()
+127.0.0.1 - - [22/Feb/2026 20:35:10] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1097: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1103: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:35:32] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:35:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:35:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:42] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:35:42] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:35:43] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:44] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:46] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:49] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:49] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:49] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:52] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:35:53] "GET /api/festival-calendar HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:31:47
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹102028.93, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:38:12
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1108: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1114: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:40:44] "GET /admin/ai-chat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:40:44] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:40:44] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:40:44] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:41:04] "GET /admin/ai-chat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:04] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:41:04] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:04] "GET /favicon.ico HTTP/1.1" 404 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:5921: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow()
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:6211: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  {'role': 'user', 'text': question, 'ts': datetime.datetime.utcnow()},
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:6212: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  {'role': 'ai',   'text': answer,   'ts': datetime.datetime.utcnow()}
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:6225: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  'created_at': datetime.datetime.utcnow(),
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:6226: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  'updated_at': datetime.datetime.utcnow()
+127.0.0.1 - - [22/Feb/2026 20:41:12] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1108: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1114: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 20:41:12] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:6218: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  '$set':  {'updated_at': datetime.datetime.utcnow()}}
+127.0.0.1 - - [22/Feb/2026 20:41:18] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:21] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:25] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:25] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:39] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:43] "GET /api/ai-chat-sessions/1771773071022 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:43] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:56] "GET /admin/ai-chat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:56] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:41:56] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:56] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:41:59] "GET /api/ai-chat-sessions/1771773084690 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:41:59] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:07] "POST /api/ai-chat-sessions/1771773084690/delete HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:07] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:18] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:18] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Feb/2026 20:42:18] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:42:18] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:42:18] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:19] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:22] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:22] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:42:22] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:42:23] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:42:26] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:15] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:15] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:15] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:16] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:17] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:19] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:23] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:23] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:24] "GET /analytics HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:24] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:24] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:26] "GET /api/business-stats?days=30 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:27] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:28] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:28] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:28] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:32] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:32] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:34] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:38] "GET /api/business-stats?days=365 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:39] "GET /api/business-stats?days=90 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:46] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:46] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:46] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:13:47] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:50] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:54] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:13:54] "GET /api/festival-calendar HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:1128: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  if (datetime.datetime.utcnow() - last_activity_time).seconds > 1800:  # 30 minutes
+127.0.0.1 - - [22/Feb/2026 21:14:36] "GET /admin HTTP/1.1" 302 -
+127.0.0.1 - - [22/Feb/2026 21:14:36] "GET /admin/login HTTP/1.1" 200 -
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:3703: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['login_time'] = datetime.datetime.utcnow().timestamp()
+p:\Sales-sense-ai-pro\sales-sense-ai\app.py:3704: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session['last_activity'] = datetime.datetime.utcnow().timestamp()
+127.0.0.1 - - [22/Feb/2026 21:14:48] "POST /admin/login HTTP/1.1" 302 -
+127.0.0.1 - - [22/Feb/2026 21:14:52] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:14:52] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:14:52] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:14:52] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:14:53] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:15:56] "GET /admin/user-details/697709416005788b8b00d2af HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:15:56] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:15:56] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:16:04] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:04] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:09] "GET /admin/ai-chat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:09] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:35] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:35] "GET /api/ai-chat-sessions HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:44] "POST /admin/ai-chat/send HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:51] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:51] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:16:51] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:16:51] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:16:52] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -

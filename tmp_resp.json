@@ -1,0 +1,198 @@
+{
+  "active_users": 1760,
+  "avg_order_value": 278.01,
+  "category_breakdown": [
+    {
+      "count": 128,
+      "name": "\u0bae\u0bb3\u0bbf\u0b95\u0bc8 (Groceries)",
+      "total": 43038.23
+    },
+    {
+      "count": 40,
+      "name": "\u0ba4\u0ba9\u0bbf\u0baa\u0bcd\u0baa\u0b9f\u0bcd\u0b9f \u0baa\u0bb0\u0bbe\u0bae\u0bb0\u0bbf\u0baa\u0bcd\u0baa\u0bc1 (Personal Care)",
+      "total": 14285.06
+    },
+    {
+      "count": 50,
+      "name": "\u0baa\u0bbe\u0ba9\u0b99\u0bcd\u0b95\u0bb3\u0bcd (Beverages)",
+      "total": 13105.28
+    },
+    {
+      "count": 19,
+      "name": "\u0b87\u0bb2\u0bcd\u0bb2\u0baa\u0bcd \u0baa\u0bca\u0bb0\u0bc1\u0b9f\u0bcd\u0b95\u0bb3\u0bcd (Household)",
+      "total": 12340.0
+    },
+    {
+      "count": 90,
+      "name": "\u0ba4\u0bbf\u0ba9\u0bcd\u0baa\u0ba3\u0bcd\u0b9f\u0b99\u0bcd\u0b95\u0bb3\u0bcd (Snacks)",
+      "total": 11178.28
+    },
+    {
+      "count": 11,
+      "name": "\u0baa\u0bbe\u0bb2\u0bcd \u0baa\u0bca\u0bb0\u0bc1\u0b9f\u0bcd\u0b95\u0bb3\u0bcd (Dairy)",
+      "total": 5191.0
+    },
+    {
+      "count": 15,
+      "name": "\u0b95\u0bbe\u0baf\u0bcd\u0b95\u0bb1\u0bbf\u0b95\u0bb3\u0bcd & \u0baa\u0bb4\u0b99\u0bcd\u0b95\u0bb3\u0bcd (Vegetables & Fruits)",
+      "total": 1715.6399999999999
+    },
+    {
+      "count": 5,
+      "name": "\u0b89\u0ba3\u0bb5\u0bc1 (Instant Food)",
+      "total": 831.0
+    }
+  ],
+  "category_sales": [
+    {
+      "count": 128,
+      "name": "\u0bae\u0bb3\u0bbf\u0b95\u0bc8 (Groceries)",
+      "total": 43038.23
+    },
+    {
+      "count": 40,
+      "name": "\u0ba4\u0ba9\u0bbf\u0baa\u0bcd\u0baa\u0b9f\u0bcd\u0b9f \u0baa\u0bb0\u0bbe\u0bae\u0bb0\u0bbf\u0baa\u0bcd\u0baa\u0bc1 (Personal Care)",
+      "total": 14285.06
+    },
+    {
+      "count": 50,
+      "name": "\u0baa\u0bbe\u0ba9\u0b99\u0bcd\u0b95\u0bb3\u0bcd (Beverages)",
+      "total": 13105.28
+    },
+    {
+      "count": 19,
+      "name": "\u0b87\u0bb2\u0bcd\u0bb2\u0baa\u0bcd \u0baa\u0bca\u0bb0\u0bc1\u0b9f\u0bcd\u0b95\u0bb3\u0bcd (Household)",
+      "total": 12340.0
+    },
+    {
+      "count": 90,
+      "name": "\u0ba4\u0bbf\u0ba9\u0bcd\u0baa\u0ba3\u0bcd\u0b9f\u0b99\u0bcd\u0b95\u0bb3\u0bcd (Snacks)",
+      "total": 11178.28
+    },
+    {
+      "count": 11,
+      "name": "\u0baa\u0bbe\u0bb2\u0bcd \u0baa\u0bca\u0bb0\u0bc1\u0b9f\u0bcd\u0b95\u0bb3\u0bcd (Dairy)",
+      "total": 5191.0
+    },
+    {
+      "count": 15,
+      "name": "\u0b95\u0bbe\u0baf\u0bcd\u0b95\u0bb1\u0bbf\u0b95\u0bb3\u0bcd & \u0baa\u0bb4\u0b99\u0bcd\u0b95\u0bb3\u0bcd (Vegetables & Fruits)",
+      "total": 1715.6399999999999
+    },
+    {
+      "count": 5,
+      "name": "\u0b89\u0ba3\u0bb5\u0bc1 (Instant Food)",
+      "total": 831.0
+    }
+  ],
+  "days": 7,
+  "new_users_today": 2,
+  "orders_today": 55,
+  "sales_today": 10948.0,
+  "sales_trend": [
+    {
+      "date": "16 Feb",
+      "sales": 19659.94
+    },
+    {
+      "date": "17 Feb",
+      "sales": 15965.12
+    },
+    {
+      "date": "18 Feb",
+      "sales": 9971.97
+    },
+    {
+      "date": "19 Feb",
+      "sales": 10530.9
+    },
+    {
+      "date": "20 Feb",
+      "sales": 11041.14
+    },
+    {
+      "date": "21 Feb",
+      "sales": 21282.84
+    },
+    {
+      "date": "22 Feb",
+      "sales": 10948.0
+    }
+  ],
+  "top_products": [
+    {
+      "name": "\u0b9a\u0b83\u0baa\u0bcb\u0bb2\u0bbe \u0b95\u0bcb\u0bb2\u0bcd\u0b9f\u0bcd \u0b8e\u0ba3\u0bcd\u0ba3\u0bc6\u0baf\u0bcd (Saffola Gold Oil)",
+      "revenue": 19425.0,
+      "units": 28
+    },
+    {
+      "name": "\u0b9a\u0bb0\u0bcd\u0b83\u0baa\u0bcd \u0b8e\u0b95\u0bcd\u0b9a\u0bc6\u0bb2\u0bcd \u0b9a\u0bb2\u0bb5\u0bc8 \u0baa\u0bca\u0b9f\u0bbf (Detergent)",
+      "revenue": 8680.0,
+      "units": 18
+    },
+    {
+      "name": "\u0b83\u0baa\u0bbe\u0bb0\u0bcd\u0b9a\u0bcd\u0b9a\u0bc2\u0ba9\u0bcd \u0b9a\u0bc2\u0bb0\u0bbf\u0baf\u0b95\u0bbe\u0ba8\u0bcd\u0ba4\u0bbf \u0b8e\u0ba3\u0bcd\u0ba3\u0bc6\u0baf\u0bcd (Sunflower Oil)",
+      "revenue": 6610.0,
+      "units": 34
+    },
+    {
+      "name": "\u0b9a\u0ba8\u0bcd\u0ba4\u0ba9\u0bae\u0bcd (Sandalwood)",
+      "revenue": 5960.24,
+      "units": 10
+    },
+    {
+      "name": "\u0bb2\u0bbf\u0baa\u0bcd\u0b9f\u0ba9\u0bcd \u0b95\u0bcd\u0bb0\u0bc0\u0ba9\u0bcd \u0b9f\u0bc0 (Green Tea)",
+      "revenue": 5220.0,
+      "units": 36
+    },
+    {
+      "name": "\u0b86\u0bb7\u0bbf\u0bb0\u0bcd\u0bb5\u0bbe\u0ba4\u0bcd \u0b95\u0bcb\u0ba4\u0bc1\u0bae\u0bc8 \u0bae\u0bbe\u0bb5\u0bc1 5kg (Atta)",
+      "revenue": 4940.0,
+      "units": 19
+    },
+    {
+      "name": "\u0b85\u0bae\u0bc1\u0bb2\u0bcd \u0bb5\u0bc6\u0ba3\u0bcd\u0ba3\u0bc6\u0baf\u0bcd 500g (Butter)",
+      "revenue": 4675.0,
+      "units": 17
+    },
+    {
+      "name": "\u0bb0\u0bc6\u0b9f\u0bcd \u0bb2\u0bc7\u0baa\u0bbf\u0bb3\u0bcd \u0ba4\u0bc7\u0ba9\u0bc0\u0bb0\u0bcd 500g (Red Label Tea)",
+      "revenue": 3600.0,
+      "units": 15
+    }
+  ],
+  "top_users": [
+    {
+      "name": "Meena Lakshmi",
+      "orders": 9,
+      "spent": 12157.0
+    },
+    {
+      "name": "Anitha Selvam",
+      "orders": 21,
+      "spent": 10506.0
+    },
+    {
+      "name": "Prakash M",
+      "orders": 18,
+      "spent": 7324.0
+    },
+    {
+      "name": "Ramesh Babu",
+      "orders": 20,
+      "spent": 6378.0
+    },
+    {
+      "name": "Vijay Murugan",
+      "orders": 14,
+      "spent": 5813.0
+    }
+  ],
+  "total_orders": 367,
+  "total_products": 60,
+  "total_purchases": 367,
+  "total_revenue": 102028.93,
+  "total_sales": 102028.93,
+  "total_users": 1760,
+  "total_workers": 8
+}

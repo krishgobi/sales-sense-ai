@@ -1,1574 +1,718 @@
 {% extends "base.html" %}
-
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard - Sales Sense AI{% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
-<div class="admin-dashboard">
-    <!-- Header -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <div>
-                <h1>Admin Dashboard</h1>
-                <p>Monitor and manage your business</p>
-            </div>
-            <a href="{{ url_for('admin_logout') }}" class="btn-logout">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+<div class="page-wrapper" style="padding:1.5rem;">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category == 'error' and 'danger' or category }} mb-3">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- BigBasket-style Dashboard Header -->
+  <div class="dashboard-header mb-4" style="background:linear-gradient(135deg,#84C225,#3d7a00);color:white;padding:1.75rem 2rem;border-radius:12px;">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:46px;height:46px;background:rgba(255,255,255,.25);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff;flex-shrink:0;">SS</div>
+        <div>
+          <h1 style="margin:0;font-size:1.6rem;font-weight:800;">Admin Dashboard</h1>
+          <p style="margin:.2rem 0 0;opacity:.85;font-size:.85rem;">Real-time business overview &amp; management</p>
         </div>
-=======
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <nav class="col-md-2 d-md-block bg-dark sidebar collapse">
-            <div class="position-sticky pt-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link text-white active" href="#overview">
-                            <i class="bi bi-speedometer2"></i> Overview
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#users">
-                            <i class="bi bi-people"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#products">
-                            <i class="bi bi-box-seam"></i> Product Reports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#workers">
-                            <i class="bi bi-person-badge"></i> Workers
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#email">
-                            <i class="bi bi-envelope"></i> Email Marketing
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{{ url_for('admin_festival_notifications') }}">
-                            <i class="bi bi-calendar-event"></i> Festival Notifications
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <div>
-                    <h1 style="color: #fbbf24; font-weight: 700; margin-bottom: 0.25rem;">📊 Sales Sense AI</h1>
-                    <p style="color: #fbbf24; font-size: 0.9rem; margin: 0;">Your Complete Business Intelligence Platform</p>
-                    <small style="color: #d97706;">Real-time analytics, smart insights, and automated reporting</small>
-                </div>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <button onclick="testEmail()" class="btn btn-outline-primary me-2" title="Test Email System">
-                        <i class="bi bi-envelope-check"></i> Test Email
-                    </button>
-                    {% if not demo_mode %}
-                    <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">Logout</a>
-                    {% else %}
-                    <span class="badge bg-secondary">Demo Mode</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Overview Section -->
-            <section id="overview" class="mb-4">
-                <h2>Business Overview</h2>
-                <div class="row">
-                    <!-- Statistics Cards -->
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <h6>Total Users</h6>
-                                <h3>{{ stats.total_users }}</h3>
-                                <small>{{ stats.new_users_today }} new today</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h6>Total Revenue</h6>
-                                <h3>₹{{ "%.2f"|format(stats.total_sales) }}</h3>
-                                <small>All time</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white">
-                            <div class="card-body text-center">
-                                <h6>Today's Sales</h6>
-                                <h3>₹{{ "%.2f"|format(stats.sales_today) }}</h3>
-                                <small class="text-muted">Today</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white">
-                            <div class="card-body text-center">
-                                <h6>Avg Order Value</h6>
-                                <h3>₹{{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users > 0 else 0) }}</h3>
-                                <small>Per customer</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <h5>Sales Trend (Last 7 Days)</h5>
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Revenue by Category</h5>
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-12">
-                        <h5>Top Selling Products</h5>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Product</th>
-                                        <th>Units Sold</th>
-                                        <th>Revenue</th>
-                                        <th>Performance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for product in top_products %}
-                                    <tr>
-                                        <td>{{ loop.index }}</td>
-                                        <td>{{ product.name }}</td>
-                                        <td>{{ product.quantity_sold }}</td>
-                                        <td>₹{{ "%.2f"|format(product.revenue) }}</td>
-                                        <td>
-                                            <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar bg-success" role="progressbar" 
-                                                     style="width: {{ (product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0 }}%">
-                                                    {{ "%.1f"|format((product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0) }}%
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% if not top_products %}
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">No sales data available</td>
-                                    </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Users Section -->
-            <section id="users" class="mb-4">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3>User Management</h3>
-                        <span class="badge bg-primary fs-5">Total Users: {{ pagination.total if pagination else stats.total_users }}</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-info">
-                            <strong>📊 Statistics:</strong> 
-                            Showing {{ recent_users|length }} of {{ pagination.total if pagination else stats.total_users }} total users
-                            {% if pagination %}(Page {{ pagination.page }} of {{ pagination.pages }}){% endif %}
-                        </div>
-                        
-                        <!-- User Search -->
-                        <div class="mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" id="userSearchInput" placeholder="Search by name, email, or phone..." onkeyup="filterUsers()">
-                            </div>
-                            <small class="text-muted">Start typing to filter users in the current page</small>
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Join Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userTableBody">
-                                    {% for user in recent_users %}
-                                    <tr data-name="{{ user.name|lower }}" data-email="{{ user.email|lower }}" data-phone="{{ user.phone|default('')|lower }}">
-                                        <td><strong>{{ user.name }}</strong></td>
-                                        <td>{{ user.email }}</td>
-                                        <td>{{ user.join_date }}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary" onclick="viewUserDetails('{{ user._id }}')">
-                                                <i class="bi bi-eye"></i> View
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            
-                            <!-- Pagination -->
-                            {% if pagination.pages > 1 %}
-                            <nav aria-label="Users pagination" class="mt-3">
-                                <ul class="pagination justify-content-center">
-                                    <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
-                                        <a class="page-link" href="{{ url_for('admin_dashboard', page=pagination.page-1) }}">Previous</a>
-                                    </li>
-                                    
-                                    {% for p in range(1, pagination.pages + 1) %}
-                                        {% if p == pagination.page %}
-                                            <li class="page-item active"><a class="page-link" href="#">{{ p }}</a></li>
-                                        {% elif p <= 3 or p > pagination.pages - 3 or (p >= pagination.page - 1 and p <= pagination.page + 1) %}
-                                            <li class="page-item"><a class="page-link" href="{{ url_for('admin_dashboard', page=p) }}">{{ p }}</a></li>
-                                        {% elif p == 4 or p == pagination.pages - 3 %}
-                                            <li class="page-item disabled"><a class="page-link">...</a></li>
-                                        {% endif %}
-                                    {% endfor %}
-                                    
-                                    <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
-                                        <a class="page-link" href="{{ url_for('admin_dashboard', page=pagination.page+1) }}">Next</a>
-                                    </li>
-                                </ul>
-                                <p class="text-center text-muted">Showing {{ (pagination.page-1) * pagination.per_page + 1 }} - {{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} users</p>
-                            </nav>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Product Reports Section -->
-            <section id="products" class="mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Product Reports</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Total Products</h6>
-                                        <h2>{{ product_summary.total_products }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Stock Value</h6>
-                                        <h2>₹{{ "%.2f"|format(product_summary.total_stock_value) }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Total Units</h6>
-                                        <h2>{{ product_summary.total_stock_quantity }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-light">
-                                    <div class="card-body text-center">
-                                        <h6>Low Stock Items</h6>
-                                        <h2 class="text-warning">{{ product_summary.low_stock_count }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Workers Section -->
-            <section id="workers" class="mb-4">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3>Workers</h3>
-                        {% if not demo_mode %}
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWorkerModal">
-                            <i class="bi bi-person-plus"></i> Add Worker
-                        </button>
-                        {% else %}
-                        <button class="btn btn-primary" disabled title="Disabled in demo"> <i class="bi bi-person-plus"></i> Add Worker</button>
-                        {% endif %}
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Products Added</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for worker in workers_summary %}
-                                    <tr>
-                                        <td>{{ worker.name }}</td>
-                                        <td>{{ worker.email }}</td>
-                                        <td>{{ worker.total_products_added or 0 }}</td>
-                                        <td>
-                                            {% if not demo_mode %}
-                                            <button class="btn btn-sm btn-warning" onclick="resetWorkerPassword('{{ worker._id }}')">Reset Password</button>
-                                            <button class="btn btn-sm btn-danger" onclick="deactivateWorker('{{ worker._id }}')">Deactivate</button>
-                                            {% else %}
-                                            <button class="btn btn-sm btn-warning" disabled title="Disabled in demo">Reset Password</button>
-                                            <button class="btn btn-sm btn-danger" disabled title="Disabled in demo">Deactivate</button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Email Section -->
-            <section id="email" class="mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>📧 Email Marketing</h3>
-                    </div>
-                    <div class="card-body">
-                        <!-- Quick Actions -->
-                        <div class="row mb-4">
-                            <div class="col-md-12">
-                                <h5>🚀 Quick Email Campaigns</h5>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-success" onclick="sendPersonalizedOffers()">
-                                        <i class="bi bi-gift"></i> Send Personalized Offers to All Users
-                                    </button>
-                                    <a href="{{ url_for('admin_festival_notifications') }}" class="btn btn-warning">
-                                        <i class="bi bi-calendar-event"></i> Festival Email Campaigns
-                                    </a>
-                                </div>
-                                <p class="text-muted mt-2">
-                                    <small>Personalized offers are based on each user's purchase history and preferences.</small>
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <hr>
-                        
-                        <!-- Custom Email Form -->
-                        <h5>✉️ Send Custom Email</h5>
-                        <form id="emailForm">
-                            <div class="mb-3">
-                                <label for="recipients" class="form-label">Recipients</label>
-                                <select class="form-select" id="recipientType">
-                                    <option value="all_users">All Users</option>
-                                    <option value="all_workers">All Workers</option>
-                                    <option value="custom">Custom Recipients</option>
-                                </select>
-                            </div>
-                            <div class="mb-3" id="customRecipientsDiv" style="display: none;">
-                                <label for="customRecipients" class="form-label">Custom Recipients</label>
-                                <input type="text" class="form-control" id="customRecipients" placeholder="Enter email addresses separated by commas">
-                            </div>
-                            <div class="mb-3">
-                                <label for="emailSubject" class="form-label">Subject</label>
-                                <input type="text" class="form-control" id="emailSubject" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="emailBody" class="form-label">Message</label>
-                                <div id="emailEditor"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="attachment" class="form-label">Attachment (optional)</label>
-                                <input type="file" class="form-control" id="attachment">
-                            </div>
-                            <button type="submit" class="btn btn-primary">Send Email</button>
-                        </form>
-                    </div>
-                </div>
-            </section>
-        </main>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        {% if not demo_mode %}
+        <button onclick="testEmail()" class="btn btn-light btn-sm">
+          <i class="fas fa-envelope-circle-check"></i> Test Email
+        </button>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-light btn-sm">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+        {% else %}
+        <span class="badge bg-warning text-dark px-3 py-2">Demo Mode</span>
+        {% endif %}
+      </div>
     </div>
-    
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card blue">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-info">
-                <h3 id="totalUsers">{{ stats.total_users or 0 }}</h3>
-                <p>Total Users</p>
-                <small>{{ stats.new_users_today or 0 }} new today</small>
-            </div>
-<<<<<<< HEAD
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="metrics-grid mb-4">
+    <div class="stat-card blue">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-value">{{ stats.total_users or 0 }}</div>
+      <div class="stat-label">Total Users <span style="font-size:.75rem;opacity:.7;">(+{{ stats.new_users_today or 0 }} today)</span></div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+      <div class="stat-value">₹{{ "%.0f"|format(stats.total_sales or 0) }}</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+      <div class="stat-value">{{ stats.total_workers or 0 }}</div>
+      <div class="stat-label">Workers <span style="font-size:.75rem;opacity:.7;">({{ stats.active_workers or 0 }} active)</span></div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon"><i class="fas fa-box"></i></div>
+      <div class="stat-value">{{ stats.total_products or 0 }}</div>
+      <div class="stat-label">Products</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row g-3 mb-4">
+    <div class="col-auto">
+      <a href="#overview" class="btn btn-outline"><i class="fas fa-chart-bar"></i> Overview</a>
+    </div>
+    <div class="col-auto">
+      <a href="#users" class="btn btn-outline"><i class="fas fa-users"></i> Users</a>
+    </div>
+    <div class="col-auto">
+      <a href="#workers" class="btn btn-outline"><i class="fas fa-user-tie"></i> Workers</a>
+    </div>
+    <div class="col-auto">
+      <a href="#products" class="btn btn-outline"><i class="fas fa-box"></i> Products</a>
+    </div>
+    <div class="col-auto">
+      <a href="#email" class="btn btn-outline"><i class="fas fa-envelope"></i> Email</a>
+    </div>
+    <div class="col-auto">
+      <a href="{{ url_for('admin_festival_notifications') }}" class="btn btn-outline">
+        <i class="fas fa-calendar-star"></i> Festivals
+      </a>
+    </div>
+    <div class="col-auto">
+      <a href="{{ url_for('analytics_page') }}" class="btn btn-primary">
+        <i class="fas fa-chart-line"></i> Full Analytics
+      </a>
+    </div>
+    <div class="col-auto">
+      <a href="{{ url_for('admin_ai_chat_page') }}"
+         class="btn btn-primary btn-sm"
+         style="font-weight:700;">
+        <i class="fas fa-robot"></i> AI Assistant
+      </a>
+    </div>
+  </div>
+
+  <!-- Overview Section -->
+  <section id="overview" class="card mb-4">
+    <div class="card-body">
+      <h4 class="chart-title mb-3">Business Overview</h4>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="p-3 rounded" style="background:#e8f5d0;border-left:4px solid #84C225;">
+            <div style="font-size:.8rem;color:#3d7a00;">Today's Sales</div>
+            <div class="fw-bold fs-5">₹{{ "%.2f"|format(stats.sales_today or 0) }}</div>
+          </div>
         </div>
-        
-        <div class="stat-card green">
-            <div class="stat-icon">
-                <i class="fas fa-dollar-sign"></i>
-=======
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="col-md-4">
+          <div class="p-3 rounded" style="background:#f0fdf4;border-left:4px solid #3d7a00;">
+            <div style="font-size:.8rem;color:#3d7a00;">Avg Order Value</div>
+            <div class="fw-bold fs-5">₹{{ "%.2f"|format((stats.total_sales / stats.total_users) if stats.total_users and stats.total_users > 0 else 0) }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 rounded" style="background:#fef9f0;border-left:4px solid #ff8c00;">
+            <div style="font-size:.8rem;color:#92400e;">Stock Value</div>
+            <div class="fw-bold fs-5">₹{{ "%.2f"|format(product_summary.total_stock_value if product_summary else 0) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart date range controls -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="font-size:.82rem;font-weight:600;color:#6b7280;">Date Range:</span>
+        <input type="date" id="chartFrom" style="border:1px solid #e5e7eb;border-radius:6px;padding:4px 8px;font-size:.82rem;">
+        <span style="font-size:.82rem;color:#9ca3af;">to</span>
+        <input type="date" id="chartTo"   style="border:1px solid #e5e7eb;border-radius:6px;padding:4px 8px;font-size:.82rem;">
+        <button onclick="applyChartDateRange()" style="background:#4f46e5;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:.82rem;cursor:pointer;">
+          <i class="fas fa-sync-alt"></i> Apply
+        </button>
+        <button onclick="resetChartRange()" style="background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:6px;padding:5px 12px;font-size:.82rem;cursor:pointer;">Reset</button>
+        <span id="chartRangeLabel" style="font-size:.78rem;color:#9ca3af;"></span>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart-card">
+          <h5 class="chart-title">Sales Trend</h5>
+          <div style="position:relative;height:240px;"><canvas id="salesChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h5 class="chart-title">Revenue by Category</h5>
+          <div style="position:relative;height:240px;"><canvas id="categoryChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Top Products Table -->
+      <h5 class="chart-title mt-4 mb-3">Top Selling Products</h5>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead><tr><th>#</th><th>Product</th><th>Units Sold</th><th>Revenue</th><th>Performance</th></tr></thead>
+          <tbody>
+            {% for product in top_products %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><strong>{{ product.name }}</strong></td>
+              <td>{{ product.units_sold or product.quantity_sold or 0 }}</td>
+              <td>₹{{ "%.2f"|format(product.revenue) }}</td>
+              <td>
+                {% set pct = (product.revenue / top_products[0].revenue * 100) if top_products and top_products[0].revenue > 0 else 0 %}
+                <div class="progress" style="height:12px;">
+                  <div class="progress-bar" style="width:{{ pct }}%;background:var(--primary);">{{ "%.0f"|format(pct) }}%</div>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No sales data available. Connect MongoDB to view data.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Users Section -->
+  <section id="users" class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="chart-title mb-0">User Management</h4>
+        <span class="badge" style="background:var(--primary);padding:.5rem .9rem;font-size:.85rem;">
+          Total: {{ pagination.total if pagination else stats.total_users }}
+        </span>
+      </div>
+
+      <div class="input-group mb-3">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+        <input type="text" class="form-control" id="userSearchInput" placeholder="Filter by name, email or phone…" oninput="filterUsers()">
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Action</th></tr></thead>
+          <tbody id="userTableBody">
+            {% for user in recent_users %}
+            <tr data-search="{{ (user.name or '') | lower }} {{ (user.email or '') | lower }} {{ (user.phone or '') | lower }}">
+              <td><strong>{{ user.name or 'N/A' }}</strong></td>
+              <td>{{ user.email or 'N/A' }}</td>
+              <td>{{ user.phone or '—' }}</td>
+              <td>{{ user.join_date or '—' }}</td>
+              <td>
+                <a href="/admin/user-details/{{ user._id }}" class="btn btn-sm btn-primary">
+                  <i class="fas fa-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No users found</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if pagination and pagination.pages > 1 %}
+      <nav class="mt-3">
+        <ul class="pagination justify-content-center flex-wrap">
+          <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin_dashboard', page=pagination.page-1) }}">← Prev</a>
+          </li>
+          {% for p in range(1, pagination.pages + 1) %}
+            {% if p == pagination.page %}
+              <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+            {% elif p <= 2 or p > pagination.pages - 2 or (p >= pagination.page - 1 and p <= pagination.page + 1) %}
+              <li class="page-item"><a class="page-link" href="{{ url_for('admin_dashboard', page=p) }}">{{ p }}</a></li>
+            {% elif p == 3 or p == pagination.pages - 2 %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('admin_dashboard', page=pagination.page+1) }}">Next →</a>
+          </li>
+        </ul>
+        <p class="text-center text-muted" style="font-size:.85rem;">
+          Showing {{ (pagination.page-1) * pagination.per_page + 1 }}–{{ [pagination.page * pagination.per_page, pagination.total]|min }} of {{ pagination.total }} users
+        </p>
+      </nav>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Workers Section -->
+  <section id="workers" class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="chart-title mb-0">Workers Management</h4>
+        {% if not demo_mode %}
+        <button class="btn btn-primary btn-sm" onclick="openAddWorkerModal()">
+          <i class="fas fa-user-plus"></i> Add Worker
+        </button>
+        {% else %}
+        <button class="btn btn-primary btn-sm" disabled title="Disabled in demo">
+          <i class="fas fa-user-plus"></i> Add Worker
+        </button>
+        {% endif %}
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Products Added</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for worker in workers_summary %}
+            <tr>
+              <td><strong>{{ worker.name or 'N/A' }}</strong></td>
+              <td>{{ worker.email or 'N/A' }}</td>
+              <td>{{ worker.phone or '—' }}</td>
+              <td>{{ worker.total_products_added or 0 }}</td>
+              <td class="d-flex gap-1 flex-wrap">
                 {% if not demo_mode %}
-                <button type="button" class="btn btn-primary" onclick="exportData()">Export</button>
+                <button class="btn btn-sm btn-warning" onclick="resetWorkerPassword('{{ worker._id }}')">Reset Pwd</button>
+                <button class="btn btn-sm btn-danger"  onclick="deactivateWorker('{{ worker._id }}')">Deactivate</button>
                 {% else %}
-                <button type="button" class="btn btn-primary" disabled title="Disabled in demo">Export</button>
+                <button class="btn btn-sm btn-warning" disabled>Reset Pwd</button>
+                <button class="btn btn-sm btn-danger"  disabled>Deactivate</button>
                 {% endif %}
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-            </div>
-            <div class="stat-info">
-                <h3 id="totalRevenue">₹{{ "%.2f"|format(stats.total_sales or 0) }}</h3>
-                <p>Total Revenue</p>
-                <small>All time</small>
-            </div>
-        </div>
-        
-        <div class="stat-card purple">
-            <div class="stat-icon">
-                <i class="fas fa-users-cog"></i>
-            </div>
-            <div class="stat-info">
-                <h3 id="totalWorkers">{{ stats.total_workers or 0 }}</h3>
-                <p>Total Workers</p>
-                <small>{{ stats.active_workers or 0 }} active</small>
-            </div>
-        </div>
-        
-        <div class="stat-card orange">
-            <div class="stat-icon">
-                <i class="fas fa-box"></i>
-            </div>
-            <div class="stat-info">
-                <h3 id="totalProducts">{{ stats.total_products or 0 }}</h3>
-                <p>Products</p>
-                <small>In catalog</small>
-            </div>
-        </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No workers found</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-    
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h2>Quick Actions</h2>
-        <div class="actions-grid">
-            <a href="#users" class="action-card">
-                <i class="fas fa-user-plus"></i>
-                <span>Manage Users</span>
-            </a>
-            <a href="#workers" class="action-card">
-                <i class="fas fa-user-tie"></i>
-                <span>Manage Workers</span>
-            </a>
-            <a href="#products" class="action-card">
-                <i class="fas fa-box-open"></i>
-                <span>View Products</span>
-            </a>
-            <a href="{{ url_for('analytics_page') }}" class="action-card">
-                <i class="fas fa-chart-line"></i>
-                <span>Analytics</span>
-            </a>
-        </div>
+  </section>
+
+  <!-- Products Summary Section -->
+  <section id="products" class="card mb-4">
+    <div class="card-body">
+      <h4 class="chart-title mb-3">Product Reports</h4>
+      <div class="row g-3">
+        {% set ps = product_summary if product_summary else {} %}
+        <div class="col-md-4"><div class="card p-3 text-center"><div style="font-size:.8rem;color:var(--text-muted);">Total Products</div><div class="fw-bold fs-4 mt-1">{{ ps.total_products or 0 }}</div></div></div>
+        <div class="col-md-4"><div class="card p-3 text-center"><div style="font-size:.8rem;color:var(--text-muted);">Stock Value</div><div class="fw-bold fs-4 mt-1">₹{{ "%.0f"|format(ps.total_stock_value or 0) }}</div></div></div>
+        <div class="col-md-4"><div class="card p-3 text-center"><div style="font-size:.8rem;color:var(--text-muted);">Total Units</div><div class="fw-bold fs-4 mt-1">{{ ps.total_stock_quantity or 0 }}</div></div></div>
+      </div>
     </div>
-    
-    <!-- Users Section -->
-    <div id="users" class="section">
-        <h2><i class="fas fa-users"></i> Users Management</h2>
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in recent_users %}
-                    <tr>
-                        <td>{{ user.name or 'N/A' }}</td>
-                        <td>{{ user.email or 'N/A' }}</td>
-                        <td>{{ user.phone or 'N/A' }}</td>
-                        <td>
-                            <a href="/admin/user-details/{{ user._id }}" class="btn-action">View</a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 2rem; color: #9ca3af;">
-                            No users found
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+  </section>
+
+  <!-- Email Section -->
+  <section id="email" class="card mb-4">
+    <div class="card-body">
+      <h4 class="chart-title mb-3">Email Marketing</h4>
+      <div class="row g-3 mb-4">
+        <div class="col-auto">
+          {% if not demo_mode %}
+          <button class="btn btn-primary" onclick="sendPersonalizedOffers()">
+            <i class="fas fa-gift"></i> Send Personalized Offers
+          </button>
+          {% else %}
+          <button class="btn btn-primary" disabled title="Disabled in demo">
+            <i class="fas fa-gift"></i> Send Personalized Offers
+          </button>
+          {% endif %}
         </div>
-    </div>
-    
-    <!-- Workers Section -->
-    <div id="workers" class="section">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h2 style="margin: 0;"><i class="fas fa-user-tie"></i> Workers Management</h2>
-            <button onclick="openAddWorkerModal()" class="btn-add">
-                <i class="fas fa-plus"></i> Add Worker
+        <div class="col-auto">
+          <a href="{{ url_for('admin_festival_notifications') }}" class="btn btn-outline">
+            <i class="fas fa-calendar"></i> Festival Email Campaigns
+          </a>
+        </div>
+      </div>
+
+      <h5 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Send Custom Email</h5>
+      <form id="emailForm">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" style="font-size:.85rem;font-weight:600;">Recipients</label>
+            <select class="form-control" id="recipientType" onchange="toggleCustomRecipients(this.value)">
+              <option value="all_users">All Users</option>
+              <option value="all_workers">All Workers</option>
+              <option value="custom">Custom Recipients</option>
+            </select>
+          </div>
+          <div class="col-md-6" id="customRecipientsDiv" style="display:none;">
+            <label class="form-label" style="font-size:.85rem;font-weight:600;">Custom Emails (comma-separated)</label>
+            <input type="text" class="form-control" id="customRecipients" placeholder="email1@example.com, email2@example.com">
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:.85rem;font-weight:600;">Subject</label>
+            <input type="text" class="form-control" id="emailSubject" required placeholder="Email subject">
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:.85rem;font-weight:600;">Message</label>
+            <textarea class="form-control" id="emailBody" rows="5" required placeholder="Your message…"></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:.85rem;font-weight:600;">Attachment (optional)</label>
+            <input type="file" class="form-control" id="attachment">
+          </div>
+          <div class="col-12">
+            {% if not demo_mode %}
+            <button type="submit" class="btn btn-primary" id="emailSendBtn">
+              <i class="fas fa-paper-plane"></i> Send Email
             </button>
+            {% else %}
+            <button type="submit" class="btn btn-primary" disabled>
+              <i class="fas fa-paper-plane"></i> Send Email (disabled in demo)
+            </button>
+            {% endif %}
+            <div id="emailStatus" style="margin-top:10px;display:none;padding:10px 14px;border-radius:8px;font-size:.88rem;font-weight:600;"></div>
+          </div>
         </div>
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for worker in workers_summary %}
-                    <tr>
-                        <td>{{ worker.name or 'N/A' }}</td>
-                        <td>{{ worker.email or 'N/A' }}</td>
-                        <td>{{ worker.phone or 'N/A' }}</td>
-                        <td>
-                            <span class="badge badge-success">Active</span>
-                        </td>
-                        <td>
-                            <a href="/worker/{{ worker._id }}" class="btn-action">View</a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 2rem; color: #9ca3af;">
-                            No workers found
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+      </form>
+
+      <!-- Email Sent History -->
+      <div style="margin-top:2rem;">
+        <h5 style="font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+          <i class="fas fa-history" style="color:#4f46e5;"></i> Email Sent History
+          <button onclick="loadEmailHistory()" style="margin-left:auto;background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;font-size:.78rem;color:#6b7280;cursor:pointer;">Refresh</button>
+        </h5>
+        <div id="emailHistoryWrap">
+          <div style="text-align:center;padding:1.5rem;color:#9ca3af;">Loading history…</div>
         </div>
+      </div>
     </div>
-</div>
+  </section>
+
+</div><!-- /.page-wrapper -->
 
 <!-- Add Worker Modal -->
-<div id="addWorkerModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2><i class="fas fa-user-plus"></i> Add New Worker</h2>
-            <button class="modal-close" onclick="closeAddWorkerModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <form id="addWorkerForm" onsubmit="submitWorkerForm(event)">
-            <div class="form-group">
-                <label for="workerName">Full Name *</label>
-                <input type="text" id="workerName" name="name" required class="form-input" placeholder="Enter worker's full name">
-            </div>
-            
-            <div class="form-group">
-                <label for="workerEmail">Email Address *</label>
-                <input type="email" id="workerEmail" name="email" required class="form-input" placeholder="worker@example.com">
-                <small style="color: #6b7280; font-size: 0.875rem;">Login credentials will be sent to this email</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="workerPassword">Password *</label>
-                <input type="password" id="workerPassword" name="password" required class="form-input" placeholder="Create a password">
-                <small style="color: #6b7280; font-size: 0.875rem;">Worker can change this after first login</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="dateOfJoining">Date of Joining</label>
-                <input type="date" id="dateOfJoining" name="date_of_joining" class="form-input">
-            </div>
-            
-            <div class="form-actions">
-                <button type="button" onclick="closeAddWorkerModal()" class="btn-cancel">Cancel</button>
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-paper-plane"></i> Add Worker & Send Email
-                </button>
-            </div>
-        </form>
-        <div id="workerFormMessage" class="form-message"></div>
-    </div>
+<div id="addWorkerOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;padding:2rem;width:100%;max-width:480px;margin:1rem;position:relative;">
+    <button onclick="closeAddWorkerModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#6b7280;">&times;</button>
+    <h3 style="margin:0 0 1.5rem;font-size:1.2rem;font-weight:700;">Add New Worker</h3>
+    <form id="addWorkerForm" onsubmit="submitWorkerForm(event)">
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;font-size:.85rem;">Full Name *</label>
+        <input type="text" id="workerName" name="name" class="form-control" required placeholder="Worker's full name">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;font-size:.85rem;">Email *</label>
+        <input type="email" id="workerEmail" name="email" class="form-control" required placeholder="worker@example.com">
+        <small class="text-muted">Login credentials will be sent here</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;font-size:.85rem;">Password *</label>
+        <input type="password" id="workerPassword" name="password" class="form-control" required placeholder="Create a password">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;font-size:.85rem;">Date of Joining</label>
+        <input type="date" id="dateOfJoining" name="date_of_joining" class="form-control">
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" onclick="closeAddWorkerModal()" class="btn btn-outline">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-paper-plane"></i> Add Worker
+        </button>
+      </div>
+    </form>
+    <div id="workerFormMessage" class="mt-2"></div>
+  </div>
 </div>
+{% endblock %}
 
-<style>
-.admin-dashboard {
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.dashboard-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-content h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-}
-
-.header-content p {
-    margin: 0;
-    opacity: 0.9;
-}
-
-.btn-logout {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.btn-logout:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-2px);
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.stat-card.blue { border-left: 4px solid #3b82f6; }
-.stat-card.green { border-left: 4px solid #10b981; }
-.stat-card.purple { border-left: 4px solid #8b5cf6; }
-.stat-card.orange { border-left: 4px solid #f59e0b; }
-
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-}
-
-.stat-card.blue .stat-icon {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-
-.stat-card.green .stat-icon {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.stat-card.purple .stat-icon {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-}
-
-.stat-card.orange .stat-icon {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-}
-
-.stat-info h3 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 0.25rem 0;
-    color: #111827;
-}
-
-.stat-info p {
-    font-size: 0.95rem;
-    color: #6b7280;
-    margin: 0 0 0.5rem 0;
-}
-
-.stat-info small {
-    font-size: 0.85rem;
-    color: #9ca3af;
-}
-
-.quick-actions {
-    margin-bottom: 2rem;
-}
-
-.quick-actions h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #111827;
-}
-
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.action-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 10px;
-    text-align: center;
-    text-decoration: none;
-    color: #111827;
-    border: 2px solid #e5e7eb;
-    transition: all 0.2s;
-}
-
-.action-card:hover {
-    border-color: #667eea;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-}
-
-.action-card i {
-    font-size: 2rem;
-    color: #667eea;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.action-card span {
-    font-weight: 500;
-}
-
-.section {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.section h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #111827;
-}
-
-.section h2 i {
-    color: #667eea;
-    margin-right: 0.5rem;
-}
-
-.table-container {
-    overflow-x: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table thead {
-    background: #f9fafb;
-}
-
-.data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 2px solid #e5e7eb;
-}
-
-.data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    color: #4b5563;
-}
-
-.data-table tbody tr:hover {
-    background: #f9fafb;
-}
-
-.btn-action {
-    padding: 0.5rem 1rem;
-    background: #667eea;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    display: inline-block;
-}
-
-.btn-action:hover {
-    background: #5568d3;
-    transform: translateY(-1px);
-}
-
-.badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.badge-success {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.btn-add {
-    background: #667eea;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-add:hover {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-}
-
-.modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-    color: #111827;
-}
-
-.modal-header h2 i {
-    color: #667eea;
-    margin-right: 0.5rem;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #6b7280;
-    cursor: pointer;
-    padding: 0.5rem;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.2s;
-}
-
-.modal-close:hover {
-    background: #f3f4f6;
-    color: #111827;
-}
-
-.modal-content form {
-    padding: 1.5rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #374151;
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: all 0.2s;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-}
-
-.btn-cancel {
-    padding: 0.75rem 1.5rem;
-    background: #f3f4f6;
-    color: #374151;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-cancel:hover {
-    background: #e5e7eb;
-}
-
-.btn-submit {
-    padding: 0.75rem 1.5rem;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-submit:hover {
-    background: #5568d3;
-    transform: translateY(-1px);
-}
-
-.btn-submit:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.form-message {
-    margin: 1rem 1.5rem;
-    padding: 1rem;
-    border-radius: 6px;
-    display: none;
-}
-
-.form-message.success {
-    display: block;
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
-}
-
-.form-message.error {
-    display: block;
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
-}
-
-@media (max-width: 768px) {
-    .admin-dashboard {
-        padding: 1rem;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 1rem;
-    }
-}
-</style>
-
+{% block scripts %}
 <script>
-// Modal Functions
-function openAddWorkerModal() {
-    document.getElementById('addWorkerModal').classList.add('active');
-    // Set today's date as default
-    document.getElementById('dateOfJoining').valueAsDate = new Date();
-}
-
-function closeAddWorkerModal() {
-    document.getElementById('addWorkerModal').classList.remove('active');
-    document.getElementById('addWorkerForm').reset();
-    document.getElementById('workerFormMessage').className = 'form-message';
-    document.getElementById('workerFormMessage').textContent = '';
-}
-
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('addWorkerModal');
-    if (event.target === modal) {
-        closeAddWorkerModal();
-    }
-});
-
-// Close modal on Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeAddWorkerModal();
-    }
-});
-
-// Form Submission
-async function submitWorkerForm(event) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const messageDiv = document.getElementById('workerFormMessage');
-    
-    // Disable submit button
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding Worker...';
-    
-    // Clear previous messages
-    messageDiv.className = 'form-message';
-    messageDiv.textContent = '';
-    
-    try {
-        const formData = new FormData(form);
-        
-        const response = await fetch('/admin/add-worker', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            messageDiv.className = 'form-message success';
-            messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
-            
-            // Reset form
-            form.reset();
-            
-            // Close modal after 2 seconds and reload page
-            setTimeout(() => {
-                closeAddWorkerModal();
-                window.location.reload();
-            }, 2000);
-        } else {
-            messageDiv.className = 'form-message error';
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + data.message;
-        }
-    } catch (error) {
-        messageDiv.className = 'form-message error';
-        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error: ' + error.message;
-    } finally {
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Add Worker & Send Email';
-    }
-}
-<<<<<<< HEAD
-=======
-
-// Worker management functions
-function resetWorkerPassword(workerId) {
-    if (confirm('Are you sure you want to reset this worker\'s password?')) {
-        fetch(`/admin/reset-worker-password/${workerId}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                alert('Password reset successfully. New password has been sent to worker\'s email.');
-            } else {
-                alert('Error resetting password: ' + result.error);
-            }
-        })
-        .catch(error => alert('Error resetting password: ' + error));
-    }
-}
-
-function deactivateWorker(workerId) {
-    if (confirm('Are you sure you want to deactivate this worker?')) {
-        fetch(`/admin/deactivate-worker/${workerId}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                location.reload();
-            } else {
-                alert('Error deactivating worker: ' + result.error);
-            }
-        })
-        .catch(error => alert('Error deactivating worker: ' + error));
-    }
-}
-
-// Product management functions
-function editProduct(productId) {
-    window.location.href = `/admin/edit-product/${productId}`;
-}
-
-function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
-        fetch(`/admin/delete-product/${productId}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                location.reload();
-            } else {
-                alert('Error deleting product: ' + result.error);
-            }
-        })
-        .catch(error => alert('Error deleting product: ' + error));
-    }
-}
-
-// User details function
-function viewUserDetails(userId) {
-    window.location.href = `/admin/user-details/${userId}`;
-}
-
-// User search function
+/* ── Filters ───────────────────────────────────── */
 function filterUsers() {
-    const input = document.getElementById('userSearchInput');
-    const filter = input.value.toLowerCase();
-    const tbody = document.getElementById('userTableBody');
-    const rows = tbody.getElementsByTagName('tr');
-    
-    let visibleCount = 0;
-    
-    for (let i = 0; i < rows.length; i++) {
-        const name = rows[i].getAttribute('data-name') || '';
-        const email = rows[i].getAttribute('data-email') || '';
-        const phone = rows[i].getAttribute('data-phone') || '';
-        
-        if (name.includes(filter) || email.includes(filter) || phone.includes(filter)) {
-            rows[i].style.display = '';
-            visibleCount++;
-        } else {
-            rows[i].style.display = 'none';
-        }
-    }
-    
-    // Show "no results" message if needed
-    const noResults = document.getElementById('noResultsMessage');
-    if (visibleCount === 0) {
-        if (!noResults) {
-            const tr = document.createElement('tr');
-            tr.id = 'noResultsMessage';
-            tr.innerHTML = '<td colspan="4" class="text-center text-muted py-4">No users found matching your search</td>';
-            tbody.appendChild(tr);
-        }
-    } else if (noResults) {
-        noResults.remove();
-    }
+  const q = document.getElementById('userSearchInput').value.toLowerCase();
+  document.querySelectorAll('#userTableBody tr').forEach(row => {
+    row.style.display = row.dataset.search && row.dataset.search.includes(q) ? '' : 'none';
+  });
 }
 
-// Email test function
+function toggleCustomRecipients(val) {
+  document.getElementById('customRecipientsDiv').style.display = val === 'custom' ? '' : 'none';
+}
+
+/* ── Worker Modal ──────────────────────────────── */
+function openAddWorkerModal() {
+  const el = document.getElementById('addWorkerOverlay');
+  el.style.display = 'flex';
+}
+function closeAddWorkerModal() {
+  document.getElementById('addWorkerOverlay').style.display = 'none';
+  document.getElementById('addWorkerForm').reset();
+  document.getElementById('workerFormMessage').innerHTML = '';
+}
+
+function submitWorkerForm(e) {
+  e.preventDefault();
+  const data = {
+    name:             document.getElementById('workerName').value,
+    email:            document.getElementById('workerEmail').value,
+    password:         document.getElementById('workerPassword').value,
+    date_of_joining:  document.getElementById('dateOfJoining').value,
+  };
+  fetch('/admin/add-worker', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+  .then(r => r.json())
+  .then(d => {
+    const msg = document.getElementById('workerFormMessage');
+    if (d.success) {
+      msg.innerHTML = '<div class="alert alert-success">✅ ' + (d.message || 'Worker added!') + '</div>';
+      setTimeout(() => { closeAddWorkerModal(); location.reload(); }, 2000);
+    } else {
+      msg.innerHTML = '<div class="alert alert-danger">❌ ' + (d.error || 'Failed to add worker') + '</div>';
+    }
+  })
+  .catch(() => {
+    document.getElementById('workerFormMessage').innerHTML = '<div class="alert alert-danger">Network error</div>';
+  });
+}
+
+/* ── Worker Actions ────────────────────────────── */
+function resetWorkerPassword(workerId) {
+  if (!confirm('Send a password reset link to this worker?')) return;
+  fetch('/admin/reset-worker-password/' + workerId, { method: 'POST' })
+  .then(r => r.json())
+  .then(d => alert(d.message || (d.success ? 'Password reset sent!' : 'Failed')));
+}
+function deactivateWorker(workerId) {
+  if (!confirm('Deactivate this worker account?')) return;
+  fetch('/admin/deactivate-worker/' + workerId, { method: 'POST' })
+  .then(r => r.json())
+  .then(d => { alert(d.message || (d.success ? 'Worker deactivated' : 'Failed')); if (d.success) location.reload(); });
+}
+
+/* ── Email ─────────────────────────────────────── */
 function testEmail() {
-    const email = prompt('Enter email address to send test email:', '');
-    
-    if (!email || !email.includes('@')) {
-        alert('Please enter a valid email address');
-        return;
-    }
-    
-    // Show loading
-    const btn = event.target.closest('button');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
-    btn.disabled = true;
-    
-    fetch('/api/test-email', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: email })
-    })
-    .then(response => response.json())
-    .then(result => {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-        
-        if (result.success) {
-            alert('✅ Test email sent successfully to ' + email + '!\n\nCheck your inbox (and spam folder) to confirm delivery.');
-        } else {
-            alert('❌ Failed to send email: ' + result.error);
-        }
-    })
-    .catch(error => {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-        alert('❌ Error: ' + error);
-    });
+  fetch('/admin/test-email')
+  .then(r => r.json())
+  .then(d => alert(d.message || (d.success ? 'Test email sent!' : 'Failed: ' + (d.error || ''))));
 }
 
-// ============ SALES ASSISTANT CHATBOT ============
-const chatWidget = document.createElement('div');
-chatWidget.innerHTML = `
-    <!-- Chat Button -->
-    <button id="chatButton" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; transition: transform 0.3s;">
-        <i class="bi bi-chat-dots-fill" style="font-size: 24px; color: white;"></i>
-    </button>
-
-    <!-- Chat Window -->
-    <div id="chatWindow" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 380px; height: 550px; background: white; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1001; overflow: hidden; flex-direction: column;">
-        <!-- Chat Header -->
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h5 style="margin: 0; font-weight: 600;">🤖 Sales Assistant</h5>
-                <small style="opacity: 0.9;">Ask me anything about Sales Sense AI</small>
-            </div>
-            <button id="closeChat" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-
-        <!-- Predefined Questions -->
-        <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
-            <p style="margin: 0 0 10px 0; font-size: 13px; color: #6c757d; font-weight: 500;">Quick Questions:</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <button class="predefined-question" data-question="What is Sales Sense AI?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    What is this?
-                </button>
-                <button class="predefined-question" data-question="How many users do we have?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    User count
-                </button>
-                <button class="predefined-question" data-question="What features are available?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Features
-                </button>
-                <button class="predefined-question" data-question="Tell me about top products" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Top Products
-                </button>
-                <button class="predefined-question" data-question="Show me sales trends" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Sales Trends
-                </button>
-                <button class="predefined-question" data-question="What is the inventory status?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Inventory Status
-                </button>
-                <button class="predefined-question" data-question="Tell me about revenue insights" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Revenue Insights
-                </button>
-                <button class="predefined-question" data-question="Show customer analytics" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Customer Analytics
-                </button>
-                <button class="predefined-question" data-question="Tell me about low stock alerts" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Low Stock Alerts
-                </button>
-                <button class="predefined-question" data-question="What payment methods are available?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Payment Methods
-                </button>
-                <button class="predefined-question" data-question="How does festival notification work?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Festival Alerts
-                </button>
-                <button class="predefined-question" data-question="Tell me about seasonal trends" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Seasonal Trends
-                </button>
-                <button class="predefined-question" data-question="Show worker performance" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Worker Performance
-                </button>
-                <button class="predefined-question" data-question="Tell me about categories" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Categories
-                </button>
-                <button class="predefined-question" data-question="Tell me about the analytics" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Analytics
-                </button>
-                <button class="predefined-question" data-question="How does the shopping cart work?" style="background: white; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                    Shopping Cart
-                </button>
-            </div>
-        </div>
-
-        <!-- Chat Messages -->
-        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; background: #ffffff;">
-            <div class="bot-message" style="margin-bottom: 15px;">
-                <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
-                    <p style="margin: 0; font-size: 14px; line-height: 1.5;">👋 Hi! I'm your Sales Sense AI assistant. Ask me anything about the project, or click a quick question above!</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Chat Input -->
-        <div style="padding: 15px; background: white; border-top: 1px solid #dee2e6; display: flex; gap: 10px;">
-            <input type="text" id="chatInput" placeholder="Type your question..." style="flex: 1; padding: 10px 15px; border: 1px solid #dee2e6; border-radius: 20px; outline: none; font-size: 14px;">
-            <button id="sendMessage" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                <i class="bi bi-send-fill"></i>
-            </button>
-        </div>
-    </div>
-`;
-document.body.appendChild(chatWidget);
-
-// Chat functionality
-const chatButton = document.getElementById('chatButton');
-const chatWindow = document.getElementById('chatWindow');
-const closeChat = document.getElementById('closeChat');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const sendMessage = document.getElementById('sendMessage');
-const predefinedQuestions = document.querySelectorAll('.predefined-question');
-
-chatButton.addEventListener('click', () => {
-    chatWindow.style.display = 'flex';
-    chatButton.style.transform = 'scale(0)';
-});
-
-closeChat.addEventListener('click', () => {
-    chatWindow.style.display = 'none';
-    chatButton.style.transform = 'scale(1)';
-});
-
-// Predefined question click
-predefinedQuestions.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const question = btn.getAttribute('data-question');
-        askQuestion(question);
-    });
-    
-    btn.addEventListener('mouseenter', function() {
-        this.style.background = '#667eea';
-        this.style.color = 'white';
-        this.style.borderColor = '#667eea';
-    });
-    
-    btn.addEventListener('mouseleave', function() {
-        this.style.background = 'white';
-        this.style.color = 'black';
-        this.style.borderColor = '#dee2e6';
-    });
-});
-
-// Send message
-sendMessage.addEventListener('click', () => {
-    const question = chatInput.value.trim();
-    if (question) {
-        askQuestion(question);
-        chatInput.value = '';
-    }
-});
-
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        const question = chatInput.value.trim();
-        if (question) {
-            askQuestion(question);
-            chatInput.value = '';
-        }
-    }
-});
-
-function askQuestion(question) {
-    // Add user message
-    const userMsg = document.createElement('div');
-    userMsg.style.marginBottom = '15px';
-    userMsg.style.textAlign = 'right';
-    userMsg.innerHTML = `
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 16px; border-radius: 18px 18px 4px 18px; max-width: 85%; display: inline-block; text-align: left;">
-            <p style="margin: 0; font-size: 14px; line-height: 1.5;">${question}</p>
-        </div>
-    `;
-    chatMessages.appendChild(userMsg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    // Show typing indicator
-    const typingIndicator = document.createElement('div');
-    typingIndicator.id = 'typingIndicator';
-    typingIndicator.style.marginBottom = '15px';
-    typingIndicator.innerHTML = `
-        <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
-            <div style="display: flex; gap: 4px;">
-                <div style="width: 8px; height: 8px; background: #999; border-radius: 50%; animation: typing 1.4s infinite;"></div>
-                <div style="width: 8px; height: 8px; background: #999; border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></div>
-                <div style="width: 8px; height: 8px; background: #999; border-radius: 50%; animation: typing 1.4s infinite 0.4s;"></div>
-            </div>
-        </div>
-    `;
-    chatMessages.appendChild(typingIndicator);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    // Add typing animation CSS
-    if (!document.getElementById('typingAnimation')) {
-        const style = document.createElement('style');
-        style.id = 'typingAnimation';
-        style.textContent = `
-            @keyframes typing {
-                0%, 60%, 100% { transform: translateY(0); }
-                30% { transform: translateY(-10px); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // Send to backend
-    fetch('/api/project-assistant', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ question: question })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Remove typing indicator
-        document.getElementById('typingIndicator').remove();
-
-        // Add bot response
-        const botMsg = document.createElement('div');
-        botMsg.style.marginBottom = '15px';
-        botMsg.innerHTML = `
-            <div style="background: #f0f2f5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
-                <p style="margin: 0; font-size: 14px; line-height: 1.5;">${data.answer}</p>
-            </div>
-        `;
-        chatMessages.appendChild(botMsg);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    })
-    .catch(error => {
-        document.getElementById('typingIndicator').remove();
-        const errorMsg = document.createElement('div');
-        errorMsg.style.marginBottom = '15px';
-        errorMsg.innerHTML = `
-            <div style="background: #ffe5e5; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 85%; display: inline-block;">
-                <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #c00;">Sorry, I encountered an error. Please try again.</p>
-            </div>
-        `;
-        chatMessages.appendChild(errorMsg);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    });
-}
-
-// Personalized offers function
 function sendPersonalizedOffers() {
-    if (confirm('🎯 This will send personalized offers to all users based on their purchase history.\n\nThis may take a few moments. Continue?')) {
-        const btn = event.target;
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sending...';
-        btn.disabled = true;
-        
-        fetch('/admin/send-personalized-offers', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                user_ids: []  // Empty array means send to all users
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-            
-            if (data.success) {
-                alert(`✅ ${data.message}\n\n✅ Successful: ${data.success_count}\n❌ Failed: ${data.failed_count}`);
-            } else {
-                alert('❌ Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-            alert('❌ Error: ' + error);
-        });
-    }
+  if (!confirm('Send personalized offers to all users?')) return;
+  fetch('/admin/send-personalized-offers', { method: 'POST' })
+  .then(r => r.json())
+  .then(d => alert(d.message || (d.success ? 'Emails sent!' : 'Failed')));
 }
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
+
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const type       = document.getElementById('recipientType').value;
+  const customVal  = document.getElementById('customRecipients').value.trim();
+  const subject    = document.getElementById('emailSubject').value.trim();
+  const body       = document.getElementById('emailBody').value.trim();
+  const statusEl   = document.getElementById('emailStatus');
+  const btnEl      = document.getElementById('emailSendBtn');
+
+  // Validate custom recipients
+  if (type === 'custom' && !customVal) {
+    statusEl.style.display    = 'block';
+    statusEl.style.background = '#fef3c7';
+    statusEl.style.color      = '#92400e';
+    statusEl.textContent      = '⚠️ Please enter at least one email address for Custom Recipients.';
+    return;
+  }
+
+  // Lock button + show spinner
+  if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Queuing…'; }
+  statusEl.style.display    = 'block';
+  statusEl.style.background = '#eff6ff';
+  statusEl.style.color      = '#1e40af';
+  statusEl.innerHTML        = '<i class="fas fa-spinner fa-spin"></i> Connecting to mail server…';
+
+  fetch('/admin/send-custom-email', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({
+      recipient_type:    type,
+      custom_recipients: type === 'custom' ? customVal : '',
+      subject, body
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.success) {
+      // Config / validation error – show immediately
+      statusEl.style.background = '#fee2e2';
+      statusEl.style.color      = '#991b1b';
+      statusEl.innerHTML        = '❌ ' + (d.message || 'Failed.');
+      if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email'; }
+      return;
+    }
+
+    const total = d.total || 0;
+    statusEl.style.background = '#eff6ff';
+    statusEl.style.color      = '#1e40af';
+    statusEl.innerHTML        = `<i class="fas fa-paper-plane fa-spin"></i> Sending to ${total} recipient(s)…`;
+
+    // Poll until done
+    const jobId = d.job_id;
+    const poll  = setInterval(() => {
+      fetch(`/api/email-send-status/${jobId}`)
+      .then(r => r.json())
+      .then(job => {
+        // Update live counter
+        if (!job.done) {
+          statusEl.innerHTML = `<i class="fas fa-paper-plane fa-spin"></i> Sending… ${job.sent + job.failed}/${job.total} processed (${job.sent} sent)`;
+          return;
+        }
+        clearInterval(poll);
+        // Done — show final result
+        if (job.sent > 0) {
+          let msg = `✅ Sent to ${job.sent} recipient(s).`;
+          if (job.failed)  msg += ` ${job.failed} failed.`;
+          if (d.invalid && d.invalid > 0) {
+            msg += `<br><span style="font-weight:400;font-size:.82rem;">⚠️ Skipped ${d.invalid} invalid address(es)` +
+                   (d.invalid_emails && d.invalid_emails.length ? ': ' + d.invalid_emails.join(', ') : '') + '</span>';
+          }
+          if (job.error)  msg += `<br><span style="font-weight:400;font-size:.82rem;color:#b91c1c;">Error: ${job.error}</span>`;
+          statusEl.style.background = '#dcfce7';
+          statusEl.style.color      = '#166534';
+          statusEl.innerHTML        = msg;
+          document.getElementById('emailForm').reset();
+          document.getElementById('customRecipientsDiv').style.display = 'none';
+        } else {
+          statusEl.style.background = '#fee2e2';
+          statusEl.style.color      = '#991b1b';
+          statusEl.innerHTML        = `❌ Failed to send. ${job.error || ''}`;
+        }
+        loadEmailHistory();
+        if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email'; }
+      })
+      .catch(() => clearInterval(poll));
+    }, 1500);
+  })
+  .catch(() => {
+    statusEl.style.background = '#fee2e2';
+    statusEl.style.color      = '#991b1b';
+    statusEl.textContent      = '❌ Network error — could not reach server.';
+    if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email'; }
+  });
+});
+
+/* ── Email History ─────────────────────────────── */
+function loadEmailHistory() {
+  const wrap = document.getElementById('emailHistoryWrap');
+  if (!wrap) return;
+  fetch('/api/email-history')
+  .then(r => r.json())
+  .then(logs => {
+    if (!logs.length) {
+      wrap.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#9ca3af;">No emails sent yet.</div>';
+      return;
+    }
+    const rows = logs.map(l => {
+      const statusColor = l.status === 'sent' ? '#16a34a' : '#b91c1c';
+      const statusIcon  = l.status === 'sent' ? '✅' : '❌';
+      const typeLabel   = l.recipient_type === 'all_users' ? '👥 All Users'
+                        : l.recipient_type === 'all_workers' ? '👷 All Workers'
+                        : '📧 Custom';
+      return `<tr>
+        <td style="padding:8px 12px;font-size:.83rem;color:#6b7280;">${l.sent_at || ''}</td>
+        <td style="padding:8px 12px;font-size:.83rem;">${typeLabel}</td>
+        <td style="padding:8px 12px;font-size:.83rem;font-weight:600;">${l.subject || ''}</td>
+        <td style="padding:8px 12px;font-size:.83rem;text-align:center;">${l.recipient_count || 0}</td>
+        <td style="padding:8px 12px;font-size:.83rem;color:${statusColor};">${statusIcon} ${l.status}</td>
+        <td style="padding:8px 12px;font-size:.78rem;color:#9ca3af;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.preview || ''}</td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb;">
+              <th style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#6b7280;text-align:left;">Sent At</th>
+              <th style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#6b7280;text-align:left;">Recipients</th>
+              <th style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#6b7280;text-align:left;">Subject</th>
+              <th style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#6b7280;text-align:center;">Sent Count</th>
+              <th style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#6b7280;text-align:left;">Status</th>
+              <th style="padding:10px 12px;font-size:.78rem;font-weight:700;color:#6b7280;text-align:left;">Preview</th>
+            </tr>
+          </thead>
+          <tbody style="border-bottom:1px solid #e5e7eb;">${rows}</tbody>
+        </table>
+      </div>`;
+  })
+  .catch(() => { wrap.innerHTML = '<div style="color:#b91c1c;padding:1rem;">Failed to load history.</div>'; });
+}
+
+// Load email history when page loads
+loadEmailHistory();
+
+/* ── Charts ────────────────────────────────────── */
+let _salesChart = null;
+let _catChart   = null;
+
+// Set default dates: last 30 days
+(function initChartDates() {
+  const today = new Date();
+  const past  = new Date(today); past.setDate(past.getDate() - 29);
+  const fmt   = d => d.toISOString().slice(0,10);
+  document.getElementById('chartFrom').value = fmt(past);
+  document.getElementById('chartTo').value   = fmt(today);
+})();
+
+async function loadCharts(fromDate, toDate) {
+  try {
+    const f = fromDate || document.getElementById('chartFrom').value;
+    const t = toDate   || document.getElementById('chartTo').value;
+    const res  = await fetch(`/api/chart-data?from=${f}&to=${t}`);
+    const data = await res.json();
+
+    const trend = data.sales_trend || [];
+    const cats  = data.category_breakdown || [];
+
+    // Update label
+    const lbl = document.getElementById('chartRangeLabel');
+    if (lbl) lbl.textContent = `Showing ${f} → ${t}`;
+
+    // ── Sales trend ──────────────────────────────────────────────────────────
+    if (_salesChart) { _salesChart.destroy(); _salesChart = null; }
+    _salesChart = new Chart(document.getElementById('salesChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels:   trend.map(p => p.date || ''),
+        datasets: [{ label: 'Revenue (₹)',
+          data:            trend.map(p => p.sales || 0),
+          backgroundColor: 'rgba(79,70,229,.7)', borderRadius: 6 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins: { legend: {display:false} },
+        scales:  { y: { beginAtZero:true, ticks:{ callback: v=>'₹'+v.toLocaleString('en-IN') } } }
+      }
+    });
+
+    // ── Category doughnut ────────────────────────────────────────────────────
+    if (_catChart) { _catChart.destroy(); _catChart = null; }
+    const catLabels = cats.length ? cats.map(c=>c.name||'Other')    : ['No data'];
+    const catValues = cats.length ? cats.map(c=>c.total||c.count||0) : [1];
+    _catChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: catLabels, datasets:[{data:catValues,
+        backgroundColor:['#4f46e5','#10b981','#f59e0b','#ef4444','#06b6d4','#8b5cf6','#ec4899','#14b8a6'],
+        borderWidth:0}] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
+    });
+  } catch(e) { console.log('Chart load failed:', e); }
+}
+
+function applyChartDateRange() {
+  const f = document.getElementById('chartFrom').value;
+  const t = document.getElementById('chartTo').value;
+  if (!f || !t) { alert('Please select both From and To dates.'); return; }
+  if (f > t)    { alert('From date cannot be after To date.');     return; }
+  loadCharts(f, t);
+}
+
+function resetChartRange() {
+  const today = new Date();
+  const past  = new Date(today); past.setDate(past.getDate() - 29);
+  const fmt   = d => d.toISOString().slice(0,10);
+  document.getElementById('chartFrom').value = fmt(past);
+  document.getElementById('chartTo').value   = fmt(today);
+  loadCharts(fmt(past), fmt(today));
+}
+
+loadCharts();
+
+/* ── User detail modal ─────────────────────────── */
+function viewUserDetails(userId) {
+  window.location.href = '/admin/user-details/' + userId;
+}
 </script>
 {% endblock %}
+  

@@ -1,1658 +1,479 @@
 {% extends "base.html" %}
-
-{% block title %}Worker Dashboard{% endblock %}
+{% block title %}Worker Dashboard - Sales Sense AI{% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
-<div class="worker-dashboard">
-    <!-- Header -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <div>
-                <h1>Worker Dashboard</h1>
-                <p>Welcome, {{ session.worker_name }}!</p>
-            </div>
-            <div style="display: flex; gap: 1rem;">
-                <a href="{{ url_for('worker_sales') }}" class="btn-sales">
-                    <i class="fas fa-shopping-cart"></i> Make Sales
-                </a>
-                <a href="{{ url_for('worker_login') }}" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-=======
-<style>
-    .worker-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 10px;
-        margin-bottom: 2rem;
-    }
-    
-    .stat-card {
-        background: white;
-        border-radius: 10px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.2s, box-shadow 0.2s;
-        border-left: 4px solid;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-    
-    .stat-card.primary { border-left-color: #667eea; }
-    .stat-card.success { border-left-color: #10b981; }
-    .stat-card.warning { border-left-color: #f59e0b; }
-    .stat-card.info { border-left-color: #3b82f6; }
-    
-    .stat-card .icon {
-        font-size: 2.5rem;
-        opacity: 0.8;
-    }
-    
-    .stat-card h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0.5rem 0;
-    }
-    
-    .stat-card p {
-        color: #6b7280;
-        margin: 0;
-        font-weight: 500;
-    }
-    
-    .section-header {
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-        border-left: 4px solid #667eea;
-    }
-    
-    .section-header h2 {
-        margin: 0;
-        color: #111827;
-        font-weight: 700;
-    }
-    
-    .product-card {
-        background: white;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        transition: all 0.2s;
-    }
-    
-    .product-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .product-card h4 {
-        color: #111827;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .badge-stock {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-    }
-    
-    .badge-high { background: #d1fae5; color: #065f46; }
-    .badge-medium { background: #fed7aa; color: #92400e; }
-    .badge-low { background: #fecaca; color: #991b1b; }
-    
-    .variant-item {
-        background: #f9fafb;
-        padding: 0.75rem;
-        border-radius: 6px;
-        margin-bottom: 0.5rem;
-    }
-    
-    .add-product-card {
-        background: white;
-        border-radius: 10px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .variant-entry {
-        background: #f9fafb;
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        border: 2px dashed #d1d5db;
-    }
-    
-    .btn-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
-        font-weight: 600;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        transition: transform 0.2s;
-    }
-    
-    .btn-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-    
-    .form-control, .form-select {
-        border: 2px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 0.75rem;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .table-modern {
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .table-modern thead {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    .table-modern th {
-        font-weight: 600;
-        padding: 1rem;
-        border: none;
-    }
-    
-    .table-modern td {
-        padding: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-    
-    .table-modern tbody tr:hover {
-        background: #f9fafb;
-    }
-</style>
+<div class="page-wrapper" style="padding:1.5rem;">
 
-<div class="container-fluid">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category == 'error' and 'danger' or category }} mb-3">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-    <!-- Header -->
-    <div class="worker-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="mb-2">👷 Welcome, {{ session.worker_name }}!</h1>
-                <p class="mb-0" style="opacity: 0.9;">Manage products and track your performance</p>
-            </div>
-            <a href="{{ url_for('worker_login') }}" class="btn btn-light btn-lg">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </a>
-        </div>
+  <!-- Header -->
+  <div class="mb-4" style="background:linear-gradient(135deg,#10b981,#059669);color:white;padding:1.75rem 2rem;border-radius:16px;">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 style="margin:0;font-size:1.75rem;font-weight:700;">👷 Welcome, {{ session.worker_name }}!</h1>
+        <p style="margin:.25rem 0 0;opacity:.85;">Manage products and track your performance</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('worker_login') }}" class="btn" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.4);">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
     </div>
+  </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="stat-card primary">
-                <div class="icon">📦</div>
-                <h3>{{ products|length }}</h3>
-                <p>Total Products</p>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="stat-card success">
-                <div class="icon">✅</div>
-                <h3>{{ products|selectattr('variants')|map(attribute='variants')|sum(start=[])|sum(attribute='stock') }}</h3>
-                <p>Total Stock Units</p>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="stat-card warning">
-                <div class="icon">⚠️</div>
-                <h3>{{ products|selectattr('variants')|map(attribute='variants')|sum(start=[])|selectattr('stock', 'lt', 10)|list|length }}</h3>
-                <p>Low Stock Items</p>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="stat-card info">
-                <div class="icon">🏷️</div>
-                <h3>{{ products|map(attribute='category')|unique|list|length }}</h3>
-                <p>Categories</p>
-            </div>
-        </div>
+  <!-- Stats Cards -->
+  <div class="mb-4" style="display:flex;">
+    <div class="stat-card blue" style="min-width:220px;">
+      <div class="stat-icon"><i class="fas fa-box"></i></div>
+      <div class="stat-value">{{ products|length if products else 0 }}</div>
+      <div class="stat-label">Total Products</div>
     </div>
+  </div>
 
-    <!-- Add Product Section -->
-    <div class="section-header">
-        <h2>➕ Add New Product</h2>
+  <!-- Restock Existing Product -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="chart-title mb-3"><i class="fas fa-warehouse" style="color:#10b981;"></i> Restock Existing Product</h4>
+      <form id="restockForm">
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <label class="form-label fw-600 fs-sm">Select Product *</label>
+            <select id="restockProduct" class="form-control" required onchange="loadVariants(this.value)">
+              <option value="">-- Choose product --</option>
+              {% for p in all_products_list %}
+              <option value="{{ p._id }}" data-variants="{{ p.variants | tojson | forceescape }}">{{ p.name }} ({{ p.category }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-600 fs-sm">Select Variant *</label>
+            <select id="restockVariant" class="form-control" required disabled>
+              <option value="">-- Choose variant --</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-600 fs-sm">Add Stock Qty *</label>
+            <input type="number" id="restockQty" class="form-control" required min="1" placeholder="e.g. 50">
+          </div>
+        </div>
+        <div id="restockVariantInfo" class="mb-3" style="display:none;">
+          <span class="badge" style="background:#d1fae5;color:#065f46;font-size:.85rem;padding:.4rem .9rem;">
+            Current stock: <strong id="currentStockVal">0</strong> units
+          </span>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Add Stock
+          </button>
+          <button type="reset" class="btn btn-outline" onclick="resetRestockForm()">
+            <i class="fas fa-times"></i> Clear
+          </button>
+        </div>
+        <div id="restockMessage" class="mt-2"></div>
+      </form>
     </div>
-    
-    <div class="add-product-card mb-5">
-        <form id="addProductForm">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <label for="productName" class="form-label fw-bold">Product Name</label>
-                    <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="category" class="form-label fw-bold">Category</label>
-                    <input type="text" class="form-control" id="category" placeholder="e.g. Electronics, Clothing" required>
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Product Variants</h4>
-                    <button type="button" class="btn btn-outline-primary" id="addVariant">
-                        <i class="bi bi-plus-circle"></i> Add Variant
-                    </button>
-                </div>
-                
-                <div id="variants">
-                    <div class="variant-entry">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Variant Name</label>
-                                <input type="text" class="form-control variant-quantity" placeholder="e.g. Medium, Red, 500ml" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label fw-bold">Price (₹)</label>
-                                <input type="number" step="0.01" class="form-control variant-price" placeholder="0.00" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label fw-bold">Stock</label>
-                                <input type="number" class="form-control variant-stock" placeholder="0" required>
-                            </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label fw-bold">&nbsp;</label>
-                                <button type="button" class="btn btn-outline-danger w-100 remove-variant" style="display: none;">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="d-flex gap-3">
-                <button type="submit" class="btn btn-gradient">
-                    <i class="bi bi-check-circle"></i> Add Product
-                </button>
-                <button type="reset" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle"></i> Clear Form
-                </button>
-            </div>
-        </form>
-    </div>
+  </div>
 
-    <!-- Products Section -->
-    <div class="section-header">
-        <h2>📦 Current Products</h2>
-    </div>
-    
-    <div class="table-responsive mb-5">
-        <table class="table table-modern">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Category</th>
-                    <th>Variants</th>
-                    <th>Total Stock</th>
-                    <th>Status</th>
-                    <th>Added By</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                {% set total_stock = product.variants|sum(attribute='stock') %}
-                <tr>
-                    <td>
-                        <strong style="color: #111827;">{{ product.name }}</strong>
-                    </td>
-                    <td>
-                        <span class="badge bg-primary">{{ product.category }}</span>
-                    </td>
-                    <td>
-                        {% for variant in product.variants %}
-                        <div class="variant-item">
-                            <strong>{{ variant.quantity }}</strong> - ₹{{ variant.price }}
-                            <span class="badge {% if variant.stock < 10 %}bg-danger{% elif variant.stock < 50 %}bg-warning{% else %}bg-success{% endif %} ms-2">
-                                {{ variant.stock }} units
-                            </span>
-                        </div>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <strong style="font-size: 1.1rem;">{{ total_stock }}</strong>
-                    </td>
-                    <td>
-                        {% if total_stock < 10 %}
-                        <span class="badge-stock badge-low">🔴 Low Stock</span>
-                        {% elif total_stock < 50 %}
-                        <span class="badge-stock badge-medium">🟡 Medium Stock</span>
-                        {% else %}
-                        <span class="badge-stock badge-high">🟢 High Stock</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ product.added_by_name if product.added_by_name else 'System' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-<<<<<<< HEAD
-    
-    <!-- Quick Stats -->
-    <div class="stats-grid">
-        <div class="stat-card blue">
-            <div class="stat-icon">
-                <i class="fas fa-box"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ unique_product_count }}</h3>
-                <p>Unique Products</p>
-            </div>
+  <!-- Add New Product Form -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="chart-title mb-3"><i class="fas fa-plus-circle" style="color:var(--primary);"></i> Add New Product</h4>
+      <form id="addProductForm">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-600 fs-sm">Product Name *</label>
+            <input type="text" id="productName" class="form-control" required placeholder="Enter product name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 fs-sm">Category *</label>
+            <select id="category" class="form-control" required onchange="handleCategoryChange(this.value)">
+              <option value="">-- Select Category --</option>
+              {% for cat in categories %}
+              <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+              <option value="__new__">+ Add New Category</option>
+            </select>
+            <input type="text" id="newCategory" class="form-control mt-2" style="display:none;" placeholder="New category name">
+          </div>
         </div>
-        
-        <div class="stat-card green">
-            <div class="stat-icon">
-                <i class="fas fa-rupee-sign"></i>
-            </div>
-            <div class="stat-info">
-                <h3>₹{{ "%.2f"|format(today_sales) }}</h3>
-                <p>Today's Sales</p>
-            </div>
-        </div>
-        
-        <div class="stat-card purple">
-            <div class="stat-icon">
-                <i class="fas fa-shopping-bag"></i>
-            </div>
-            <div class="stat-info">
-                <h3>{{ today_orders }}</h3>
-                <p>Orders Today</p>
-            </div>
-        </div>
-        
-        <div class="stat-card orange">
-            <div class="stat-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="stat-info">
-                <h3>₹{{ "%.2f"|format(total_sales) }}</h3>
-                <p>Total Sales</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Product Section -->
-    <div class="section">
-        <h2><i class="fas fa-plus-circle"></i> Add New Product</h2>
-        <div class="form-card">
-            <form id="addProductForm">
-                <!-- Product Search -->
-                <div class="form-group">
-                    <label for="productSearch">Search Existing Product (Optional)</label>
-                    <input type="text" id="productSearch" class="form-input" placeholder="Type product name to search...">
-                    <div id="searchResults" class="search-results"></div>
-                </div>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="productName">Product Name *</label>
-                        <input type="text" id="productName" required class="form-input" placeholder="Enter product name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="category">Category *</label>
-                        <select id="category" required class="form-input">
-                            <option value="">-- Select Category --</option>
-                            {% for cat in categories %}
-                            <option value="{{ cat }}">{{ cat }}</option>
-                            {% endfor %}
-                            <option value="__new__">+ Add New Category</option>
-                        </select>
-                        <input type="text" id="newCategory" class="form-input" style="display: none; margin-top: 0.5rem;" placeholder="Enter new category">
-                    </div>
-                </div>
-                
-                <div class="variants-section">
-                    <div class="variants-header">
-                        <h3>Product Variants</h3>
-                        <div>
-                            <span id="existingPriceInfo" class="price-info"></span>
-                            <button type="button" class="btn-add-variant" id="addVariant">
-                                <i class="fas fa-plus"></i> Add Variant
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="variants">
-<div class="variant-entry">
-                            <div class="variant-grid">
-                                <div class="form-group">
-                                    <label>Quantity/Size</label>
-                                    <input type="text" class="form-input variant-quantity" required placeholder="e.g., 1kg, 500g">
-                                </div>
-                                <div class="form-group">
-                                    <label>Price (₹)</label>
-                                    <div class="price-input-group">
-                                        <input type="number" step="0.01" class="form-input variant-price" required placeholder="0.00">
-                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -10)">-10</button>
-                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -5)">-5</button>
-                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 5)">+5</button>
-                                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 10)">+10</button>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Stock</label>
-                                    <input type="number" class="form-input variant-stock" required placeholder="0">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="reset" class="btn-cancel" onclick="clearForm()">Clear Form</button>
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-check"></i> Add Product
-                    </button>
-                </div>
-            </form>
-            <div id="formMessage" class="form-message"></div>
-        </div>
-    </div>
-    
-    <!-- Products List -->
-    <div class="section">
-        <h2><i class="fas fa-box-open"></i> Your Added Products (Page {{ page }} of {{ total_pages }})</h2>
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Category</th>
-                        <th>Variants</th>
-                        <th>Total Stock</th>
-                        <th>Added By</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    {% if product.name %}
-                    <tr id="product-row-{{ product._id }}">
-                        <td>
-                            <strong>{{ product.name|default('Unnamed Product') }}</strong>
-                        </td>
-                        <td>
-                            <span class="category-badge">{{ product.category|default('Uncategorized') }}</span>
-                        </td>
-                        <td>
-                            <div class="variants-list">
-                                {% if product.variants and product.variants|length > 0 %}
-                                    {% for variant in product.variants %}
-                                    <div class="variant-item">
-                                        <span class="variant-qty">{{ variant.quantity|default('N/A') }}</span>
-                                        <span class="variant-price">₹{{ "%.2f"|format(variant.price|default(0)) }}</span>
-                                        <span class="variant-stock">Stock: {{ variant.stock|default(0) }}</span>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <span style="color: #9ca3af;">No variants</span>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td>
-                            <span class="stock-badge">
-                                {% set product_stock = namespace(value=0) %}
-                                {% if product.variants %}
-                                    {% for variant in product.variants %}
-                                        {% set product_stock.value = product_stock.value + (variant.stock|default(0)) %}
-                                    {% endfor %}
-                                {% endif %}
-                                {{ product_stock.value }}
-                            </span>
-                        </td>
-                        <td>{{ product.added_by_name|default('System') }}</td>
-                        <td>
-                            <button class="btn-delete" onclick="deleteProduct('{{ product._id }}', '{{ product.name|default('Unknown Product') }}')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% else %}
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 2rem; color: #9ca3af;">
-                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                            <strong>No products added yet</strong><br>
-                            <small>Use the form above to add your first product</small>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Pagination -->
-        {% if total_pages > 1 %}
-        <div class="pagination">
-            {% if page > 1 %}
-            <a href="?page={{ page - 1 }}" class="page-btn">← Previous</a>
-            {% endif %}
-            
-            {% for p in range(1, total_pages + 1) %}
-                {% if p == page %}
-                <span class="page-btn active">{{ p }}</span>
-                {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
-                <a href="?page={{ p }}" class="page-btn">{{ p }}</a>
-                {% elif p == page - 3 or p == page + 3 %}
-                <span class="page-btn">...</span>
-                {% endif %}
-            {% endfor %}
-            
-            {% if page < total_pages %}
-            <a href="?page={{ page + 1 }}" class="page-btn">Next →</a>
-            {% endif %}
-        </div>
-        {% endif %}
-    </div>
-</div>
 
-<style>
-.worker-dashboard {
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-=======
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const variantsContainer = document.getElementById('variants');
-    const addVariantBtn = document.getElementById('addVariant');
-    const addProductForm = document.getElementById('addProductForm');
-    let variantCount = 1;
-
-    // Add variant button click handler
-    addVariantBtn.addEventListener('click', function() {
-        variantCount++;
-        const variantHtml = `
-            <div class="variant-entry">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Variant Name</label>
-                        <input type="text" class="form-control variant-quantity" placeholder="e.g. Medium, Red, 500ml" required>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">Price (₹)</label>
-                        <input type="number" step="0.01" class="form-control variant-price" placeholder="0.00" required>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">Stock</label>
-                        <input type="number" class="form-control variant-stock" placeholder="0" required>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">&nbsp;</label>
-                        <button type="button" class="btn btn-outline-danger w-100 remove-variant">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        variantsContainer.insertAdjacentHTML('beforeend', variantHtml);
-    });
-
-    // Remove variant button click handler (using event delegation)
-    variantsContainer.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-variant')) {
-            e.target.closest('.variant-entry').remove();
-            variantCount--;
-        }
-    });
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-
-.dashboard-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-content h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-}
-
-.header-content p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 1.1rem;
-}
-
-.btn-sales {
-    background: rgba(255, 255, 255, 0.95);
-    color: #10b981;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s;
-    border: 1px solid rgba(255,255,255,1);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-sales:hover {
-    background: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.btn-logout {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-    border: 1px solid rgba(255,255,255,0.3);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-logout:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-2px);
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.stat-card.blue { border-left: 4px solid #3b82f6; }
-.stat-card.green { border-left: 4px solid #10b981; }
-.stat-card.purple { border-left: 4px solid #8b5cf6; }
-.stat-card.orange { border-left: 4px solid #f59e0b; }
-
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-}
-
-.stat-card.blue .stat-icon {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-
-.stat-card.green .stat-icon {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.stat-card.purple .stat-icon {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-}
-
-.stat-card.orange .stat-icon {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-}
-
-.stat-info h3 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 0.25rem 0;
-    color: #111827;
-}
-
-.stat-info p {
-    font-size: 0.95rem;
-    color: #6b7280;
-    margin: 0;
-}
-
-.section {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.section h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #111827;
-}
-
-.section h2 i {
-    color: #10b981;
-    margin-right: 0.5rem;
-}
-
-.form-card {
-    background: #f9fafb;
-    padding: 2rem;
-    border-radius: 10px;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.form-group {
-    margin-bottom: 0;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #374151;
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: all 0.2s;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.search-results {
-    position: relative;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    margin-top: 0.5rem;
-    max-height: 400px;
-    overflow-y: auto;
-    display: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 100;
-}
-
-.search-results.active {
-    display: block;
-}
-
-.search-result-item {
-    padding: 1rem;
-    cursor: pointer;
-    border-bottom: 1px solid #f3f4f6;
-    transition: all 0.2s;
-}
-
-.search-result-item:hover {
-    background: #f0fdf4;
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
-}
-
-.result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.result-name {
-    font-weight: 600;
-    color: #111827;
-    font-size: 1rem;
-}
-
-.result-badge {
-    background: #dbeafe;
-    color: #1e40af;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.result-info {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.result-category {
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.result-price {
-    font-size: 0.875rem;
-    color: #10b981;
-    font-weight: 600;
-}
-
-.result-stock {
-    font-size: 0.875rem;
-    color: #f59e0b;
-    font-weight: 600;
-}
-
-.result-variants {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin-top: 0.25rem;
-}
-
-.search-loading {
-    padding: 1rem;
-    text-align: center;
-    color: #9ca3af;
-}
-
-.price-info {
-    color: #10b981;
-    font-weight: 600;
-    margin-right: 1rem;
-    font-size: 0.875rem;
-}
-
-.variants-section {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-}
-
-.variants-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.variants-header h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    color: #111827;
-}
-
-.btn-add-variant {
-    background: #10b981;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-add-variant:hover {
-    background: #059669;
-    transform: translateY(-1px);
-}
-
-.variant-entry {
-    background: #f9fafb;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    position: relative;
-}
-
-.variant-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.price-input-group {
-    display: flex;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-}
-
-.price-input-group input {
-    flex: 1;
-    min-width: 100px;
-}
-
-.btn-price-adjust {
-    padding: 0.5rem 0.75rem;
-    background: #e5e7eb;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-price-adjust:hover {
-    background: #d1d5db;
-}
-
-.btn-remove-variant {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background: #ef4444;
-    color: white;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.btn-remove-variant:hover {
-    background: #dc2626;
-    transform: scale(1.1);
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-
-.btn-cancel {
-    padding: 0.75rem 1.5rem;
-    background: #f3f4f6;
-    color: #374151;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-cancel:hover {
-    background: #e5e7eb;
-}
-
-.btn-submit {
-    padding: 0.75rem 1.5rem;
-    background: #10b981;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-submit:hover {
-    background: #059669;
-    transform: translateY(-1px);
-}
-
-.btn-submit:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.form-message {
-    margin-top: 1rem;
-    padding: 1rem;
-    border-radius: 6px;
-    display: none;
-}
-
-.form-message.success {
-    display: block;
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
-}
-
-.form-message.error {
-    display: block;
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
-}
-
-.table-container {
-    overflow-x: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table thead {
-    background: #f9fafb;
-}
-
-.data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 2px solid #e5e7eb;
-}
-
-.data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    color: #4b5563;
-}
-
-.data-table tbody tr:hover {
-    background: #f9fafb;
-}
-
-.category-badge {
-    background: #dbeafe;
-    color: #1e40af;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.variants-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.variant-item {
-    background: #f9fafb;
-    padding: 0.5rem;
-    border-radius: 6px;
-    display: flex;
-    gap: 0.75rem;
-    font-size: 0.875rem;
-}
-
-.variant-qty {
-    font-weight: 600;
-    color: #111827;
-}
-
-.variant-price {
-    color: #10b981;
-    font-weight: 600;
-}
-
-.variant-stock {
-    color: #6b7280;
-}
-
-.stock-badge {
-    background: #d1fae5;
-    color: #065f46;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1.125rem;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.page-btn {
-    padding: 0.5rem 1rem;
-    background: white;
-    color: #374151;
-    text-decoration: none;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.page-btn:hover {
-    background: #f9fafb;
-    border-color: #10b981;
-}
-
-.page-btn.active {
-    background: #10b981;
-    color: white;
-    border-color: #10b981;
-}
-
-.btn-delete {
-    background: #ef4444;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-delete:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-}
-
-.btn-delete:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    transform: none;
-}
-
-@media (max-width: 768px) {
-    .worker-dashboard {
-        padding: 1rem;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .variant-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .price-input-group {
-        flex-direction: column;
-    }
-    
-    .price-input-group input {
-        min-width: 100%;
-    }
-}
-</style>
-
-<script>
-let searchTimeout;
-let selectedProduct = null;
-
-// Category dropdown change
-document.getElementById('category').addEventListener('change', function() {
-    const newCategoryInput = document.getElementById('newCategory');
-    if (this.value === '__new__') {
-        newCategoryInput.style.display = 'block';
-        newCategoryInput.required = true;
-    } else {
-        newCategoryInput.style.display = 'none';
-        newCategoryInput.required = false;
-    }
-});
-
-// Product search
-document.getElementById('productSearch').addEventListener('input', function(e) {
-    const query = e.target.value.trim();
-    const resultsDiv = document.getElementById('searchResults');
-    
-    clearTimeout(searchTimeout);
-    
-    if (query.length < 2) {
-        resultsDiv.classList.remove('active');
-        return;
-    }
-    
-    // Show loading
-    resultsDiv.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-    resultsDiv.classList.add('active');
-    
-    searchTimeout = setTimeout(async () => {
-        try {
-<<<<<<< HEAD
-            const response = await fetch(`/api/search-products?q=${encodeURIComponent(query)}`);
-            const products = await response.json();
-            
-            if (products.length > 0) {
-                resultsDiv.innerHTML = products.map(product => {
-                    const stockText = product.stock > 0 ? `Stock: ${product.stock}` : 'Out of Stock';
-                    const variantsText = product.variants && product.variants.length > 0 
-                        ? `${product.variants.length} variant(s)` 
-                        : 'No variants';
-                    
-                    return `
-                        <div class="search-result-item" onclick='selectProduct(${JSON.stringify(product).replace(/'/g, "&#39;")})'>
-                            <div class="result-header">
-                                <div class="result-name">${product.name}</div>
-                                <span class="result-badge">${product.source || 'DB'}</span>
-                            </div>
-                            <div class="result-info">
-                                <span class="result-category"><i class="fas fa-tag"></i> ${product.category}</span>
-                                ${product.price ? `<span class="result-price"><i class="fas fa-rupee-sign"></i> ₹${product.price.toFixed(2)}</span>` : '<span class="result-price">Price not set</span>'}
-                                <span class="result-stock"><i class="fas fa-box"></i> ${stockText}</span>
-                            </div>
-                            <div class="result-variants">${variantsText}</div>
-                        </div>
-                    `;
-                }).join('');
-                resultsDiv.classList.add('active');
-=======
-            const response = await fetch('/worker/add-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(productData)
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                // Show success message
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                alertDiv.innerHTML = `
-                    <strong>✅ Success!</strong> Product "${productData.name}" has been added successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-                document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.worker-header'));
-                
-                // Reset form and scroll to top
-                addProductForm.reset();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Reload page after 2 seconds to show new product
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-            } else {
-                resultsDiv.innerHTML = `
-                    <div style="padding: 2rem; text-align: center; color: #9ca3af;">
-                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                        <div>No products found for "${query}"</div>
-                        <small>Try a different search term</small>
-                    </div>
-                `;
-                resultsDiv.classList.add('active');
-            }
-        } catch (error) {
-            console.error('Search error:', error);
-            resultsDiv.innerHTML = `
-                <div style="padding: 1rem; text-align: center; color: #ef4444;">
-                    <i class="fas fa-exclamation-circle"></i> Error searching products
-                </div>
-            `;
-        }
-    }, 300);
-});
-
-// Select product from search
-function selectProduct(product) {
-    selectedProduct = product;
-    document.getElementById('productName').value = product.name;
-    document.getElementById('category').value = product.category;
-    document.getElementById('searchResults').classList.remove('active');
-    document.getElementById('productSearch').value = product.name;
-    
-    // Show message that this will update existing product
-    const messageDiv = document.getElementById('formMessage');
-    messageDiv.className = 'form-message';
-    messageDiv.style.display = 'block';
-    messageDiv.style.background = '#dbeafe';
-    messageDiv.style.color = '#1e40af';
-    messageDiv.style.borderColor = '#93c5fd';
-    
-    let priceInfo = '';
-    let stockInfo = '';
-    
-    // Show existing stock and price info
-    if (product.stock && product.stock > 0) {
-        stockInfo = ` | Current Stock: ${product.stock}`;
-    }
-    
-    if (product.price) {
-        priceInfo = `Existing Price: ₹${product.price.toFixed(2)}`;
-        // Set the first variant price to existing price
-        document.querySelector('.variant-price').value = product.price.toFixed(2);
-    } else if (product.variants && product.variants.length > 0) {
-        const prices = product.variants.filter(v => v.price).map(v => v.price);
-        if (prices.length > 0) {
-            const avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
-            priceInfo = `Avg Price: ₹${avgPrice.toFixed(2)}`;
-            document.querySelector('.variant-price').value = avgPrice.toFixed(2);
-        }
-    }
-    
-    messageDiv.innerHTML = `
-        <div style="margin-bottom: 0.5rem;">
-            <i class="fas fa-info-circle"></i> 
-            <strong>Existing Product Selected!</strong>
-        </div>
-        <div style="font-size: 0.875rem;">
-            ${priceInfo}${stockInfo}<br>
-            <strong>Actions:</strong> Use +/- buttons to adjust price | Add new variants to increase stock
-        </div>
-    `;
-    
-    document.getElementById('existingPriceInfo').innerHTML = `
-        <i class="fas fa-arrow-right"></i> ${priceInfo} 
-        <span style="color: #6b7280; font-weight: normal;">(Adjust with +/- buttons or enter new price)</span>
-    `;
-    
-    // Update submit button text
-    const submitBtn = document.querySelector('#addProductForm button[type="submit"]');
-    submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add More Stock / Update Price';
-    submitBtn.style.background = '#3b82f6'; // Blue color for update
-}
-
-// Adjust price
-function adjustPrice(btn, amount) {
-    const priceInput = btn.closest('.price-input-group').querySelector('.variant-price');
-    const currentPrice = parseFloat(priceInput.value) || 0;
-    const newPrice = Math.max(0, currentPrice + amount);
-    priceInput.value = newPrice.toFixed(2);
-}
-
-// Add variant
-document.getElementById('addVariant').addEventListener('click', function() {
-    const variantHtml = `
-        <div class="variant-entry">
-            <button type="button" class="btn-remove-variant remove-variant">
-                <i class="fas fa-times"></i>
+        <!-- Variants -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="fw-bold" style="font-size:.95rem;">Product Variants</label>
+            <button type="button" class="btn btn-outline btn-sm" id="addVariant">
+              <i class="fas fa-plus"></i> Add Variant
             </button>
-            <div class="variant-grid">
-                <div class="form-group">
-                    <label>Quantity/Size</label>
-                    <input type="text" class="form-input variant-quantity" required placeholder="e.g., 1kg, 500g">
-                </div>
-                <div class="form-group">
-                    <label>Price (₹)</label>
-                    <div class="price-input-group">
-                        <input type="number" step="0.01" class="form-input variant-price" required placeholder="0.00">
-                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -10)">-10</button>
-                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, -5)">-5</button>
-                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 5)">+5</button>
-                        <button type="button" class="btn-price-adjust" onclick="adjustPrice(this, 10)">+10</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Stock</label>
-                    <input type="number" class="form-input variant-stock" required placeholder="0">
-                </div>
+          </div>
+          <div id="variants">
+            <div class="variant-entry row g-2 mb-2 p-2 rounded" style="background:#f9fafb;border:1.5px dashed #d1d5db;">
+              <div class="col-md-4">
+                <label style="font-size:.8rem;font-weight:600;">Quantity / Size *</label>
+                <input type="text" class="form-control variant-quantity" required placeholder="e.g. 1kg, 500ml">
+              </div>
+              <div class="col-md-3">
+                <label style="font-size:.8rem;font-weight:600;">Price (₹) *</label>
+                <input type="number" step="0.01" class="form-control variant-price" required placeholder="0.00">
+              </div>
+              <div class="col-md-3">
+                <label style="font-size:.8rem;font-weight:600;">Stock *</label>
+                <input type="number" class="form-control variant-stock" required placeholder="0">
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger w-100 remove-variant" style="display:none;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
+          </div>
         </div>
-    `;
-    document.getElementById('variants').insertAdjacentHTML('beforeend', variantHtml);
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check"></i> Add Product
+          </button>
+          <button type="reset" class="btn btn-outline" onclick="clearProductForm()">
+            <i class="fas fa-times"></i> Clear
+          </button>
+        </div>
+        <div id="formMessage" class="mt-2"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="chart-title mb-0">
+          <i class="fas fa-box-open" style="color:var(--primary);"></i> Your Products
+          {% if total_pages and total_pages > 1 %}
+          <small class="text-muted fw-normal" style="font-size:.8rem;">(Page {{ page }} of {{ total_pages }})</small>
+          {% endif %}
+        </h4>
+        <input type="text" id="productSearch" class="items-select" placeholder="Search products…" oninput="filterProducts(this.value)" style="width:220px;">
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-striped" id="productsTable">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Variants</th>
+              <th>Total Stock</th>
+              <th>Status</th>
+              <th>Added By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in products %}
+            {% if product.name %}
+            {% set product_stock_ns = namespace(value=0) %}
+            {% if product.variants %}
+              {% for v in product.variants %}
+                {% set product_stock_ns.value = product_stock_ns.value + (v.stock|default(0)|int) %}
+              {% endfor %}
+            {% endif %}
+            <tr id="product-row-{{ product._id }}" data-search="{{ (product.name or '') | lower }} {{ (product.category or '') | lower }}">
+              <td><strong>{{ product.name }}</strong></td>
+              <td><span class="badge" style="background:rgba(79,70,229,.1);color:var(--primary);padding:.3rem .7rem;">{{ product.category or 'Uncategorized' }}</span></td>
+              <td>
+                {% if product.variants %}
+                  {% for v in product.variants %}
+                  <div style="font-size:.8rem;padding:.2rem 0;">
+                    <strong>{{ v.quantity|default('—') }}</strong>
+                    — ₹{{ "%.2f"|format(v.price|default(0)|float) }}
+                    <span class="badge {% if (v.stock|default(0)|int) < 10 %}bg-danger{% elif (v.stock|default(0)|int) < 50 %}bg-warning{% else %}bg-success{% endif %}">
+                      {{ v.stock|default(0) }} units
+                    </span>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-muted">No variants</span>
+                {% endif %}
+              </td>
+              <td><strong style="font-size:1.1rem;">{{ product_stock_ns.value }}</strong></td>
+              <td>
+                {% if product_stock_ns.value < 10 %}
+                  <span style="background:#fecaca;color:#991b1b;padding:.3rem .75rem;border-radius:20px;font-size:.8rem;font-weight:600;">🔴 Low</span>
+                {% elif product_stock_ns.value < 50 %}
+                  <span style="background:#fed7aa;color:#92400e;padding:.3rem .75rem;border-radius:20px;font-size:.8rem;font-weight:600;">🟡 Medium</span>
+                {% else %}
+                  <span style="background:#d1fae5;color:#065f46;padding:.3rem .75rem;border-radius:20px;font-size:.8rem;font-weight:600;">🟢 Good</span>
+                {% endif %}
+              </td>
+              <td>{{ product.added_by_name or 'System' }}</td>
+              <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteProduct('{{ product._id }}', '{{ (product.name or 'Product') | replace("'", "\\'") }}')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endif %}
+            {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fas fa-inbox" style="font-size:3rem;opacity:.3;display:block;margin-bottom:.75rem;"></i>
+                No products yet. Use the form above to add your first product.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if total_pages and total_pages > 1 %}
+      <div class="pagination mt-3">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}" class="page-btn">← Prev</a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+          {% if p == page %}
+          <span class="page-btn active">{{ p }}</span>
+          {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+          <a href="?page={{ p }}" class="page-btn">{{ p }}</a>
+          {% elif p == page - 3 or p == page + 3 %}
+          <span class="page-btn">…</span>
+          {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}" class="page-btn">Next →</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div><!-- /.page-wrapper -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Variant management ─────────────────────────── */
+const variantsContainer = document.getElementById('variants');
+
+document.getElementById('addVariant').addEventListener('click', function() {
+  const html = `
+    <div class="variant-entry row g-2 mb-2 p-2 rounded" style="background:#f9fafb;border:1.5px dashed #d1d5db;">
+      <div class="col-md-4">
+        <label style="font-size:.8rem;font-weight:600;">Quantity / Size *</label>
+        <input type="text" class="form-control variant-quantity" required placeholder="e.g. 1kg, 500ml">
+      </div>
+      <div class="col-md-3">
+        <label style="font-size:.8rem;font-weight:600;">Price (₹) *</label>
+        <input type="number" step="0.01" class="form-control variant-price" required placeholder="0.00">
+      </div>
+      <div class="col-md-3">
+        <label style="font-size:.8rem;font-weight:600;">Stock *</label>
+        <input type="number" class="form-control variant-stock" required placeholder="0">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-outline-danger w-100 remove-variant">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>`;
+  variantsContainer.insertAdjacentHTML('beforeend', html);
+  updateRemoveButtons();
 });
 
-// Remove variant
-document.getElementById('variants').addEventListener('click', function(e) {
-    if (e.target.closest('.remove-variant')) {
-        const variants = document.querySelectorAll('.variant-entry');
-        if (variants.length > 1) {
-            e.target.closest('.variant-entry').remove();
-        } else {
-            showMessage('error', 'You must have at least one variant!');
-        }
-    }
+variantsContainer.addEventListener('click', function(e) {
+  if (e.target.closest('.remove-variant')) {
+    e.target.closest('.variant-entry').remove();
+    updateRemoveButtons();
+  }
 });
 
-// Clear form
-function clearForm() {
-    selectedProduct = null;
-    document.getElementById('productSearch').value = '';
-    document.getElementById('existingPriceInfo').innerHTML = ''; 
-    document.getElementById('searchResults').classList.remove('active');
-    document.getElementById('newCategory').style.display = 'none';
-    
-    // Reset submit button text and style
-    const submitBtn = document.querySelector('#addProductForm button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Add Product';
-        submitBtn.style.background = '#10b981'; // Green color for add
-    }
-    
-    // Hide message div
-    const messageDiv = document.getElementById('formMessage');
-    if (messageDiv) {
-        messageDiv.className = 'form-message';
-        messageDiv.style.display = 'none';
-    }
+function updateRemoveButtons() {
+  const entries = variantsContainer.querySelectorAll('.variant-entry');
+  entries.forEach((entry, i) => {
+    const btn = entry.querySelector('.remove-variant');
+    if (btn) btn.style.display = entries.length > 1 ? '' : 'none';
+  });
 }
 
-// Form submit
-document.getElementById('addProductForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const messageDiv = document.getElementById('formMessage');
-    
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-    
-    messageDiv.className = 'form-message';
-    messageDiv.textContent = '';
+/* ── Category ─────────────────────────────────── */
+function handleCategoryChange(val) {
+  document.getElementById('newCategory').style.display = val === '__new__' ? '' : 'none';
+}
 
-    const variants = [];
-    document.querySelectorAll('.variant-entry').forEach(entry => {
-        variants.push({
-            quantity: entry.querySelector('.variant-quantity').value,
-            price: parseFloat(entry.querySelector('.variant-price').value),
-            stock: parseInt(entry.querySelector('.variant-stock').value)
-        });
+/* ── Submit product ───────────────────────────── */
+document.getElementById('addProductForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name     = document.getElementById('productName').value.trim();
+  const catSel   = document.getElementById('category').value;
+  const category = catSel === '__new__' ? document.getElementById('newCategory').value.trim() : catSel;
+
+  const variants = [];
+  document.querySelectorAll('.variant-entry').forEach(entry => {
+    variants.push({
+      quantity: entry.querySelector('.variant-quantity').value.trim(),
+      price:    parseFloat(entry.querySelector('.variant-price').value) || 0,
+      stock:    parseInt(entry.querySelector('.variant-stock').value) || 0
     });
+  });
 
-    let category = document.getElementById('category').value;
-    if (category === '__new__') {
-        category = document.getElementById('newCategory').value;
+  if (!name || !category || !variants.length) {
+    showMsg('Please fill all required fields.', 'danger'); return;
+  }
+
+  const btn = this.querySelector('button[type=submit]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding…';
+
+  fetch('/worker/add-product', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name, category, variants })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      showMsg('✅ Product added successfully!', 'success');
+      this.reset(); clearProductForm();
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showMsg('❌ ' + (d.error || 'Failed to add product'), 'danger');
     }
-
-    const productData = {
-        name: document.getElementById('productName').value,
-        category: category,
-        variants: variants
-    };
-
-    try {
-        const response = await fetch('/worker/add-product', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(productData)
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-            let message = result.message || 'Operation completed successfully!';
-            if (result.updated) {
-                message = `✓ Product stock increased! ${variants.length} new variant(s) added to "${productData.name}"`;
-            } else {
-                message = `✓ New product "${productData.name}" added successfully with ${variants.length} variant(s)!`;
-            }
-            showMessage('success', message);
-            clearForm();
-            this.reset();
-            
-            // Reload page after 1.5 seconds
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            showMessage('error', 'Error: ' + result.error);
-        }
-    } catch (error) {
-        showMessage('error', 'Error adding product: ' + error);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Add Product';
-    }
+  })
+  .catch(() => showMsg('❌ Network error', 'danger'))
+  .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Add Product'; });
 });
 
-function showMessage(type, message) {
-    const messageDiv = document.getElementById('formMessage');
-    messageDiv.className = 'form-message ' + type;
-    messageDiv.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + message;
+function showMsg(text, type) {
+  const el = document.getElementById('formMessage');
+  el.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${text}</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
 }
 
-// Close search results when clicking outside
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('#productSearch') && !e.target.closest('#searchResults')) {
-        document.getElementById('searchResults').classList.remove('active');
+function clearProductForm() {
+  const nc = document.getElementById('newCategory');
+  if (nc) nc.style.display = 'none';
+  const variants = document.getElementById('variants');
+  const entries = variants.querySelectorAll('.variant-entry');
+  entries.forEach((el, i) => { if (i > 0) el.remove(); });
+  variants.querySelectorAll('input').forEach(inp => inp.value = '');
+}
+
+/* ── Delete product ───────────────────────────── */
+function deleteProduct(productId, productName) {
+  if (!confirm('Delete "' + productName + '"?\nThis cannot be undone.')) return;
+  fetch('/worker/delete-product/' + productId, { method: 'POST' })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      const row = document.getElementById('product-row-' + productId);
+      if (row) row.remove();
+    } else {
+      alert('Failed to delete: ' + (d.error || 'Unknown error'));
     }
+  })
+  .catch(() => alert('Network error'));
+}
+
+/* ── Inline search ────────────────────────────── */
+function filterProducts(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#productsTable tbody tr').forEach(row => {
+    row.style.display = !row.dataset.search || row.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+
+/* ── Restock: load variants when product selected ─ */
+function loadVariants(productId) {
+  const variantSel = document.getElementById('restockVariant');
+  const infoBox    = document.getElementById('restockVariantInfo');
+  variantSel.innerHTML = '<option value="">-- Choose variant --</option>';
+  variantSel.disabled = true;
+  infoBox.style.display = 'none';
+
+  if (!productId) return;
+
+  const opt = document.querySelector(`#restockProduct option[value="${productId}"]`);
+  if (!opt) return;
+
+  let variants = [];
+  try { variants = JSON.parse(opt.dataset.variants || '[]'); } catch(e) {}
+
+  variants.forEach((v, i) => {
+    const o = document.createElement('option');
+    o.value       = i;
+    o.textContent = `${v.quantity || 'Variant ' + (i+1)} — ₹${parseFloat(v.price||0).toFixed(2)} (${v.stock||0} in stock)`;
+    o.dataset.stock = v.stock || 0;
+    variantSel.appendChild(o);
+  });
+  variantSel.disabled = false;
+}
+
+document.getElementById('restockVariant').addEventListener('change', function() {
+  const opt     = this.options[this.selectedIndex];
+  const infoBox = document.getElementById('restockVariantInfo');
+  if (opt && opt.value !== '') {
+    document.getElementById('currentStockVal').textContent = opt.dataset.stock || 0;
+    infoBox.style.display = '';
+  } else {
+    infoBox.style.display = 'none';
+  }
 });
 
-// Delete product function
-async function deleteProduct(productId, productName) {
-    if (!confirm('Are you sure you want to delete "' + productName + '"? This action cannot be undone.')) {
-        return;
+/* ── Restock: submit ──────────────────────────── */
+document.getElementById('restockForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const productId    = document.getElementById('restockProduct').value;
+  const variantIndex = document.getElementById('restockVariant').value;
+  const qty          = parseInt(document.getElementById('restockQty').value) || 0;
+
+  if (!productId || variantIndex === '' || qty < 1) {
+    showRestockMsg('Please fill all fields correctly.', 'danger'); return;
+  }
+
+  const btn = this.querySelector('button[type=submit]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating…';
+
+  fetch('/worker/restock', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ product_id: productId, variant_index: parseInt(variantIndex), add_qty: qty })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      showRestockMsg(`✅ Stock updated! New stock: ${d.new_stock} units`, 'success');
+      // update the current stock badge
+      const opt = document.querySelector(`#restockVariant option[value="${variantIndex}"]`);
+      if (opt) {
+        opt.dataset.stock = d.new_stock;
+        opt.textContent   = opt.textContent.replace(/\(\d+ in stock\)/, `(${d.new_stock} in stock)`);
+        document.getElementById('currentStockVal').textContent = d.new_stock;
+      }
+      document.getElementById('restockQty').value = '';
+      setTimeout(() => location.reload(), 1800);
+    } else {
+      showRestockMsg('❌ ' + (d.error || 'Failed to update stock'), 'danger');
     }
-    
-    const deleteBtn = event.target.closest('.btn-delete');
-    if (deleteBtn) {
-        deleteBtn.disabled = true;
-        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-    }
-    
-    try {
-        const response = await fetch(`/worker/delete-product/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // Remove the row with animation
-            const row = document.getElementById(`product-row-${productId}`);
-            if (row) {
-                row.style.transition = 'opacity 0.3s, transform 0.3s';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(-20px)';
-                
-                setTimeout(() => {
-                    row.remove();
-                    
-                    // Show success message
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'form-message success';
-                    messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> Product deleted successfully!';
-                    messageDiv.style.position = 'fixed';
-                    messageDiv.style.top = '20px';
-                    messageDiv.style.right = '20px';
-                    messageDiv.style.zIndex = '9999';
-                    messageDiv.style.minWidth = '300px';
-                    document.body.appendChild(messageDiv);
-                    
-                    setTimeout(() => {
-                        messageDiv.remove();
-                        // Reload to update pagination and counts
-                        window.location.reload();
-                    }, 2000);
-                }, 300);
-            }
-        } else {
-            alert('Error deleting product: ' + result.error);
-            if (deleteBtn) {
-                deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-            }
-        }
-    } catch (error) {
-        alert('Error deleting product: ' + error);
-        if (deleteBtn) {
-            deleteBtn.disabled = false;
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
-        }
-    }
+  })
+  .catch(() => showRestockMsg('❌ Network error', 'danger'))
+  .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Stock'; });
+});
+
+function showRestockMsg(text, type) {
+  const el = document.getElementById('restockMessage');
+  el.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'danger'}">${text}</div>`;
+  setTimeout(() => el.innerHTML = '', 5000);
 }
 
+function resetRestockForm() {
+  document.getElementById('restockVariant').innerHTML = '<option value="">-- Choose variant --</option>';
+  document.getElementById('restockVariant').disabled = true;
+  document.getElementById('restockVariantInfo').style.display = 'none';
+}
 </script>
 {% endblock %}
+  

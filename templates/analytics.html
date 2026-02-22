@@ -1,837 +1,463 @@
-{% extends "base.html" %}
-
-{% block title %}Analytics{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Analytics - Sales Sense AI{% endblock %}
 
 {% block content %}
-<div class="analytics-dashboard">
-    <!-- Header -->
-    <div class="analytics-header">
-        <div class="header-content">
-            <div>
-                <h1>Analytics Dashboard</h1>
-                <p>Real-time insights and business metrics</p>
-            </div>
-            <div class="date-range">
-                <select id="dateRange" class="date-select">
-                    <option value="7">Last 7 Days</option>
-                    <option value="30">Last 30 Days</option>
-                    <option value="90">Last 90 Days</option>
-                    <option value="365">Last Year</option>
-                </select>
-            </div>
-        </div>
-    </div>
-<<<<<<< HEAD
-    
-    <!-- Key Metrics -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">
-                <i class="fas fa-rupee-sign"></i>
-                Total Revenue (All Customers)
-            </div>
-            <div class="metric-value" id="totalRevenue">₹0.00</div>
-            <div class="metric-change positive">
-                <i class="fas fa-arrow-up"></i> From all purchases
-=======
+<div class="page-wrapper analytics-dashboard">
 
-    <!-- Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 id="periodRevenue">₹0.00</h3>
-                    <p class="mb-0">Total Revenue</p>
-                    <small id="periodOrders">0 orders</small>
-                </div>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-label">
-                <i class="fas fa-shopping-cart"></i>
-                Total Orders
-            </div>
-            <div class="metric-value" id="totalOrders">0</div>
-            <div class="metric-change positive">
-                <i class="fas fa-calendar-day"></i> <span id="ordersToday">0</span> today
-            </div>
-        </div>
-<<<<<<< HEAD
-        
-        <div class="metric-card">
-            <div class="metric-label">
-                <i class="fas fa-chart-line"></i>
-                Avg Order Value
-            </div>
-            <div class="metric-value" id="avgOrderValue">₹0.00</div>
-            <div class="metric-change positive">
-                <i class="fas fa-calculator"></i> Per transaction
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-label">
-                <i class="fas fa-users"></i>
-                Total Customers
-            </div>
-            <div class="metric-value" id="activeUsers">0</div>
-            <div class="metric-change positive">
-                <i class="fas fa-user-plus"></i> <span id="newUsersToday">0</span> new today
-=======
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h3 id="periodAvgOrder">₹0.00</h3>
-                    <p class="mb-0">Avg Order Value</p>
-                    <small id="periodProductsSold">0 products sold</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <h3 id="periodTopCategory">--</h3>
-                    <p class="mb-0">Top Category</p>
-                    <small id="periodCategoryRevenue">₹0.00</small>
-                </div>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-            </div>
-        </div>
+  <!-- Page Header -->
+  <div class="analytics-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 style="margin:0;font-size:1.75rem;">Business Analytics</h1>
+        <p class="text-muted mb-0" id="lastUpdated">Loading data…</p>
+      </div>
+      <div class="d-flex gap-2">
+        <select id="dateRange" class="items-select">
+          <option value="7">Last 7 Days</option>
+          <option value="30" selected>Last 30 Days</option>
+          <option value="90">Last 3 Months</option>
+          <option value="365">Last Year</option>
+        </select>
+        <button class="btn btn-outline" onclick="refreshData()" id="refreshBtn">
+          <i class="fas fa-rotate-right"></i> Refresh
+        </button>
+      </div>
     </div>
-    
-    <!-- Charts Section -->
-    <div class="charts-section">
-        <div class="chart-card full">
-            <div class="chart-header">
-                <h3>Revenue Trend</h3>
-                <div class="chart-controls">
-                    <button class="chart-btn active">Daily</button>
-                    <button class="chart-btn">Weekly</button>
-                    <button class="chart-btn">Monthly</button>
-                </div>
-            </div>
-            <div class="chart-body">
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </div>
-        
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Top Products</h3>
-            </div>
-            <div class="chart-body">
-                <div class="product-list">
-                    <div class="product-item">
-                        <div class="product-info">
-                            <span class="product-rank">1</span>
-                            <div>
-                                <div class="product-name">Basmati Rice</div>
-                                <div class="product-sales">145 sales</div>
-                            </div>
-                        </div>
-                        <div class="product-revenue">₹12,450</div>
-                    </div>
-                    <div class="product-item">
-                        <div class="product-info">
-                            <span class="product-rank">2</span>
-                            <div>
-                                <div class="product-name">Wheat Flour</div>
-                                <div class="product-sales">132 sales</div>
-                            </div>
-                        </div>
-                        <div class="product-revenue">₹9,870</div>
-                    </div>
-                    <div class="product-item">
-                        <div class="product-info">
-                            <span class="product-rank">3</span>
-                            <div>
-                                <div class="product-name">Coconut Oil</div>
-                                <div class="product-sales">98 sales</div>
-                            </div>
-                        </div>
-                        <div class="product-revenue">₹7,340</div>
-                    </div>
-                    <div class="product-item">
-                        <div class="product-info">
-                            <span class="product-rank">4</span>
-                            <div>
-                                <div class="product-name">Sugar</div>
-                                <div class="product-sales">87 sales</div>
-                            </div>
-                        </div>
-                        <div class="product-revenue">₹5,220</div>
-                    </div>
-                    <div class="product-item">
-                        <div class="product-info">
-                            <span class="product-rank">5</span>
-                            <div>
-                                <div class="product-name">Tea Powder</div>
-                                <div class="product-sales">76 sales</div>
-                            </div>
-                        </div>
-                        <div class="product-revenue">₹4,180</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Category Distribution</h3>
-            </div>
-            <div class="chart-body">
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="metrics-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+      <div class="stat-value" id="totalRevenue">₹0</div>
+      <div class="stat-label">Total Revenue</div>
+      <small class="period-label" style="opacity:.75;font-size:.78rem;">Last 30 Days</small>
     </div>
-    
-    <!-- Recent Activity -->
-    <div class="activity-section">
-        <h3><i class="fas fa-clock"></i> Recent Activity</h3>
-        <div class="activity-list">
-            <div class="activity-item">
-                <div class="activity-icon blue">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">New order placed</div>
-                    <div class="activity-desc">Order #12345 - ₹1,250</div>
-                </div>
-                <div class="activity-time">2 mins ago</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-icon green">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">New user registered</div>
-                    <div class="activity-desc">Rajesh Kumar</div>
-                </div>
-                <div class="activity-time">15 mins ago</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-icon purple">
-                    <i class="fas fa-box"></i>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">Product added</div>
-                    <div class="activity-desc">Premium Rice - 5kg</div>
-                </div>
-                <div class="activity-time">1 hour ago</div>
-            </div>
-        </div>
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-bag-shopping"></i></div>
+      <div class="stat-value" id="totalOrders">0</div>
+      <div class="stat-label">Total Orders</div>
+      <small class="period-label" style="opacity:.75;font-size:.78rem;">Last 30 Days</small>
     </div>
+    <div class="stat-card purple">
+      <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+      <div class="stat-value" id="avgOrderValue">₹0</div>
+      <div class="stat-label">Avg. Order Value</div>
+      <small class="period-label" style="opacity:.75;font-size:.78rem;">Last 30 Days</small>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-value" id="activeUsers">0</div>
+      <div class="stat-label">Active Users</div>
+      <small style="opacity:.75;font-size:.78rem;">All Time</small>
+    </div>
+  </div>
+
+  <!-- Today Quick Stats -->
+  <div class="quick-stats-row mb-4">
+    <div class="quick-stat-card">
+      <div class="qs-label"><i class="fas fa-fire me-1" style="color:var(--orange);"></i>Today's Sales</div>
+      <div class="qs-value" id="salesToday">₹0</div>
+    </div>
+    <div class="quick-stat-card">
+      <div class="qs-label"><i class="fas fa-receipt me-1" style="color:var(--info);"></i>Orders Today</div>
+      <div class="qs-value" id="ordersToday">0</div>
+    </div>
+    <div class="quick-stat-card">
+      <div class="qs-label"><i class="fas fa-box me-1" style="color:var(--secondary);"></i>Total Products</div>
+      <div class="qs-value" id="totalProducts">0</div>
+    </div>
+    <div class="quick-stat-card">
+      <div class="qs-label"><i class="fas fa-warehouse me-1" style="color:var(--purple);"></i>Stock Value (est.)</div>
+      <div class="qs-value" id="stockValue">₹0</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-section">
+    <div class="chart-card">
+      <h5 class="chart-title"><i class="fas fa-chart-area" style="color:var(--primary);"></i> Revenue Trend</h5>
+      <div style="position:relative;height:280px;">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h5 class="chart-title"><i class="fas fa-chart-pie" style="color:var(--secondary);"></i> Sales by Category</h5>
+      <div style="position:relative;height:280px;">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Products + Insights -->
+  <div class="row g-3">
+    <div class="col-md-7">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="chart-title mb-3">Top Selling Products</h5>
+          <div id="topProductsList">
+            <div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="chart-title mb-3"><i class="fas fa-flag" style="color:#84C225;"></i> Product Priority</h5>
+          <div id="insightsList">
+            <div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Buyers Report -->
+  <div class="row g-3" style="margin-top:4px;">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="chart-title mb-3"><i class="fas fa-crown" style="color:#f59e0b;"></i> Top Buyers Report</h5>
+          <div id="topUsersList">
+            <div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
+{% endblock %}
 
-<style>
-.analytics-dashboard {
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.analytics-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    margin-bottom: 2rem;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-content h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-}
-
-.header-content p {
-    margin: 0;
-    opacity: 0.9;
-}
-
-.date-select {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.date-select option {
-    color: #111827;
-}
-
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.metric-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-}
-
-.metric-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.metric-label {
-    color: #6b7280;
-    font-size: 0.95rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.metric-label i {
-    color: #667eea;
-}
-
-.metric-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 0.5rem;
-}
-
-.metric-change {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.metric-change.positive {
-    color: #10b981;
-}
-
-.metric-change.negative {
-    color: #ef4444;
-}
-
-.charts-section {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.chart-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.chart-card.full {
-    grid-column: 1 / -1;
-}
-
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.chart-header h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-    margin: 0;
-}
-
-.chart-controls {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.chart-btn {
-    padding: 0.5rem 1rem;
-    background: #f3f4f6;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.chart-btn.active {
-    background: #667eea;
-    color: white;
-}
-
-.chart-btn:hover:not(.active) {
-    background: #e5e7eb;
-}
-
-.chart-body {
-    min-height: 300px;
-}
-
-.product-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.product-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #f9fafb;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.product-item:hover {
-    background: #f3f4f6;
-}
-
-.product-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.product-rank {
-    width: 32px;
-    height: 32px;
-    background: #667eea;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.875rem;
-}
-
-.product-name {
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.25rem;
-}
-
-.product-sales {
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.product-revenue {
-    font-weight: 700;
-    color: #667eea;
-    font-size: 1.125rem;
-}
-
-.activity-section {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.activity-section h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #111827;
-}
-
-.activity-section h3 i {
-    color: #667eea;
-    margin-right: 0.5rem;
-}
-
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.activity-item:hover {
-    background: #f9fafb;
-}
-
-.activity-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.activity-icon.blue {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-
-.activity-icon.green {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.activity-icon.purple {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-}
-
-.activity-content {
-    flex: 1;
-}
-
-.activity-title {
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.25rem;
-}
-
-.activity-desc {
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.activity-time {
-    font-size: 0.875rem;
-    color: #9ca3af;
-    white-space: nowrap;
-}
-
-@media (max-width: 1024px) {
-    .charts-section {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .analytics-dashboard {
-        padding: 1rem;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .metrics-grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block scripts %}
 <script>
-// Revenue Chart
-const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-const revenueChart = new Chart(revenueCtx, {
+let revenueChart = null;
+let categoryChart = null;
+
+function formatINR(val) {
+  return '₹' + Number(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+  btn.disabled = true;
+  loadAnalytics().finally(() => {
+    setTimeout(() => { btn.innerHTML = '<i class="fas fa-rotate-right"></i> Refresh'; btn.disabled = false; }, 600);
+  });
+}
+
+async function loadAnalytics() {
+  const days = document.getElementById('dateRange').value || 30;
+  // Update period label on KPI cards
+  document.querySelectorAll('.period-label').forEach(el => {
+    el.textContent = days == 1 ? 'Today' : `Last ${days} Days`;
+  });
+  try {
+    const res  = await fetch(`/api/business-stats?days=${days}`);
+    const data = await res.json();
+    setText('totalRevenue',  formatINR(data.total_sales));
+    setText('totalOrders',   data.total_orders || 0);
+    setText('avgOrderValue', formatINR(data.avg_order_value));
+    setText('activeUsers',   data.active_users || 0);
+    setText('salesToday',    formatINR(data.sales_today));
+    setText('ordersToday',   data.orders_today || 0);
+    setText('totalProducts', data.total_products || 0);
+    setText('stockValue',    formatINR((data.total_sales || 0) * 0.45));
+    setText('lastUpdated',   'Last updated: ' + new Date().toLocaleTimeString('en-IN'));
+    buildRevenueChart(data.sales_trend || []);
+    buildCategoryChart(data.category_breakdown || []);
+    buildTopProducts(data.top_products || []);
+    buildInsights(data);
+    buildTopUsers(data.top_users || []);
+  } catch (e) {
+    setText('lastUpdated', 'Error loading — check server connection');
+  }
+}
+
+function buildRevenueChart(trend) {
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  const labels = trend.map(t => t.date || t.period || '');
+  const values = trend.map(t => t.sales || t.total || t.revenue || t.amount || 0);
+  if (revenueChart) revenueChart.destroy();
+  revenueChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [],
-        datasets: [{
-            label: 'Revenue',
-            data: [],
-            borderColor: '#667eea',
-            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
+      labels: labels.length ? labels : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [{ label: 'Revenue (₹)', data: values.length ? values : [0,0,0,0,0,0,0],
+        borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.08)', fill: true,
+        tension: 0.4, pointBackgroundColor: '#4f46e5', pointBorderColor: '#fff',
+        pointBorderWidth: 2, pointRadius: 5, pointHoverRadius: 7 }]
     },
     options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return '₹' + value.toLocaleString();
-                    }
-                }
-            }
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ₹' + Number(ctx.parsed.y).toLocaleString('en-IN', {minimumFractionDigits: 2})
+          }
         }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' },
+             ticks: { callback: v => '₹' + Number(v).toLocaleString('en-IN'), font: { size: 11 } } }
+      }
     }
-});
+  });
+}
 
-// Category Chart
-const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-const categoryChart = new Chart(categoryCtx, {
+function buildCategoryChart(cats) {
+  const ctx = document.getElementById('categoryChart').getContext('2d');
+  const labels = cats.length ? cats.map(c => c.name || c.category || c._id || 'Other')
+                              : ['Groceries','Dairy','Snacks','Beverages','Household'];
+  const values = cats.length ? cats.map(c => c.total || c.revenue || c.count || 0)
+                              : [30, 25, 20, 15, 10];
+  const colors = ['#4f46e5','#10b981','#f59e0b','#ef4444','#06b6d4','#8b5cf6','#ec4899','#f97316'];
+  if (categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(ctx, {
     type: 'doughnut',
-    data: {
-        labels: [],
-        datasets: [{
-            data: [],
-            backgroundColor: [
-                '#667eea',
-                '#10b981',
-                '#f59e0b',
-                '#8b5cf6',
-                '#ec4899',
-                '#14b8a6',
-                '#f97316',
-                '#6366f1',
-                '#84cc16',
-                '#a855f7'
-            ]
-        }]
-    },
+    data: { labels, datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 2, borderColor: '#fff' }] },
     options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom'
-            }
-        }
+      responsive: true, maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 }, usePointStyle: true } },
+        tooltip: { callbacks: { label: ctx => ` ₹${Number(ctx.parsed).toLocaleString('en-IN')}` } }
+      }
     }
-});
-
-// Fetch real data
-async function loadAnalytics() {
-    try {
-        const response = await fetch('/api/business-stats');
-        const data = await response.json();
-        
-        console.log('Analytics data:', data); // Debug log
-        
-        // Update metrics - Total Revenue from ALL customers
-        const totalRevenue = data.total_revenue || data.total_sales || 0;
-        document.getElementById('totalRevenue').textContent = 
-            '₹' + totalRevenue.toLocaleString('en-IN', {minimumFractionDigits: 2});
-        document.getElementById('totalOrders').textContent = 
-            (data.total_orders || 0).toLocaleString('en-IN');
-        document.getElementById('avgOrderValue').textContent = 
-            '₹' + (data.avg_order_value || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
-        document.getElementById('activeUsers').textContent = 
-            (data.total_users || 0).toLocaleString('en-IN');
-        
-        // Update sub-metrics
-        if (document.getElementById('ordersToday')) {
-            document.getElementById('ordersToday').textContent = 
-                (data.orders_today || 0).toLocaleString('en-IN');
-        }
-        if (document.getElementById('newUsersToday')) {
-            document.getElementById('newUsersToday').textContent = 
-                (data.new_users_today || 0).toLocaleString('en-IN');
-        }
-        
-        console.log(`Total Revenue: ₹${totalRevenue.toFixed(2)} from ${data.total_purchases || 0} purchases`);
-        console.log(`Today's Sales: ₹${(data.sales_today || 0).toFixed(2)}`);
-        console.log(`Total Orders: ${data.total_orders || 0} (${data.orders_today || 0} today)`);
-        console.log(`Total Customers: ${data.total_users || 0} (${data.new_users_today || 0} new today)`);
-        
-        // Update top products list if available
-        if (data.top_products && data.top_products.length > 0) {
-            const productList = document.querySelector('.product-list');
-            if (productList) {
-                productList.innerHTML = data.top_products.map((product, index) => `
-                    <div class="product-item">
-                        <div class="product-info">
-                            <span class="product-rank">${index + 1}</span>
-                            <div>
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-sales">${product.units} units sold</div>
-                            </div>
-                        </div>
-                        <div class="product-revenue">₹${product.revenue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
-                    </div>
-                `).join('');
-            }
-        }
-        
-        // Update revenue chart with sales trend
-        if (data.sales_trend && data.sales_trend.length > 0) {
-            revenueChart.data.labels = data.sales_trend.map(d => d.date);
-            revenueChart.data.datasets[0].data = data.sales_trend.map(d => d.sales);
-            revenueChart.update();
-        }
-        
-        // Update category chart with category sales
-        if (data.category_sales && data.category_sales.length > 0) {
-            categoryChart.data.labels = data.category_sales.map(c => c.category);
-            categoryChart.data.datasets[0].data = data.category_sales.map(c => c.revenue);
-            categoryChart.update();
-        }
-    } catch (error) {
-        console.error('Error loading analytics:', error);
-    }
+  });
 }
 
-<<<<<<< HEAD
+function buildTopProducts(products) {
+  const container = document.getElementById('topProductsList');
+  if (!products.length) {
+    container.innerHTML = '<p class="text-muted text-center py-3">No product data available</p>'; return;
+  }
+  const max = Math.max(...products.map(p => p.total_revenue || p.revenue || p.sales || 0)) || 1;
+  container.innerHTML = products.slice(0, 8).map((p, i) => {
+    const rev = p.total_revenue || p.revenue || p.sales || 0;
+    const pct = Math.round((rev / max) * 100);
+    return `<div class="d-flex align-items-center gap-3 mb-3">
+      <span class="product-rank">${i + 1}</span>
+      <div class="flex-grow-1">
+        <div class="d-flex justify-content-between mb-1">
+          <span class="fw-semibold" style="font-size:.9rem;">${p.name || p._id || 'Product'}</span>
+          <span style="font-size:.85rem;color:var(--text-muted);">${formatINR(rev)}</span>
+        </div>
+        <div class="progress" style="height:6px;">
+          <div class="progress-bar" style="width:${pct}%;background:var(--primary);"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildInsights(data) {
+  const container = document.getElementById('insightsList');
+  const products  = (data.top_products || []).slice(0, 9);
+  if (!products.length) {
+    container.innerHTML = '<p class="text-muted text-center py-3"><i class="fas fa-circle-info me-2"></i>No product data available</p>';
+    return;
+  }
+  const total   = products.length;
+  const highEnd = Math.ceil(total / 3);
+  const midEnd  = Math.ceil(total * 2 / 3);
+  container.innerHTML = products.map((p, i) => {
+    const rev   = p.total_revenue || p.revenue || 0;
+    const units = p.units_sold   || p.units    || 0;
+    let badgeClass, badgeIcon, badgeLabel;
+    if (i < highEnd) {
+      badgeClass = 'priority-high'; badgeIcon = 'fa-arrow-trend-up';   badgeLabel = 'High';
+    } else if (i < midEnd) {
+      badgeClass = 'priority-mid';  badgeIcon = 'fa-equals';           badgeLabel = 'Medium';
+    } else {
+      badgeClass = 'priority-low';  badgeIcon = 'fa-arrow-trend-down'; badgeLabel = 'Low';
+    }
+    const safeName = (p.name || p._id || 'Product').replace(/'/g, "\\'");
+    return `<div class="insight-item" style="cursor:pointer;" onclick="showProductDetail('${safeName}','${badgeLabel}',${units},${rev})">
+      <div class="insight-info">
+        <div class="insight-name">${p.name || p._id || 'Product'}</div>
+        <div class="insight-meta">${units} units &bull; ${formatINR(rev)}</div>
+      </div>
+      <span class="priority-badge ${badgeClass}"><i class="fas ${badgeIcon}"></i> ${badgeLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function buildTopUsers(users) {
+  const container = document.getElementById('topUsersList');
+  if (!container) return;
+  if (!users.length) {
+    container.innerHTML = '<p class="text-muted text-center py-3"><i class="fas fa-circle-info me-2"></i>No buyer data available yet</p>';
+    return;
+  }
+  const max = Math.max(...users.map(u => u.spent)) || 1;
+  const medals = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+  container.innerHTML = `<div class="table-responsive"><table style="width:100%;border-collapse:collapse;">
+    <thead><tr style="background:#f9fafb;font-size:.72rem;text-transform:uppercase;color:#9ca3af;">
+      <th style="padding:10px 14px;">#</th>
+      <th style="padding:10px 14px;">Buyer Name</th>
+      <th style="padding:10px 14px;text-align:center;">Orders</th>
+      <th style="padding:10px 14px;text-align:right;">Total Spent</th>
+      <th style="padding:10px 14px;">Spend Share</th>
+    </tr></thead>
+    <tbody>${users.map((u, i) => {
+      const pct   = Math.round((u.spent / max) * 100);
+      const medal = medals[i] || ('#' + (i + 1));
+      const safeUName = (u.name || 'Guest').replace(/'/g, "\\'");
+      return `<tr style="border-top:1px solid #f0f0f0;cursor:pointer;" onclick="showUserDetail('${safeUName}')" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background=''">\n        <td style="padding:10px 14px;font-size:1.1rem;">${medal}</td>
+        <td style="padding:10px 14px;font-weight:600;">${u.name || 'Guest'} <small style="color:#84C225;font-size:.7rem;"><i class="fas fa-eye"></i></small></td>
+        <td style="padding:10px 14px;text-align:center;color:#6b7280;">${u.orders}</td>
+        <td style="padding:10px 14px;text-align:right;font-weight:700;color:#16a34a;">${formatINR(u.spent)}</td>
+        <td style="padding:10px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="progress" style="flex:1;height:8px;"><div class="progress-bar" style="width:${pct}%;background:#84C225;"></div></div>
+            <span style="font-size:.72rem;color:#6b7280;min-width:28px;">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+/* ─── Product Detail Modal ─── */
+async function showProductDetail(name, priority, units, rev) {
+  const modal = document.getElementById('detailModal');
+  const title = document.getElementById('detailModalTitle');
+  const body  = document.getElementById('detailModalBody');
+  title.textContent = name;
+  body.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x" style="color:#84C225;"></i></div>';
+  modal.style.display = 'flex';
+
+  try {
+    const res  = await fetch('/api/product-detail?name=' + encodeURIComponent(name));
+    const data = await res.json();
+    const badgeColor = {High:'#dcfce7',Medium:'#fef9c3',Low:'#fee2e2'}[priority] || '#f3f4f6';
+    const badgeText  = {High:'#16a34a',Medium:'#92400e',Low:'#b91c1c'}[priority]  || '#374151';
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:20px;">
+        <div style="background:#f0fdf4;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#16a34a;">${formatINR(data.total_revenue||rev)}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Total Revenue</div>
+        </div>
+        <div style="background:#eff6ff;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#2563eb;">${data.total_units||units}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Units Sold</div>
+        </div>
+        <div style="background:#fefce8;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#d97706;">${data.total_orders||0}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Total Orders</div>
+        </div>
+        <div style="background:#fdf4ff;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#7c3aed;">${data.unique_buyers||0}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Unique Buyers</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <span style="background:${badgeColor};color:${badgeText};padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700;">Priority: ${priority}</span>
+      </div>
+      ${(data.records||[]).length ? `
+      <div style="max-height:250px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead><tr style="background:#f9fafb;position:sticky;top:0;">
+            <th style="padding:8px 10px;text-align:left;">Buyer</th>
+            <th style="padding:8px 10px;text-align:center;">Qty</th>
+            <th style="padding:8px 10px;text-align:right;">Amount</th>
+            <th style="padding:8px 10px;text-align:right;">Date</th>
+          </tr></thead>
+          <tbody>${(data.records||[]).map(r=>`<tr style="border-top:1px solid #f0f0f0;">
+            <td style="padding:7px 10px;">${r.buyer}</td>
+            <td style="padding:7px 10px;text-align:center;">${r.quantity}</td>
+            <td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:600;">${formatINR(r.total)}</td>
+            <td style="padding:7px 10px;text-align:right;color:#9ca3af;">${r.date}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>` : '<p class="text-muted text-center py-3">No detailed purchase records yet.</p>'}
+    `;
+  } catch(e) {
+    body.innerHTML = '<p class="text-muted text-center py-3">Could not load product details.</p>';
+  }
+}
+
+/* ─── User Detail Modal ─── */
+async function showUserDetail(name) {
+  const modal = document.getElementById('detailModal');
+  const title = document.getElementById('detailModalTitle');
+  const body  = document.getElementById('detailModalBody');
+  title.innerHTML = '<i class="fas fa-user me-2" style="color:#84C225;"></i>' + name;
+  body.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x" style="color:#84C225;"></i></div>';
+  modal.style.display = 'flex';
+
+  try {
+    const res  = await fetch('/api/user-detail?name=' + encodeURIComponent(name));
+    const data = await res.json();
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:20px;">
+        <div style="background:#f0fdf4;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#16a34a;">${formatINR(data.total_spent)}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Total Spent</div>
+        </div>
+        <div style="background:#eff6ff;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#2563eb;">${data.total_orders}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Total Orders</div>
+        </div>
+        <div style="background:#fefce8;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:800;color:#d97706;">${data.total_units||0}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Items Bought</div>
+        </div>
+        <div style="background:#fdf4ff;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:.95rem;font-weight:700;color:#7c3aed;padding-top:4px;">${(data.categories||[]).slice(0,2).join(', ')||'—'}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Top Categories</div>
+        </div>
+      </div>
+      ${(data.records||[]).length ? `
+      <div style="max-height:260px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead><tr style="background:#f9fafb;position:sticky;top:0;">
+            <th style="padding:8px 10px;text-align:left;">Product</th>
+            <th style="padding:8px 10px;text-align:left;">Category</th>
+            <th style="padding:8px 10px;text-align:center;">Qty</th>
+            <th style="padding:8px 10px;text-align:right;">Amount</th>
+            <th style="padding:8px 10px;text-align:right;">Date</th>
+          </tr></thead>
+          <tbody>${(data.records||[]).map(r=>`<tr style="border-top:1px solid #f0f0f0;">
+            <td style="padding:7px 10px;font-weight:600;">${r.product}</td>
+            <td style="padding:7px 10px;color:#6b7280;">${r.category}</td>
+            <td style="padding:7px 10px;text-align:center;">${r.quantity}</td>
+            <td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:600;">${formatINR(r.total)}</td>
+            <td style="padding:7px 10px;text-align:right;color:#9ca3af;">${r.date}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>` : '<p class="text-muted text-center py-3">No purchase records found.</p>'}
+    `;
+  } catch(e) {
+    body.innerHTML = '<p class="text-muted text-center py-3">Could not load user details.</p>';
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailModal(); });
+function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+document.getElementById('dateRange').addEventListener('change', loadAnalytics);
 loadAnalytics();
-=======
-function updateSummaryCards(data) {
-    console.log('Updating summary cards with data:', data); // Debug log
-    
-    const fmt = (num) => num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    
-    document.getElementById('periodRevenue').textContent = '₹' + fmt(data.total_revenue || 0);
-    document.getElementById('periodOrders').textContent = `${(data.total_orders || 0).toLocaleString()} orders`;
-    document.getElementById('periodCustomers').textContent = (data.active_customers || 0).toLocaleString();
-    document.getElementById('periodNewCustomers').textContent = `${data.new_customers || 0} new`;
-    document.getElementById('periodAvgOrder').textContent = '₹' + fmt(data.avg_order_value || 0);
-    document.getElementById('periodProductsSold').textContent = `${(data.total_units_sold || 0).toLocaleString()} units sold`;
-    document.getElementById('periodTopCategory').textContent = data.top_category || '--';
-    document.getElementById('periodCategoryRevenue').textContent = data.top_category_revenue ? '₹' + fmt(data.top_category_revenue) : '₹0.00';
-}
-
-function updateSalesChart(trendData) {
-    const ctx = document.getElementById('salesChart');
-    if (salesChart) salesChart.destroy();
-    
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: trendData.map(d => d.date),
-            datasets: [{
-                label: 'Daily Sales',
-                data: trendData.map(d => d.sales),
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: (context) => '₹' + context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2})
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: (value) => '₹' + value.toLocaleString()
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateCategoryChart(categoryData) {
-    const ctx = document.getElementById('categoryChart');
-    if (categoryChart) categoryChart.destroy();
-    
-    categoryChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: categoryData.map(c => c.category),
-            datasets: [{
-                data: categoryData.map(c => c.revenue),
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(75, 192, 192)',
-                    'rgb(153, 102, 255)',
-                    'rgb(255, 159, 64)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: (context) => context.label + ': ₹' + context.parsed.toLocaleString('en-US', {minimumFractionDigits: 2})
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateTopProducts(products) {
-    const tbody = document.getElementById('topProductsBody');
-    if (!products || products.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = products.map((p, i) => `
-        <tr>
-            <td><span class="badge bg-${i === 0 ? 'warning' : i === 1 ? 'secondary' : 'info'}">#${i + 1}</span></td>
-            <td><strong>${p.name}</strong></td>
-            <td>${p.units.toLocaleString()}</td>
-            <td>₹${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-            <td>₹${(p.revenue / p.units).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-        </tr>
-    `).join('');
-}
-
-function updateAllProducts(products) {
-    const tbody = document.getElementById('allProductsBody');
-    if (!products || products.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = products.map(p => `
-        <tr>
-            <td>${p.name}</td>
-            <td><span class="badge bg-secondary">${p.category}</span></td>
-            <td>${p.units_sold.toLocaleString()}</td>
-            <td>₹${p.revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-            <td><span class="badge bg-${p.stock > 10 ? 'success' : p.stock > 0 ? 'warning' : 'danger'}">${p.stock} units</span></td>
-        </tr>
-    `).join('');
-}
-
-function updateTopCustomers(customers) {
-    const tbody = document.getElementById('topCustomersBody');
-    if (!customers || customers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = customers.map((c, i) => `
-        <tr>
-            <td><span class="badge bg-primary">#${i + 1}</span></td>
-            <td>${c.name}</td>
-            <td>${c.email}</td>
-            <td>${c.orders}</td>
-            <td>₹${c.total_spent.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-        </tr>
-    `).join('');
-}
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
+setInterval(loadAnalytics, 60000);
 </script>
+
+<!-- Detail Modal (shared for product + user) -->
+<div id="detailModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeDetailModal()">
+  <div style="background:#fff;border-radius:14px;width:100%;max-width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #e5e7eb;background:linear-gradient(135deg,#84C225,#3d7a00);">
+      <h5 id="detailModalTitle" style="margin:0;font-weight:800;color:#fff;font-size:1rem;"></h5>
+      <button onclick="closeDetailModal()" style="background:rgba(255,255,255,.25);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;">&times;</button>
+    </div>
+    <div id="detailModalBody" style="padding:20px;overflow-y:auto;"></div>
+  </div>
+</div>
+
 {% endblock %}
+

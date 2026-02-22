@@ -1,581 +1,441 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Sales Sense AI - Home{% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
-<!-- Hero Section -->
-<div class="text-center mb-4">
-    <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem;">
-        Welcome to Sales Sense AI
-    </h1>
-    <p style="font-size: 1.125rem; color: var(--gray-600);">
-        Smart Business Intelligence & Analytics Platform
-    </p>
-</div>
+<div class="page-wrapper">
 
-<!-- Quick Stats -->
-<div class="grid grid-3 mb-4">
-    <div class="stat-card">
-        <div class="stat-icon">
-            <i class="fas fa-dollar-sign"></i>
-        </div>
-        <div class="stat-value" id="totalRevenue">$0</div>
-        <div class="stat-label">Total Revenue</div>
-        <small id="totalOrders" style="opacity: 0.8;">0 orders</small>
+  <!-- BigBasket-style Hero Banner -->
+  <div class="hero-section">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.2rem;color:#fff;">SS</div>
+      <h1 style="margin:0;">SalesSense AI</h1>
     </div>
-    
-    <div class="stat-card success">
-        <div class="stat-icon">
-            <i class="fas fa-box"></i>
-=======
-<div class="home-container">
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <h1 style="color: #fbbf24; font-weight: 700;">📊 Sales Sense AI</h1>
-        <p class="lead" style="color: #fbbf24; font-weight: 600;">Your Complete Business Intelligence Platform</p>
-        <p style="color: #b45309; font-size: 1rem; font-weight: 600;">Real-time analytics, smart insights, and automated reporting</p>
-        <div class="mt-4">
-            <a href="/analytics" class="btn btn-primary btn-lg me-2">
-                <i class="bi bi-graph-up-arrow"></i> Advanced Analytics
-            </a>
-            <button onclick="exportBusinessSummaryPDF()" class="btn btn-danger btn-lg">
-                <i class="bi bi-file-pdf"></i> Export PDF
-            </button>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-        </div>
-        <div class="stat-value" id="totalProducts">0</div>
-        <div class="stat-label">Products</div>
-        <small id="activeUsers" style="opacity: 0.8;">0 active users</small>
+    <p class="lead">Your Smart Grocery Intelligence Platform</p>
+    <p>Real-time analytics &bull; Festival offers &bull; AI-powered insights</p>
+    <div class="mt-4" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="/labor" class="btn btn-light btn-lg">
+        <i class="fas fa-shopping-bag"></i> Shop Now
+      </a>
+      <a href="/analytics" class="btn btn-lg" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.5);">
+        <i class="fas fa-chart-bar"></i> Analytics
+      </a>
     </div>
-<<<<<<< HEAD
-    
-    <div class="stat-card warning">
-        <div class="stat-icon">
-            <i class="fas fa-chart-line"></i>
-=======
+  </div>
 
-    <!-- Quick Stats Section -->
-    <div class="row mb-4">
-        <div class="col-md-12 mb-3">
-            <h3 class="text-center" style="color: white; font-weight: 700;">� Real-Time Business Overview</h3>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card success">
-                <div class="text-center">
-                    <i class="bi bi-cash-stack stat-icon" style="color: #10B981;"></i>
-                    <div class="stat-value" id="totalRevenue">Loading...</div>
-                    <div class="stat-label">Total Revenue</div>
-                    <small class="text-muted" id="totalOrders">...</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card warning">
-                <div class="text-center">
-                    <i class="bi bi-box-seam stat-icon" style="color: #F59E0B;"></i>
-                    <div class="stat-value" id="totalProducts">Loading...</div>
-                    <div class="stat-label">Products</div>
-                    <small class="text-muted" id="activeUsers">...</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="text-center">
-                    <i class="bi bi-graph-up-arrow stat-icon" style="color: #4F46E5;"></i>
-                    <div class="stat-value" id="todaySales">Loading...</div>
-                    <div class="stat-label">Today's Sales</div>
-                    <small class="text-muted" id="todayOrders">...</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Reports Section -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-graph-up"></i> Sales Trend (Last 7 Days)
-                </div>
-                <div class="card-body">
-                    <canvas id="salesTrendChart" height="100"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-trophy"></i> Top Selling Products (Last 30 Days)
-                </div>
-                <div class="card-body">
-                    <div id="topProductsList">
-                        <div class="text-center text-muted">Loading...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded text-center">
-                                <small class="text-muted">Weekly Sales</small>
-                                <h4 id="weeklySales" class="mb-0">$0.00</h4>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded text-center">
-                                <small class="text-muted">Weekly Orders</small>
-                                <h4 id="weeklyOrders" class="mb-0">0</h4>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded text-center">
-                                <small class="text-muted">Avg Daily Sales</small>
-                                <h4 id="avgDailySales" class="mb-0">$0.00</h4>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded text-center">
-                                <small class="text-muted">Best Selling Day</small>
-                                <h4 id="bestDay" class="mb-0">--</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Performance Metrics -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h3 class="text-center mb-4">📈 Performance Metrics</h3>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <i class="bi bi-cart-check text-success" style="font-size: 2.5rem;"></i>
-                    <h3 id="avgOrderValue" class="mt-3">$0.00</h3>
-                    <p class="text-muted mb-0">Average Order Value</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <i class="bi bi-people text-primary" style="font-size: 2.5rem;"></i>
-                    <h3 id="activeUsersCount" class="mt-3">0</h3>
-                    <p class="text-muted mb-0">Active Users (30 Days)</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <i class="bi bi-clock-history text-info" style="font-size: 2.5rem;"></i>
-                    <h3 id="lastUpdate" class="mt-3">--:--</h3>
-                    <p class="text-muted mb-0">Last Updated</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Intelligent Business Intelligence Section -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <div class="card border-primary">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-lightbulb"></i> Smart Business Intelligence
-                    </h5>
-                    <button class="btn btn-light btn-sm" onclick="loadNotifications()" id="refreshNotificationsBtn">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Notifications Summary -->
-                        <div class="col-md-4">
-                            <div class="card h-100 border-warning">
-                                <div class="card-header bg-warning text-dark">
-                                    <h6 class="mb-0"><i class="bi bi-bell"></i> Smart Alerts</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-danger"><i class="bi bi-exclamation-triangle"></i> High Priority</span>
-                                        <span class="badge bg-danger" id="highPriorityCount">0</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-warning"><i class="bi bi-info-circle"></i> Medium Priority</span>
-                                        <span class="badge bg-warning" id="mediumPriorityCount">0</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span class="text-info"><i class="bi bi-check-circle"></i> Low Priority</span>
-                                        <span class="badge bg-info" id="lowPriorityCount">0</span>
-                                    </div>
-                                    <button class="btn btn-primary btn-sm w-100" onclick="showAllNotifications()">
-                                        <i class="bi bi-list"></i> View All Alerts
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Product Performance Insights -->
-                        <div class="col-md-4">
-                            <div class="card h-100 border-success">
-                                <div class="card-header bg-success text-white">
-                                    <h6 class="mb-0"><i class="bi bi-graph-up"></i> Product Insights</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-2">
-                                        <small class="text-muted">Top Performers</small>
-                                        <div class="badge bg-success" id="topPerformersCount">Loading...</div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <small class="text-muted">Low Performers</small>
-                                        <div class="badge bg-danger" id="lowPerformersCount">Loading...</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <small class="text-muted">Analysis Period</small>
-                                        <div class="text-primary fw-bold">Last 3 Months</div>
-                                    </div>
-                                    <button class="btn btn-success btn-sm w-100" onclick="showProductInsights()">
-                                        <i class="bi bi-bar-chart"></i> Detailed Analysis
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Festival Calendar -->
-                        <div class="col-md-4">
-                            <div class="card h-100 border-info">
-                                <div class="card-header bg-info text-white">
-                                    <h6 class="mb-0"><i class="bi bi-calendar-event"></i> Festival Calendar</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-2">
-                                        <small class="text-muted">Upcoming Festivals</small>
-                                        <div class="badge bg-info" id="upcomingFestivalsCount">Loading...</div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <small class="text-muted">Recommended Promotions</small>
-                                        <div class="badge bg-primary" id="recommendedPromotionsCount">Loading...</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <small class="text-muted">Current Month</small>
-                                        <div class="text-info fw-bold" id="currentMonthName">December</div>
-                                    </div>
-                                    <button class="btn btn-info btn-sm w-100" onclick="showFestivalCalendar()">
-                                        <i class="bi bi-calendar3"></i> View Calendar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Action Buttons -->
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <div class="d-flex flex-wrap gap-2">
-                                <button class="btn btn-outline-primary btn-sm" onclick="loadNotifications()">
-                                    <i class="bi bi-arrow-clockwise"></i> Refresh Intelligence
-                                </button>
-                                <button class="btn btn-outline-success btn-sm" onclick="exportInsights()">
-                                    <i class="bi bi-download"></i> Export Insights
-                                </button>
-                                <button class="btn btn-outline-info btn-sm" onclick="window.location.href='/analytics'">
-                                    <i class="bi bi-graph-up-arrow"></i> Full Analytics
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Access Panels -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h3 class="text-center mb-4">🚀 System Access</h3>
-        </div>
-        <div class="col-md-4">
-            <div class="card access-card h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-shield-check text-primary mb-3" style="font-size: 3rem;"></i>
-                    <h3 class="card-title">Admin Panel</h3>
-                    <p class="card-text">Complete system management, analytics, and business intelligence dashboard</p>
-                    <ul class="list-unstyled text-start mb-4">
-                        <li>📊 Advanced Analytics</li>
-                        <li>👥 User Management</li>
-                        <li>📧 Email Marketing</li>
-                        <li>🤖 AI Assistant</li>
-                        <li>📈 Real-time Reports</li>
-                    </ul>
-                    <a href="/admin" class="btn btn-primary btn-lg">Access Admin Panel</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card access-card h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-workspace text-success mb-3" style="font-size: 3rem;"></i>
-                    <h3 class="card-title">Worker Panel</h3>
-                    <p class="card-text">Streamlined interface for daily operations and product management</p>
-                    <ul class="list-unstyled text-start mb-4">
-                        <li>📦 Product Management</li>
-                        <li>📝 Order Processing</li>
-                        <li>📊 Performance Tracking</li>
-                        <li>🔔 Task Notifications</li>
-                        <li>📋 Daily Reports</li>
-                    </ul>
-                    <a href="/worker" class="btn btn-success btn-lg">Access Worker Panel</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card access-card h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-gear-wide-connected text-info mb-3" style="font-size: 3rem;"></i>
-                    <h3 class="card-title">Labor Management</h3>
-                    <p class="card-text">Track workforce activities and optimize labor efficiency</p>
-                    <ul class="list-unstyled text-start mb-4">
-                        <li>⏰ Time Tracking</li>
-                        <li>📊 Productivity Analytics</li>
-                        <li>👷 Worker Assignments</li>
-                        <li>📈 Performance Metrics</li>
-                        <li>💼 Resource Planning</li>
-                    </ul>
-                    <a href="/labor" class="btn btn-info btn-lg">Access Labor Panel</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
-    <!-- Shopping Section -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h3 class="text-center mb-4">🛒 Customer Experience</h3>
-        </div>
-        <div class="col-md-6">
-            <div class="card shopping-card h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-shop text-warning mb-3" style="font-size: 3rem;"></i>
-                    <h3 class="card-title">Browse Products</h3>
-                    <p class="card-text">Explore our comprehensive product catalog with smart recommendations</p>
-                    <div class="mb-3">
-                        <span class="badge bg-primary me-2">AI Recommendations</span>
-                        <span class="badge bg-success me-2">Real-time Inventory</span>
-                        <span class="badge bg-info">Secure Shopping</span>
-                    </div>
-                    <a href="/products" class="btn btn-warning btn-lg">Start Shopping</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shopping-card h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-circle text-secondary mb-3" style="font-size: 3rem;"></i>
-                    <h3 class="card-title">User Account</h3>
-                    <p class="card-text">Manage your profile, orders, and personalized shopping experience</p>
-                    <div class="mb-3">
-                        <span class="badge bg-secondary me-2">Order History</span>
-                        <span class="badge bg-primary me-2">Wishlist</span>
-                        <span class="badge bg-success">Rewards</span>
-                    </div>
-                    <a href="/user/products" class="btn btn-secondary btn-lg">My Account</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h3 class="text-center mb-4">✨ Platform Features</h3>
-        </div>
-        <div class="col-md-3">
-            <div class="feature-card text-center">
-                <i class="bi bi-robot text-primary mb-3" style="font-size: 2.5rem;"></i>
-                <h5>AI Assistant</h5>
-                <p class="text-muted">Smart chatbot for instant business insights</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="feature-card text-center">
-                <i class="bi bi-graph-up text-success mb-3" style="font-size: 2.5rem;"></i>
-                <h5>Real-time Analytics</h5>
-                <p class="text-muted">Live dashboard with auto-refresh every 15 minutes</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="feature-card text-center">
-                <i class="bi bi-envelope-paper text-info mb-3" style="font-size: 2.5rem;"></i>
-                <h5>Email Marketing</h5>
-                <p class="text-muted">Automated personalized customer outreach</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="feature-card text-center">
-                <i class="bi bi-file-pdf text-danger mb-3" style="font-size: 2.5rem;"></i>
-                <h5>PDF Reports</h5>
-                <p class="text-muted">Detailed analytics exported in professional formats</p>
-            </div>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-        </div>
-        <div class="stat-value" id="todaySales">$0</div>
-        <div class="stat-label">Today's Sales</div>
-        <small id="todayOrders" style="opacity: 0.8;">0 orders today</small>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="flex justify-center gap-2 mb-4">
-    <a href="/analytics" class="btn btn-primary btn-lg">
-        <i class="fas fa-chart-bar"></i>
-        View Analytics
+  <!-- Category Quick Links (BigBasket style) -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:28px;">
+    {% set cats = [('🥦','Vegetables'),('🍎','Fruits'),('🥛','Dairy'),('🍿','Snacks'),('🥤','Beverages'),('🍞','Bakery'),('🧴','Personal'),('🏠','Household')] %}
+    {% for emoji, name in cats %}
+    <a href="/products?cat={{ name }}" style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px 8px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:600;font-size:.75rem;color:#333;text-decoration:none;" onmouseover="this.style.boxShadow='0 2px 12px rgba(132,194,37,.3)';this.style.borderColor='#84C225'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.06)';this.style.borderColor='#e0e0e0'">
+      <span style="font-size:1.8rem;">{{ emoji }}</span>{{ name }}
     </a>
-    <button onclick="exportBusinessSummaryPDF()" class="btn btn-danger btn-lg">
-        <i class="fas fa-file-pdf"></i>
-        Export Report
-    </button>
-</div>
+    {% endfor %}
+  </div>
 
-<!-- Top Products Section -->
-<div class="card mb-4">
-    <div class="card-header">
-        <i class="fas fa-trophy"></i> Top Products (30 Days)
+  <!-- Real-Time Stats -->
+  <div class="row mb-4">
+    <div class="col-12 mb-3 text-center">
+      <h4 class="fw-bold" style="color:var(--gray-900);">📈 Real-Time Business Overview</h4>
     </div>
-    <div id="topProductsList" style="padding: 1rem;">
-        <div class="text-center text-muted">Loading...</div>
+    <div class="col-md-4 mb-3">
+      <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+        <div class="stat-value" id="totalRevenue">Loading…</div>
+        <div class="stat-label">Total Revenue</div>
+        <small id="totalOrders" style="opacity:.8;">…</small>
+      </div>
     </div>
-</div>
+    <div class="col-md-4 mb-3">
+      <div class="stat-card warning">
+        <div class="stat-icon"><i class="fas fa-box"></i></div>
+        <div class="stat-value" id="totalProducts">Loading…</div>
+        <div class="stat-label">Products</div>
+        <small id="activeUsers" style="opacity:.8;">…</small>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-value" id="todaySales">Loading…</div>
+        <div class="stat-label">Today's Sales</div>
+        <small id="todayOrders" style="opacity:.8;">…</small>
+      </div>
+    </div>
+  </div>
 
-<!-- System Access Cards -->
-<div class="grid grid-3 mb-4">
-    <div class="card text-center">
-        <i class="fas fa-user-shield" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
-        <h3 class="card-title">Admin Panel</h3>
-        <p class="card-text">System management & analytics</p>
-        <a href="/admin" class="btn btn-primary mt-2">Access Admin</a>
+  <!-- Charts Row -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-chart-line"></i> Sales Trend (Last 7 Days)</div>
+        <div style="padding:1rem;">
+          <canvas id="salesTrendChart" height="120"></canvas>
+        </div>
+      </div>
     </div>
-    
-    <div class="card text-center">
-        <i class="fas fa-users" style="font-size: 3rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-        <h3 class="card-title">Worker Portal</h3>
-        <p class="card-text">Manage products & sales</p>
-        <a href="/worker" class="btn btn-secondary mt-2">Worker Login</a>
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-trophy"></i> Top Selling Products (30 Days)</div>
+        <div id="topProductsList" style="padding:1rem;">
+          <div class="text-center text-muted">Loading…</div>
+        </div>
+      </div>
     </div>
-    
-    <div class="card text-center">
-        <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--info); margin-bottom: 1rem;"></i>
-        <h3 class="card-title">Products</h3>
-        <p class="card-text">Browse product catalog</p>
-        <a href="/products" class="btn btn-outline mt-2">View Products</a>
+  </div>
+
+  <!-- Product Priority Insights -->
+  <div class="row mb-4">
+    <div class="col-12 mb-2">
+      <h4 class="fw-bold" style="color:var(--gray-900);">🏷️ Product Priority Insights</h4>
     </div>
-</div>
+    <div class="col-md-4 mb-3">
+      <div class="card" style="border-left:4px solid #16a34a;">
+        <div class="card-body" style="padding:1.2rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;"><i class="fas fa-arrow-trend-up" style="color:#16a34a;"></i> High Priority</div>
+              <div id="homePriorityHigh" style="font-size:1.6rem;font-weight:800;color:#16a34a;margin-top:4px;">—</div>
+              <div style="font-size:.75rem;color:#9ca3af;">Top selling products</div>
+            </div>
+            <div style="width:48px;height:48px;background:#dcfce7;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🔥</div>
+          </div>
+          <div id="homePriorityHighList" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card" style="border-left:4px solid #d97706;">
+        <div class="card-body" style="padding:1.2rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;"><i class="fas fa-equals" style="color:#d97706;"></i> Medium Priority</div>
+              <div id="homePriorityMid" style="font-size:1.6rem;font-weight:800;color:#d97706;margin-top:4px;">—</div>
+              <div style="font-size:.75rem;color:#9ca3af;">Average performers</div>
+            </div>
+            <div style="width:48px;height:48px;background:#fef3c7;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📊</div>
+          </div>
+          <div id="homePriorityMidList" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card" style="border-left:4px solid #b91c1c;">
+        <div class="card-body" style="padding:1.2rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;"><i class="fas fa-arrow-trend-down" style="color:#b91c1c;"></i> Low Priority</div>
+              <div id="homePriorityLow" style="font-size:1.6rem;font-weight:800;color:#b91c1c;margin-top:4px;">—</div>
+              <div style="font-size:.75rem;color:#9ca3af;">Need attention</div>
+            </div>
+            <div style="width:48px;height:48px;background:#fee2e2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">⚠️</div>
+          </div>
+          <div id="homePriorityLowList" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Metrics -->
+  <div class="row mb-4">
+    <div class="col-12 mb-3 text-center">
+      <h4 class="fw-bold" style="color:var(--gray-900);">📊 Performance Metrics</h4>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="fas fa-shopping-cart" style="font-size:2.5rem;color:var(--secondary);"></i>
+          <h3 id="avgOrderValue" class="mt-3 fw-bold" style="color:var(--gray-900);">₹0.00</h3>
+          <p class="text-muted mb-0">Average Order Value</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="fas fa-users" style="font-size:2.5rem;color:var(--primary);"></i>
+          <h3 id="activeUsersCount" class="mt-3 fw-bold" style="color:var(--gray-900);">0</h3>
+          <p class="text-muted mb-0">Active Users (30 Days)</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="fas fa-clock" style="font-size:2.5rem;color:var(--info);"></i>
+          <h3 id="lastUpdate" class="mt-3 fw-bold" style="color:var(--gray-900);">--:--</h3>
+          <p class="text-muted mb-0">Last Updated</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Access Cards -->
+  <div class="row mb-4">
+    <div class="col-12 mb-3 text-center">
+      <h4 class="fw-bold" style="color:var(--gray-900);">🚀 System Access</h4>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card access-card h-100">
+        <div style="padding:2rem;text-align:center;">
+          <i class="fas fa-user-shield" style="font-size:3rem;color:var(--primary);margin-bottom:1rem;"></i>
+          <h4 class="card-title">Admin Panel</h4>
+          <p class="card-text">Complete system management, analytics, and business intelligence</p>
+          <ul class="list-unstyled text-start mb-4 mt-3">
+            <li>📊 Advanced Analytics</li>
+            <li>👥 User Management</li>
+            <li>📧 Email Marketing</li>
+            <li>🤖 AI Assistant</li>
+            <li>📈 Real-time Reports</li>
+          </ul>
+          <a href="/admin" class="btn btn-primary w-100">Access Admin Panel</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card access-card h-100">
+        <div style="padding:2rem;text-align:center;">
+          <i class="fas fa-users" style="font-size:3rem;color:var(--secondary);margin-bottom:1rem;"></i>
+          <h4 class="card-title">Worker Portal</h4>
+          <p class="card-text">Streamlined interface for daily operations and product management</p>
+          <ul class="list-unstyled text-start mb-4 mt-3">
+            <li>📦 Product Management</li>
+            <li>📝 Order Processing</li>
+            <li>📊 Performance Tracking</li>
+            <li>🔔 Task Notifications</li>
+            <li>📋 Daily Reports</li>
+          </ul>
+          <a href="/worker" class="btn btn-secondary w-100">Access Worker Portal</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card access-card h-100">
+        <div style="padding:2rem;text-align:center;">
+          <i class="fas fa-cogs" style="font-size:3rem;color:var(--info);margin-bottom:1rem;"></i>
+          <h4 class="card-title">Labor Management</h4>
+          <p class="card-text">Track workforce activities and optimize labor efficiency</p>
+          <ul class="list-unstyled text-start mb-4 mt-3">
+            <li>⏰ Time Tracking</li>
+            <li>📊 Productivity Analytics</li>
+            <li>👷 Worker Assignments</li>
+            <li>📈 Performance Metrics</li>
+            <li>💼 Resource Planning</li>
+          </ul>
+          <a href="/labor" class="btn btn-info w-100">Access Labor Panel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Platform Features -->
+  <div class="row mb-2">
+    <div class="col-12 mb-3 text-center">
+      <h4 class="fw-bold" style="color:var(--gray-900);">✨ Platform Features</h4>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="feature-card">
+        <i class="fas fa-robot" style="font-size:2.5rem;color:var(--primary);"></i>
+        <h5>AI Assistant</h5>
+        <p>Smart chatbot for instant business insights</p>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="feature-card">
+        <i class="fas fa-chart-line" style="font-size:2.5rem;color:var(--secondary);"></i>
+        <h5>Real-time Analytics</h5>
+        <p>Live dashboard with auto-refresh every 15 minutes</p>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="feature-card">
+        <i class="fas fa-envelope-open-text" style="font-size:2.5rem;color:var(--info);"></i>
+        <h5>Email Marketing</h5>
+        <p>Automated personalized customer outreach</p>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="feature-card">
+        <i class="fas fa-file-pdf" style="font-size:2.5rem;color:var(--danger);"></i>
+        <h5>PDF Reports</h5>
+        <p>Detailed analytics in professional formats</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page-wrapper -->
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Format currency helper
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount);
+function formatINR(amount) {
+  return '₹' + Number(amount || 0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
-// Load business stats
 async function loadBusinessStats() {
-    try {
-        const response = await fetch('/api/business-stats');
-        if (!response.ok) {
-            throw new Error('Failed to fetch data');
-        }
-        const data = await response.json();
-        
-        console.log('Business stats loaded:', data);
-        
-        // Update stats
-        document.getElementById('totalRevenue').textContent = formatCurrency(data.total_sales || 0);
-        document.getElementById('totalOrders').textContent = (data.total_orders || 0).toLocaleString() + ' orders';
-        document.getElementById('totalProducts').textContent = data.total_products || 0;
-        document.getElementById('activeUsers').textContent = (data.active_users || 0) + ' active users';
-        document.getElementById('todaySales').textContent = formatCurrency(data.sales_today || 0);
-        document.getElementById('todayOrders').textContent = (data.orders_today || 0) + ' orders today';
-        
-        // Load top products
-        loadTopProducts(data.top_products || []);
-    } catch (error) {
-        console.error('Error loading stats:', error);
-        document.getElementById('topProductsList').innerHTML = 
-            '<div class="text-center text-danger">Failed to load data. Please refresh the page.</div>';
-    }
+  const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  try {
+    const res = await fetch('/api/business-stats?days=7');
+    if (!res.ok) throw new Error('API error');
+    const d = await res.json();
+
+    setEl('totalRevenue',    formatINR(d.total_sales));
+    setEl('totalOrders',     (d.total_orders || 0).toLocaleString() + ' total orders');
+    setEl('totalProducts',   d.total_products || 0);
+    setEl('activeUsers',     (d.active_users || 0) + ' active users');
+    setEl('todaySales',      formatINR(d.sales_today));
+    setEl('todayOrders',     (d.orders_today || 0) + ' orders today');
+    setEl('avgOrderValue',   formatINR(d.avg_order_value));
+    setEl('activeUsersCount',d.active_users || 0);
+    setEl('lastUpdate',      new Date().toLocaleTimeString('en-IN'));
+
+    loadTopProducts(d.top_products || []);
+    loadSalesTrendChart(d.sales_trend || []);
+    loadProductPriority(d.top_products || [], d.top_users || []);
+    buildHomePriority(d.top_products || []);
+  } catch (e) {
+    console.error('Stats load error:', e);
+    ['totalRevenue','totalProducts','todaySales'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = 'N/A';
+    });
+  }
 }
 
-// Load top products
+function buildHomePriority(products) {
+  const total  = products.length;
+  if (!total) return;
+  const highEnd = Math.ceil(total / 3);
+  const midEnd  = Math.ceil(total * 2 / 3);
+  const high = products.slice(0, highEnd);
+  const mid  = products.slice(highEnd, midEnd);
+  const low  = products.slice(midEnd);
+  const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  setEl('homePriorityHigh', high.length + ' Products');
+  setEl('homePriorityMid',  mid.length  + ' Products');
+  setEl('homePriorityLow',  low.length  + ' Products');
+  const fmt = (arr, el) => {
+    const e = document.getElementById(el);
+    if (!e) return;
+    e.innerHTML = arr.slice(0,3).map(p =>
+      `<div style="font-size:.75rem;padding:3px 0;border-bottom:1px solid #f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || 'Product'}</div>`
+    ).join('');
+  };
+  fmt(high, 'homePriorityHighList');
+  fmt(mid,  'homePriorityMidList');
+  fmt(low,  'homePriorityLowList');
+}
+
+function loadProductPriority(products, topUsers) {
+  const total    = products.length;
+  const highEnd  = Math.ceil(total / 3);
+  const midEnd   = Math.ceil(total * 2 / 3);
+  const highCount = highEnd;
+  const midCount  = midEnd - highEnd;
+  const lowCount  = total - midEnd;
+  const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  setEl('highProdCount', highCount > 0 ? highCount + ' products' : '—');
+  setEl('midProdCount',  midCount  > 0 ? midCount  + ' products' : '—');
+  setEl('lowProdCount',  lowCount  > 0 ? lowCount  + ' products' : '—');
+  if (topUsers.length > 0) {
+    const row = document.getElementById('topBuyerRow');
+    if (row) row.style.display = '';
+    setEl('topBuyerName', (topUsers[0].name || 'Guest') + ' · ' + formatINR(topUsers[0].spent));
+  }
+}
+
 function loadTopProducts(products) {
-    const container = document.getElementById('topProductsList');
-    if (!container) return;
-    
-<<<<<<< HEAD
-    if (products.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted">No data available</div>';
-        return;
-    }
-    
-    container.innerHTML = products.map((p, i) => `
-        <div class="flex justify-between items-center p-2 mb-2" style="background: var(--gray-50); border-radius: var(--border-radius-sm);">
-            <div>
-                <div class="fw-semibold">${i + 1}. ${p.name || 'Unknown Product'}</div>
-                <small class="text-muted">${p.units || 0} units sold</small>
-=======
-    // Static Tamil products - always show these
-    const tamilProducts = [
-        { name: 'Basmati Rice', units: 145, revenue: 45678.50 },
-        { name: 'Idli Batter', units: 98, revenue: 32456.75 },
-        { name: 'Sambar Powder', units: 76, revenue: 28934.20 },
-        { name: 'Coconut Oil', units: 63, revenue: 24567.80 },
-        { name: 'Jaggery (Vellam)', units: 52, revenue: 18945.60 }
-    ];
-    
-    let html = '<div class="list-group">';
-    tamilProducts.forEach((product, index) => {
-        const badgeClass = index === 0 ? 'warning' : index === 1 ? 'secondary' : 'info';
-        html += `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="badge bg-${badgeClass} me-2">#${index + 1}</span>
-                    <strong>${product.name}</strong>
-                    <small class="text-muted d-block">${product.units} units sold</small>
-                </div>
-                <span class="badge bg-success rounded-pill">₹${product.revenue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
->>>>>>> 7fb6acd397eec1b770bfde23ef8067077abc4054
-            </div>
-            <div class="fw-bold text-primary">${formatCurrency(p.revenue || 0)}</div>
-        </div>
-    `).join('');
+  const el = document.getElementById('topProductsList');
+  if (!el) return;
+  if (!products.length) {
+    el.innerHTML = '<p class="text-muted text-center py-3">No sales data available yet.</p>';
+    return;
+  }
+  el.innerHTML = '<div class="list-group">' + products.map((p, i) => {
+    const colors = ['warning','secondary','info','primary','success'];
+    return `<div class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <span class="badge bg-${colors[i]||'primary'} me-2">#${i+1}</span>
+        <strong>${p.name||'Unknown'}</strong>
+        <small class="text-muted d-block">${p.units||0} units sold</small>
+      </div>
+      <span class="badge bg-success rounded-pill">${formatINR(p.revenue)}</span>
+    </div>`;
+  }).join('') + '</div>';
 }
 
-// Export business summary (stub)
+function loadSalesTrendChart(trend) {
+  const ctx = document.getElementById('salesTrendChart');
+  if (!ctx || !trend.length) return;
+  if (window._trendChart) window._trendChart.destroy();
+  window._trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trend.map(t => t.date),
+      datasets: [{
+        label: 'Sales (₹)',
+        data: trend.map(t => t.sales),
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79,70,229,.1)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#4f46e5',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive:true, plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>'₹'+v.toLocaleString('en-IN')}}}
+    }
+  });
+}
+
 function exportBusinessSummaryPDF() {
-    if (window.showInfo) {
-        window.showInfo('PDF export feature coming soon!');
-    } else {
-        alert('PDF export feature coming soon!');
-    }
+  window.showToast ? window.showToast('PDF export coming soon!','warning') : alert('PDF export coming soon!');
 }
 
-// Load stats on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, fetching business stats...');
-    loadBusinessStats();
+async function loadNotifications() {
+  // === Smart Alerts ===
+  try {
+    const nr = await fetch('/api/notifications');
+    const nd = await nr.json();
+    const notifs = nd.notifications || [];
+    const high   = notifs.filter(n => n.priority === 'high').length;
+    const medium = notifs.filter(n => n.priority === 'medium').length;
+    const low    = notifs.filter(n => n.priority === 'low').length;
+    const setEl  = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setEl('highPriorityCount',   high);
+    setEl('mediumPriorityCount', medium);
+    setEl('lowPriorityCount',    low);
+  } catch(e) { console.warn('Notifications load error:', e); }
+
+  // === Product Insights ===
+  try {
+    const pr = await fetch('/api/product-insights');
+    const pd = await pr.json();
+    const topCount = (pd.top_performers || []).length;
+    const el = document.getElementById('topPerformersCount');
+    if (el) el.textContent = topCount > 0 ? topCount + ' Products' : 'No data yet';
+  } catch(e) { console.warn('Product insights error:', e); }
+
+  // === Festival Calendar ===
+  try {
+    const fr  = await fetch('/api/festival-calendar');
+    const fd  = await fr.json();
+    const upcoming = fd.upcoming_festivals || [];
+    const fe  = document.getElementById('upcomingFestivalsCount');
+    if (fe) fe.textContent = upcoming.length > 0 ? upcoming.length + ' Festivals' : 'None this month';
+    const currentMonthEl = document.getElementById('currentMonthName');
+    if (currentMonthEl) currentMonthEl.textContent = new Date().toLocaleString('en-IN', {month:'long'});
+  } catch(e) { console.warn('Festival calendar error:', e); }
+}
+
+function showAllNotifications() { window.location.href = '/admin'; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadBusinessStats();
+  loadNotifications();
 });
 </script>
 {% endblock %}
+

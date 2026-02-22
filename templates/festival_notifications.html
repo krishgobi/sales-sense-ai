@@ -29,6 +29,129 @@
         </div>
     </div>
 
+    <!-- Add Custom Festival -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Add Custom Festival / Offer</h5>
+                    <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addFestivalForm">
+                        <i class="fas fa-chevron-down"></i> Toggle Form
+                    </button>
+                </div>
+                <div class="collapse show" id="addFestivalForm">
+                    <div class="card-body">
+                        <form id="customFestivalForm">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Emoji</label>
+                                    <input type="text" id="cf_emoji" class="form-control" placeholder="🎉" value="🎉" maxlength="4">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold">Festival / Offer Name *</label>
+                                    <input type="text" id="cf_name" class="form-control" placeholder="e.g. Summer Sale, New Year Offer" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Start Date *</label>
+                                    <input type="date" id="cf_start_date" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">End Date</label>
+                                    <input type="date" id="cf_end_date" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Discount</label>
+                                    <input type="text" id="cf_discount" class="form-control" placeholder="e.g. 15% or ₹100 off">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold">Description</label>
+                                    <input type="text" id="cf_description" class="form-control" placeholder="Short description of the offer">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Featured Products &amp; Price Override</label>
+                                    <div class="d-flex gap-2 align-items-center mb-1">
+                                        <select id="cf_product_select" class="form-select">
+                                            <option value="">-- Loading products... --</option>
+                                        </select>
+                                        <button class="btn btn-outline-primary btn-sm" type="button" onclick="addProductToList()">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mb-2">
+                                        <i class="fas fa-info-circle"></i>
+                                        Add products then optionally enter a <strong>specific override price</strong> per product.
+                                        Leave blank to apply the global <strong>discount %</strong> instead.
+                                    </small>
+                                    <div id="cf_products_list" class="p-2 border rounded" style="min-height:50px;">
+                                        <small class="text-muted" id="cf_no_products">No products selected yet</small>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-success" onclick="submitCustomFestival()">
+                                        <i class="fas fa-save"></i> Save Festival / Offer
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary ms-2" onclick="clearProducts()">
+                                        <i class="fas fa-times"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Festivals List -->
+    {% if custom_festivals %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Custom Festivals & Offers ({{ custom_festivals|length }})</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Festival</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Discount</th>
+                                    <th>Products</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cf in custom_festivals %}
+                                <tr id="cf-row-{{ cf._id }}">
+                                    <td><strong>{{ cf.emoji }} {{ cf.name }}</strong><br><small class="text-muted">{{ cf.description }}</small></td>
+                                    <td>{{ cf.start_date.strftime('%b %d, %Y') if cf.start_date else '—' }}</td>
+                                    <td>{{ cf.end_date.strftime('%b %d, %Y') if cf.end_date else '—' }}</td>
+                                    <td><span class="badge bg-success">{{ cf.discount }}</span></td>
+                                    <td><small>
+                                        {% for p in cf.products[:4] %}
+                                        <span class="badge bg-light text-dark me-1">{{ p }}
+                                            {% if cf.product_prices and p in cf.product_prices %}
+                                            <span class="text-success fw-bold"> &#8377;{{ cf.product_prices[p] }}</span>
+                                            {% endif %}
+                                        </span>
+                                        {% endfor %}
+                                        {% if cf.products|length > 4 %}<span class="text-muted">+{{ cf.products|length - 4 }} more</span>{% endif %}
+                                    </small></td>
+                                    <td><button class="btn btn-danger btn-sm" onclick="deleteCustomFestival('{{ cf._id }}')"><i class="fas fa-trash"></i> Delete</button></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Upcoming Festivals (within 30 days) -->
     {% if upcoming_festivals %}
     <div class="row mb-4">
@@ -182,6 +305,143 @@
 </div>
 
 <script>
+// ─── Custom Festival Logic ───────────────────────────────────────────────────
+// {name: {overridePrice: null|number}}
+const selectedProducts = {};
+
+// Load products into select on page load
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/admin/get-products-list')
+        .then(r => r.json())
+        .then(data => {
+            const sel = document.getElementById('cf_product_select');
+            sel.innerHTML = '<option value="">-- Select a product --</option>';
+            (data.products || []).forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                sel.appendChild(opt);
+            });
+        });
+});
+
+function addProductToList() {
+    const sel = document.getElementById('cf_product_select');
+    const val = sel.value.trim();
+    if (!val || selectedProducts[val]) return;
+    selectedProducts[val] = { overridePrice: null };
+
+    document.getElementById('cf_no_products').style.display = 'none';
+
+    // Build a row: name | price override input | remove btn
+    const row = document.createElement('div');
+    row.className = 'd-flex align-items-center gap-2 mb-2 p-2 border rounded bg-light w-100';
+    row.dataset.name = val;
+    row.style.flexWrap = 'wrap';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'fw-semibold flex-grow-1';
+    nameSpan.textContent = val;
+
+    const priceWrap = document.createElement('div');
+    priceWrap.className = 'd-flex align-items-center gap-1';
+
+    const rupee = document.createElement('span');
+    rupee.className = 'text-muted';
+    rupee.textContent = '₹';
+
+    const priceInput = document.createElement('input');
+    priceInput.type = 'number';
+    priceInput.min = '0';
+    priceInput.step = '0.01';
+    priceInput.className = 'form-control form-control-sm';
+    priceInput.style.width = '100px';
+    priceInput.placeholder = 'Override price';
+    priceInput.title = 'Leave blank to use the discount %. Enter a specific price to set it manually.';
+    priceInput.addEventListener('input', () => {
+        selectedProducts[val].overridePrice = priceInput.value !== '' ? parseFloat(priceInput.value) : null;
+    });
+
+    const hint = document.createElement('small');
+    hint.className = 'text-muted';
+    hint.textContent = '(optional)';
+
+    priceWrap.appendChild(rupee);
+    priceWrap.appendChild(priceInput);
+    priceWrap.appendChild(hint);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-danger btn-sm';
+    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    removeBtn.onclick = () => {
+        delete selectedProducts[val];
+        row.remove();
+        if (!Object.keys(selectedProducts).length)
+            document.getElementById('cf_no_products').style.display = '';
+    };
+
+    row.appendChild(nameSpan);
+    row.appendChild(priceWrap);
+    row.appendChild(removeBtn);
+
+    document.getElementById('cf_products_list').appendChild(row);
+    sel.value = '';
+}
+
+function clearProducts() {
+    Object.keys(selectedProducts).forEach(k => delete selectedProducts[k]);
+    document.getElementById('cf_products_list').innerHTML =
+        '<small class="text-muted" id="cf_no_products">No products selected yet</small>';
+}
+
+function submitCustomFestival() {
+    const name = document.getElementById('cf_name').value.trim();
+    const start_date = document.getElementById('cf_start_date').value;
+    if (!name || !start_date) { alert('Please fill in festival name and start date.'); return; }
+
+    const productNames = Object.keys(selectedProducts);
+    // Build price overrides dict (only include products with explicit price set)
+    const product_prices = {};
+    productNames.forEach(pn => {
+        const op = selectedProducts[pn].overridePrice;
+        if (op !== null && !isNaN(op) && op > 0) product_prices[pn] = op;
+    });
+
+    const body = {
+        name,
+        emoji: document.getElementById('cf_emoji').value.trim() || '🎉',
+        start_date,
+        end_date: document.getElementById('cf_end_date').value || start_date,
+        discount: document.getElementById('cf_discount').value.trim() || '10%',
+        description: document.getElementById('cf_description').value.trim(),
+        products: productNames,
+        product_prices
+    };
+    fetch('/admin/add-custom-festival', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { alert('✅ ' + data.message); location.reload(); }
+        else { alert('❌ ' + data.error); }
+    })
+    .catch(e => alert('❌ Error: ' + e));
+}
+
+function deleteCustomFestival(id) {
+    if (!confirm('Delete this custom festival?')) return;
+    fetch('/admin/delete-custom-festival/' + id, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { document.getElementById('cf-row-' + id)?.remove(); alert('✅ Deleted!'); }
+            else { alert('❌ ' + data.error); }
+        });
+}
+// ─── End Custom Festival Logic ───────────────────────────────────────────────
+
 function triggerNotifications() {
     if (confirm('This will check for upcoming festivals and send test notifications. Continue?')) {
         fetch('/admin/send-festival-notifications', {

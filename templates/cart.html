@@ -1,10 +1,19 @@
 {% extends "base.html" %}
+{% block title %}My Basket - SalesSense AI{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Shopping Cart</h2>
-        <a href="{{ url_for('product_list') }}" class="btn btn-secondary">
+<div class="container" style="max-width:1100px;">
+    <!-- BB-style header bar -->
+    <div style="background:#fff;border-radius:8px;padding:16px 20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+            <h2 style="font-size:1.3rem;font-weight:800;margin:0;color:#333;">
+                <i class="fas fa-shopping-basket" style="color:#84C225;margin-right:8px;"></i>My Basket
+            </h2>
+            {% if cart %}
+            <div style="font-size:.78rem;color:#888;margin-top:3px;">{{ cart|length }} item(s) in your basket</div>
+            {% endif %}
+        </div>
+        <a href="{{ url_for('product_list') }}" class="btn btn-light">
             <i class="bi bi-arrow-left"></i> Continue Shopping
         </a>
     </div>
@@ -32,7 +41,7 @@
                             <tbody>
                                 {% for cart_key, item in cart.items() %}
                                 <tr>
-                                    <td>{{ item.product_name }} ({{ item.variant_name }})</td>
+                                    <td>{{ item.product_name }} ({{ item.variant_name or item.variant_quantity or '' }})</td>
                                     <td>{{ item.quantity }}</td>
                                     <td>₹{{ item.price }}</td>
                                     <td>₹{{ item.price * item.quantity }}</td>
@@ -83,31 +92,35 @@
 <div class="modal fade" id="checkoutModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Complete Your Purchase</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header" style="background:linear-gradient(135deg,#84C225,#3d7a00);color:#fff;">
+                <h5 class="modal-title" style="color:#fff;font-weight:800;">
+                    <i class="fas fa-shopping-basket me-2"></i>Confirm Your Order
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <!-- Logged-in user info (read-only) -->
+                {% if current_user %}
+                <div style="background:#e8f5d0;border:1.5px solid #84C225;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;background:#84C225;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:.95rem;color:#3d7a00;">{{ current_user.name }}</div>
+                        <div style="font-size:.8rem;color:#555;">{{ current_user.email }}
+                            {% if current_user.mobile or current_user.phone %}
+                            &nbsp;&bull;&nbsp;{{ current_user.mobile or current_user.phone }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span style="margin-left:auto;background:#84C225;color:#fff;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;">Logged In</span>
+                </div>
+                {% endif %}
+
                 <form id="checkoutForm">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="buyer_name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="buyer_name" name="buyer_name" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="buyer_email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="buyer_email" name="buyer_email" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="buyer_phone" class="form-label">Mobile Number <span class="text-danger">*</span></label>
-                            <input type="tel" class="form-control" id="buyer_phone" name="buyer_phone" 
-                                   placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-                            <small class="text-muted">Enter 10-digit mobile number</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="payment_method_modal" class="form-label">Payment Method <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Payment Method <span class="text-danger">*</span></label>
                             <select class="form-select" id="payment_method_modal" name="payment_method" required>
                                 <option value="upi">UPI</option>
                                 <option value="cod">Cash on Delivery</option>
@@ -116,21 +129,30 @@
                                 <option value="net_banking">Net Banking</option>
                             </select>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Delivery Address <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="delivery_address" name="delivery_address"
+                                      rows="3" required placeholder="Enter your full delivery address"></textarea>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="delivery_address" class="form-label">Delivery Address <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="delivery_address" name="delivery_address" 
-                                  rows="3" required placeholder="Enter full delivery address"></textarea>
-                    </div>
-                    <div class="alert alert-info">
-                        <strong>Total Amount:</strong> ₹{{ cart_total }}
+                    <div style="background:#f9f9f9;border-radius:8px;padding:14px 18px;margin-top:4px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="font-size:.95rem;color:#555;">Order Total</span>
+                            <span style="font-size:1.3rem;font-weight:800;color:#3d7a00;">₹{{ cart_total }}</span>
+                        </div>
+                        <div style="font-size:.75rem;color:#888;margin-top:4px;">
+                            <i class="fas fa-envelope me-1"></i>
+                            A confirmation email will be sent to
+                            {% if current_user %}<strong>{{ current_user.email }}</strong>{% else %}your registered email{% endif %}
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirm-purchase-btn">
-                    <i class="bi bi-check-circle"></i> Confirm Purchase
+            <div class="modal-footer" style="border-top:1px solid #e0e0e0;">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirm-purchase-btn"
+                        style="background:#84C225;border:none;color:#fff;font-weight:700;padding:10px 28px;border-radius:6px;font-size:.9rem;cursor:pointer;">
+                    <i class="fas fa-check-circle me-2"></i>Place Order
                 </button>
             </div>
         </div>
@@ -144,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', async function() {
             const cartKey = this.dataset.cartKey;
             try {
-                const response = await fetch('/cart/guest-remove', {
+                const response = await fetch('/cart/remove', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -154,9 +176,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const result = await response.json();
                 if (result.success) {
-                    location.reload();
+                    this.closest('tr').remove();
+                    // update item count
+                    const badge = document.querySelector('[style*="margin-top:3px"]');
+                    const remaining = document.querySelectorAll('tbody tr').length;
+                    if (remaining === 0) { location.reload(); return; }
+                    if (badge) badge.textContent = remaining + ' item(s) in your basket';
                 } else {
-                    alert('Error removing item: ' + result.error);
+                    alert('Error removing item: ' + (result.error || 'Unknown error'));
                 }
             } catch (error) {
                 alert('Error: ' + error);
@@ -169,55 +196,39 @@ document.addEventListener('DOMContentLoaded', function() {
     if (confirmPurchaseBtn) {
         confirmPurchaseBtn.addEventListener('click', async function() {
             const form = document.getElementById('checkoutForm');
-            
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            
-            const buyerName = document.getElementById('buyer_name').value;
-            const buyerEmail = document.getElementById('buyer_email').value;
-            const buyerPhone = document.getElementById('buyer_phone').value;
-            const deliveryAddress = document.getElementById('delivery_address').value;
-            const paymentMethod = document.getElementById('payment_method_modal').value;
-            
-            // Disable button and show loading
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+
+            const deliveryAddress = document.getElementById('delivery_address').value.trim();
+            const paymentMethod   = document.getElementById('payment_method_modal').value;
+
+            if (!deliveryAddress) { alert('Please enter a delivery address.'); return; }
+
             confirmPurchaseBtn.disabled = true;
-            confirmPurchaseBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Processing...';
-            
+            confirmPurchaseBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing…';
+
             try {
-                const response = await fetch('/guest/purchase', {
+                const response = await fetch('/user/purchase', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        buyer_name: buyerName,
-                        buyer_email: buyerEmail,
-                        buyer_phone: buyerPhone,
-                        delivery_address: deliveryAddress,
-                        payment_method: paymentMethod
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ delivery_address: deliveryAddress, payment_method: paymentMethod })
                 });
 
                 const result = await response.json();
                 if (result.success) {
-                    // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('checkoutModal'));
-                    modal.hide();
-                    
-                    // Show success message
-                    alert('✅ Order Confirmed!\\n\\nOrder ID: ' + result.order_id + '\\nTotal Amount: ₹' + result.total_amount.toFixed(2) + '\\n\\nA confirmation email has been sent to ' + buyerEmail);
+                    if (modal) modal.hide();
+                    const emailNote = result.user_email ? `\n📧 Confirmation sent to ${result.user_email}` : '';
+                    alert(`✅ Order Placed!\n\nOrder ID: ${result.order_id}\nTotal: ₹${parseFloat(result.total_amount).toFixed(2)}${emailNote}`);
                     window.location.href = '{{ url_for("product_list") }}';
                 } else {
-                    alert('Error: ' + result.error);
+                    alert('❌ Error: ' + result.error);
                     confirmPurchaseBtn.disabled = false;
-                    confirmPurchaseBtn.innerHTML = '<i class="bi bi-check-circle"></i> Confirm Purchase';
+                    confirmPurchaseBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Place Order';
                 }
             } catch (error) {
                 alert('Error processing purchase: ' + error);
                 confirmPurchaseBtn.disabled = false;
-                confirmPurchaseBtn.innerHTML = '<i class="bi bi-check-circle"></i> Confirm Purchase';
+                confirmPurchaseBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Place Order';
             }
         });
     }

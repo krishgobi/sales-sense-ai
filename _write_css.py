@@ -1,4 +1,7 @@
-/* ===================================================
+"""Helper: rewrite style.css with BigBasket theme."""
+import os, sys
+
+css = r"""/* ===================================================
    BigBasket-Style CSS — Sales Sense AI
    =================================================== */
 
@@ -23,9 +26,6 @@
   --primary:        #84C225;
   --secondary:      #3d7a00;
   --info:           #0ea5e9;
-  --warning:        #ff8c00;
-  --success:        #84C225;
-  --danger:         #e23744;
   --gray-900:       #333333;
 }
 
@@ -360,26 +360,6 @@ img { max-width: 100%; }
 .analytics-header { background: linear-gradient(135deg, var(--bb-green) 0%, var(--bb-green-dark) 100%); color: #fff; border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
 .analytics-header h1 { font-size: 1.6rem; font-weight: 800; }
 
-/* Analytics Quick Stats */
-.quick-stats-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; margin:20px 0 24px; }
-.quick-stat-card { background:#fff; border:1px solid var(--bb-border); border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow-sm); }
-.qs-label { font-size:.76rem; font-weight:600; color:var(--bb-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; display:flex; align-items:center; }
-.qs-value { font-size:1.55rem; font-weight:800; color:var(--bb-text); line-height:1.2; }
-
-/* Product Rank Badge */
-.product-rank { display:inline-flex; align-items:center; justify-content:center; min-width:28px; height:28px; background:var(--bb-green); color:#fff; border-radius:7px; font-size:.78rem; font-weight:700; flex-shrink:0; }
-
-/* Insight Items */
-.insight-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--bb-border); }
-.insight-item:last-child { border-bottom:none; padding-bottom:0; }
-.insight-info { min-width:0; flex:1; }
-.insight-name { font-size:.88rem; font-weight:600; color:var(--bb-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px; }
-.insight-meta { font-size:.74rem; color:var(--bb-muted); margin-top:2px; }
-.priority-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:.72rem; font-weight:700; white-space:nowrap; flex-shrink:0; }
-.priority-high { background:#dcfce7; color:#16a34a; }
-.priority-mid  { background:#fef9c3; color:#92400e; }
-.priority-low  { background:#fee2e2; color:#b91c1c; }
-
 /* ── Misc Helpers ── */
 .notification-card { border: 1px solid var(--bb-border); border-radius: var(--radius); padding: 16px; background: #fff; box-shadow: var(--shadow-sm); transition: box-shadow .2s; }
 .notification-card:hover { box-shadow: var(--shadow-md); }
@@ -446,38 +426,9 @@ img { max-width: 100%; }
  .col-md-9{width:75%}.col-md-10{width:83.333%}.col-md-11{width:91.667%}.col-md-12{width:100%}
 }
 @media(min-width:576px){.col-sm-6{width:50%}}
+"""
 
-/* ── Admin Dashboard Extra Classes ── */
-.metrics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
-.stat-card.blue   { background:#0ea5e9; }
-.stat-card.green  { background:var(--bb-green); }
-.stat-card.purple { background:#7c3aed; }
-.stat-card.orange { background:#ff8c00; }
-.stat-card.red    { background:var(--bb-red); }
-.btn-outline { display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid var(--bb-border);background:#fff;color:var(--bb-text);transition:all .2s; }
-.btn-outline:hover { border-color:var(--bb-green);color:var(--bb-green-dark);background:var(--bb-green-light); }
-.charts-section { display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:20px;margin-top:16px; }
-.chart-card { background:#fff;border:1px solid var(--bb-border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm); }
-.chart-title { font-size:.95rem;font-weight:700;color:var(--bb-text);margin:0; }
-.progress { background:#f0f0f0;border-radius:6px;overflow:hidden; }
-.progress-bar { height:100%;background:var(--bb-green);display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:.65rem;color:#fff;font-weight:700; }
-.table-responsive { overflow-x:auto; }
-.table-sm th,.table-sm td { padding:7px 12px; }
-.text-warning { color:var(--bb-orange)!important; }
-.fs-5 { font-size:1.1rem; }
-.g-3 { gap:12px; }
-.col-auto { flex:0 0 auto; }
-.rounded { border-radius:var(--radius); }
-.list-unstyled { list-style:none;padding:0;margin:0; }
-.list-unstyled li { padding:4px 0; }
-.h-100 { height:100%; }
-.access-card { transition:transform .2s,box-shadow .2s; }
-.access-card:hover { transform:translateY(-3px);box-shadow:var(--shadow-md); }
-.pagination { display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:20px; }
-.page-btn { padding:7px 14px;border:1.5px solid var(--bb-border);border-radius:var(--radius-sm);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--bb-text);transition:all .2s; }
-.page-btn:hover,.page-btn.active { background:var(--bb-green);color:#fff;border-color:var(--bb-green); }
-.col-md-auto { flex:0 0 auto; }
-.spinner-border { display:inline-block;width:1rem;height:1rem;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite; }
-.spinner-border-sm { width:.75rem;height:.75rem; }
-@keyframes spin { to { transform:rotate(360deg); } }
-
+path = os.path.join(os.path.dirname(__file__), 'static', 'css', 'style.css')
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(css)
+print("CSS written:", len(css), "chars")

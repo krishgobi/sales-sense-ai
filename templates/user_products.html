@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2>Welcome, {{ user.name }}!</h2>
-        </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ url_for('view_cart') }}" class="btn btn-primary me-2">
-                View Cart 
-                <span class="badge bg-light text-dark" id="cart-count">
-                    {{ cart|length }}
-                </span>
-            </a>
-            <a href="{{ url_for('labor_logout') }}" class="btn btn-outline-danger">Logout</a>
-        </div>
+<!-- BB-style page header bar -->
+<div style="background:#fff;border-bottom:2px solid #84C225;padding:14px 0;margin-bottom:20px;">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div>
+      <span style="font-weight:800;font-size:1.15rem;color:#3d7a00;"><i class="fas fa-shopping-basket me-2"></i>Welcome, {{ user.name }}!</span>
+      <span style="font-size:.8rem;color:#888;margin-left:10px;">Browse &amp; add products to your basket</span>
     </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('view_cart') }}" style="background:#fff;border:2px solid #84C225;color:#3d7a00;font-weight:700;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:6px;">
+        <i class="fas fa-shopping-basket"></i> My Basket
+        <span style="background:#84C225;color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;" id="cart-count">{{ cart|length }}</span>
+      </a>
+      <a href="{{ url_for('labor_logout') }}" style="background:#fff;border:2px solid #e23744;color:#e23744;font-weight:700;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:.85rem;">Logout</a>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row mb-3" style="display:none"></div>
 
     <div class="row mb-4">
         <div class="col-12">
@@ -35,14 +38,27 @@
              data-name="{{ product.name }}">
                             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">Category: {{ product.category }}</p>
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                      <h5 class="card-title mb-0" style="font-size:.95rem;font-weight:800;color:#333;">{{ product.name }}</h5>
+                      {% if product.festival_discount %}
+                      <span style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:4px;">
+                          {{ product.festival_discount.emoji }} {{ product.festival_discount.label }}
+                      </span>
+                      {% endif %}
+                    </div>
+                    <p class="card-text" style="font-size:.78rem;color:#888;margin-bottom:8px;"><i class="fas fa-tag me-1" style="color:#84C225;"></i>{{ product.category }}</p>
                     <div id="variants-container-{{ product._id }}">
                         {% for variant in product.variants %}
                         <div class="variant-row mb-3 p-2 border rounded">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="variant-info">
-                                    {{ variant.quantity }} - ₹{{ variant.price }}
+                                    {{ variant.quantity }} &mdash;
+                                    {% if variant.original_price is defined %}
+                                        <s class="text-muted">&#8377;{{ "%.2f"|format(variant.original_price) }}</s>
+                                        <strong class="text-success ms-1">&#8377;{{ "%.2f"|format(variant.price) }}</strong>
+                                    {% else %}
+                                        &#8377;{{ variant.price }}
+                                    {% endif %}
                                     <small class="text-muted">({{ variant.stock }} in stock)</small>
                                 </span>
                                 <div class="form-check">
@@ -68,7 +84,7 @@
                                            value="1"
                                            data-variant-index="{{ loop.index0 }}"
                                            {% if variant.stock <= 0 %}disabled{% endif %}>
-                                    <span class="input-group-text">Total: ₹<span class="variant-total">{{ variant.price }}</span></span>
+                                    <span class="input-group-text">Total: &#8377;<span class="variant-total">{{ variant.price }}</span></span>
                                 </div>
                             </div>
                         </div>
@@ -78,10 +94,11 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Total Selected: <span class="product-total-price">₹0.00</span></span>
-                        <button class="btn btn-primary add-to-cart-btn" 
+                        <button class="btn btn-success add-to-cart-btn" 
+                                style="background:#84C225;border-color:#84C225;font-weight:700;font-size:.82rem;"
                                 data-product-id="{{ product._id }}"
                                 data-product-name="{{ product.name }}">
-                            Add Selected to Cart
+                            <i class="fas fa-plus me-1"></i>Add to Basket
                         </button>
                     </div>
                 </div>

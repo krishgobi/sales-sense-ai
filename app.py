@@ -22,8 +22,10 @@ import time
 load_dotenv()
 
 app = Flask(__name__)
-# Use environment variable for SECRET_KEY, fallback to random for development
-app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
+# Use environment variable for SECRET_KEY, fallback to a stable key (random rotates on restart and kills sessions)
+app.secret_key = os.environ.get('SECRET_KEY', 'salessense-stable-key-2026-do-not-change')
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 # ===== INTELLIGENT ADMIN NOTIFICATION SYSTEM =====
 
@@ -695,32 +697,113 @@ def extract_numeric_value(value):
         return 0.0
 
 def send_email(to_email, subject, html_body):
-    """Send email using SMTP"""
+    """Send email via SMTP. Returns (True, '') on success or (False, error_message) on failure."""
     try:
-        smtp_server = os.getenv('SMTP_SERVER')
-        smtp_port = int(os.getenv('SMTP_PORT', 587))
+        smtp_server   = os.getenv('SMTP_SERVER')
+        smtp_port     = int(os.getenv('SMTP_PORT', 587))
         smtp_username = os.getenv('SMTP_USERNAME')
         smtp_password = os.getenv('SMTP_PASSWORD')
-        sender_email = os.getenv('SENDER_EMAIL')
-        
+        sender_email  = os.getenv('SENDER_EMAIL')
+
+        # Validate that SMTP env vars are configured
+        if not smtp_server:
+            return False, 'SMTP_SERVER is not configured in environment variables.'
+        if not smtp_username or not smtp_password:
+            return False, 'SMTP_USERNAME / SMTP_PASSWORD not configured in environment variables.'
+        if not sender_email:
+            return False, 'SENDER_EMAIL is not configured in environment variables.'
+
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = sender_email
-        msg['To'] = to_email
-        
-        html_part = MIMEText(html_body, 'html')
-        msg.attach(html_part)
-        
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        msg['From']    = sender_email
+        msg['To']      = to_email
+        msg.attach(MIMEText(html_body, 'html'))
+
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.send_message(msg)
         server.quit()
-        
-        return True
+        return True, ''
     except Exception as e:
-        print(f"Error sending email: {e}")
-        return False
+        err = str(e)
+        print(f'Error sending email to {to_email}: {err}')
+        return False, err
+
+
+# ── In-memory bulk-send job tracker ───────────────────────────────────────────
+_bulk_jobs: dict = {}  # job_id -> {status, sent, failed, total, error, done}
+
+def _run_bulk_send(job_id: str, recipient_list: list, subject: str,
+                   html_body: str, recipient_type: str, invalid_count: int,
+                   body_preview: str):
+    """Background thread: open ONE SMTP connection, send all messages, log result."""
+    import uuid as _uuid
+    job = _bulk_jobs[job_id]
+    try:
+        smtp_server   = os.getenv('SMTP_SERVER')
+        smtp_port     = int(os.getenv('SMTP_PORT', 587))
+        smtp_username = os.getenv('SMTP_USERNAME')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+        sender_email  = os.getenv('SENDER_EMAIL')
+
+        # Open a single connection for the whole batch
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+
+        for addr in recipient_list:
+            try:
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From']    = sender_email
+                msg['To']      = addr
+                msg.attach(MIMEText(html_body, 'html'))
+                server.send_message(msg)
+                job['sent'] += 1
+            except Exception as e:
+                err_str = str(e)
+                job['failed'] += 1
+                if not job['error']:
+                    job['error'] = err_str
+                # Gmail 550 daily limit — no point continuing, all will fail
+                if '550' in err_str and ('limit' in err_str.lower() or '5.4.5' in err_str):
+                    remaining = len(recipient_list) - job['sent'] - job['failed']
+                    job['failed'] += remaining
+                    job['error'] = ('Gmail daily sending limit exceeded. '
+                                    'Free Gmail accounts allow ~500 emails/day. '
+                                    'Please wait 24 hours or use a Google Workspace account.')
+                    break
+
+        try:
+            server.quit()
+        except Exception:
+            pass
+
+    except Exception as e:
+        job['error'] = str(e)
+        # Mark remaining as failed
+        remaining = job['total'] - job['sent'] - job['failed']
+        job['failed'] += remaining
+    finally:
+        job['status'] = 'done'
+        job['done']   = True
+        # Log result to MongoDB
+        try:
+            if email_logs is not None:
+                email_logs.insert_one({
+                    'recipient_type':  recipient_type,
+                    'recipient_count': job['sent'],
+                    'failed_count':    job['failed'],
+                    'invalid_count':   invalid_count,
+                    'subject':         subject,
+                    'preview':         body_preview,
+                    'sent_at':         datetime.datetime.utcnow(),
+                    'status':          'sent' if job['sent'] > 0 else 'failed'
+                })
+        except Exception:
+            pass
+# ──────────────────────────────────────────────────────────────────────────────
 
 def safe_float(value, default=0.0):
     """Safely convert a value to float"""
@@ -763,6 +846,8 @@ if db is not None:
     workers_update = db.workers_update  # Changed from workers to workers_update
     worker_specific_added = db.worker_specific_added
     chat_history = db.chat_history  # New collection for worker actions
+    email_logs   = db.email_logs    # Email send history
+    admin_ai_chats = db.admin_ai_chats  # AI chat session history
     labors = db.labors
     admins = db.admins
     users = db.users  # New users collection
@@ -770,6 +855,7 @@ if db is not None:
     products_sold = db.products_sold
     products_by_user = db.products_by_user
     user_data_bought = db.user_data_bought  # User purchase history
+    carts = db.carts  # Persistent cart storage (avoids session cookie limits)
 else:
     # Set collections to None if database connection failed
     products = None
@@ -777,13 +863,15 @@ else:
     workers_update = None
     worker_specific_added = None
     chat_history = None
-    labors = None
+    email_logs   = None
+    admin_ai_chats = None
     admins = None
     users = None
     users_update = None
     products_sold = None
     products_by_user = None
     user_data_bought = None
+    carts = None
     print("Warning: Database collections not initialized due to connection failure.")
 
 # Custom template filters
@@ -890,6 +978,88 @@ def require_db_connection(f):
 def home():
     return render_template('home.html')
 
+def get_active_festival_discounts():
+    """Return {product_name: {type, pct, flat, label, festival, emoji, override_price}}
+    for all custom_festivals whose start_date <= now <= end_date."""
+    import re as _re
+    now = datetime.datetime.utcnow()
+    discounts = {}
+    try:
+        for cf in db.custom_festivals.find({
+            'start_date': {'$lte': now},
+            'end_date':   {'$gte': now}
+        }):
+            discount_str = str(cf.get('discount', '')).strip()
+            overrides = cf.get('product_prices') or {}  # {name: override_price}
+            pct = flat = 0.0
+            dtype = None
+            m = _re.search(r'(\d+(?:\.\d+)?)\s*%', discount_str)
+            if m:
+                pct = float(m.group(1))
+                dtype = 'pct'
+                label = f"{pct:.0f}% off"
+            else:
+                m2 = _re.search(r'(\d+(?:\.\d+)?)', discount_str)
+                if m2:
+                    flat = float(m2.group(1))
+                    dtype = 'flat'
+                    label = f'Rs.{flat:.0f} off'
+            for pname in cf.get('products', []):
+                if not pname:
+                    continue
+                entry = {
+                    'type': dtype or 'pct',
+                    'pct': pct, 'flat': flat,
+                    'label': label if dtype else '',
+                    'festival': cf.get('name', 'Festival Offer'),
+                    'emoji': cf.get('emoji', 'Rs.'),
+                    'override_price': overrides.get(pname)  # manual price or None
+                }
+                if pname not in discounts:
+                    discounts[pname] = entry
+    except Exception:
+        pass
+    return discounts
+
+
+def _apply_festival_discounts(products_list):
+    """Enrich product dicts in-memory with offer_price / original_price fields."""
+    discounts = get_active_festival_discounts()
+    if not discounts:
+        return products_list
+    for product in products_list:
+        name = product.get('name', '')
+        if name not in discounts:
+            continue
+        fd = discounts[name]
+        product['festival_discount'] = fd
+
+        def compute_offer(orig):
+            orig = float(orig or 0)
+            if fd.get('override_price') is not None:
+                return round(float(fd['override_price']), 2)
+            if fd['type'] == 'pct' and fd['pct']:
+                return round(orig * (1 - fd['pct'] / 100), 2)
+            if fd['type'] == 'flat' and fd['flat']:
+                return round(max(0, orig - fd['flat']), 2)
+            return orig
+
+        if product.get('variants'):
+            for v in product['variants']:
+                orig = float(v.get('price', 0))
+                offer = compute_offer(orig)
+                if offer != orig:
+                    v['original_price'] = orig
+                    v['price'] = offer
+        elif product.get('price'):
+            orig = float(product['price'])
+            offer = compute_offer(orig)
+            if offer != orig:
+                product['original_price'] = orig
+                product['price'] = offer
+    return products_list
+
+
 @app.route('/products')
 @require_db_connection
 def product_list():
@@ -918,6 +1088,9 @@ def product_list():
         if name and key not in seen_products:
             seen_products.add(key)
             unique_products.append(product)
+    
+    # Apply active festival discounts in-memory (non-destructive)
+    unique_products = _apply_festival_discounts(unique_products)
     
     return render_template('products.html', products=unique_products)
 
@@ -1002,30 +1175,25 @@ def build_dashboard_context():
         # Get current date for calculations
         today = datetime.datetime.now().replace(hour=0, minute=0, second=0)
 
-        # Use MongoDB aggregation for faster total sales calculation
-        total_sales_pipeline = [
-            {'$group': {
-                '_id': None,
-                'total': {'$sum': '$total'}
-            }}
-        ]
-        total_sales_result = list(products_sold.aggregate(total_sales_pipeline))
+        # Use user_data_bought (the actual sales collection with purchase_date)
+        total_sales_result = list(user_data_bought.aggregate([
+            {'$match': {'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+        ])) if user_data_bought is not None else []
         total_sales = float(total_sales_result[0]['total']) if total_sales_result else 0.0
 
-        # Calculate today's sales using aggregation
-        sales_today_pipeline = [
-            {'$match': {'date': {'$gte': today}}},
-            {'$group': {
-                '_id': None,
-                'total': {'$sum': '$total'}
-            }}
-        ]
-        sales_today_result = list(products_sold.aggregate(sales_today_pipeline))
+        # Calculate today's sales using purchase_date field
+        sales_today_result = list(user_data_bought.aggregate([
+            {'$match': {'purchase_date': {'$gte': today}, 'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+        ])) if user_data_bought is not None else []
         sales_today = float(sales_today_result[0]['total']) if sales_today_result else 0.0
 
         # Get statistics - optimized queries
+        _u_count = (users.count_documents({}) if users is not None else 0) + \
+                   (users_update.count_documents({}) if users_update is not None else 0)
         stats = {
-            'total_users': users.count_documents({}) if users is not None else 0,
+            'total_users': _u_count,
             'new_users_today': users.count_documents({'created_at': {'$gte': today}}) if users is not None else 0,
             'total_sales': total_sales,
             'sales_today': sales_today,
@@ -1044,19 +1212,31 @@ def build_dashboard_context():
                         low_stock_count += 1
         stats['low_stock_products'] = low_stock_count
 
-        # Get recent users with pagination support
+        # Get recent users with pagination support - from BOTH users and users_update
         page = request.args.get('page', 1, type=int)
         per_page = 20  # Show 20 users per page
         skip = (page - 1) * per_page
 
-        total_users_count = users.count_documents({}) if users is not None else 0
+        # Merge users from both collections
+        all_users_merged = []
+        seen_ids = set()
+        for col in [users, users_update]:
+            if col is not None:
+                for u in col.find().sort('_id', -1):
+                    uid_s = str(u['_id'])
+                    if uid_s not in seen_ids:
+                        seen_ids.add(uid_s)
+                        all_users_merged.append(u)
+
+        total_users_count = len(all_users_merged)
         total_pages = (total_users_count + per_page - 1) // per_page if total_users_count else 0
 
+        # Apply pagination
+        paginated = all_users_merged[skip: skip + per_page]
         recent_users = []
-        if users is not None:
-            recent_users = list(users.find().sort('created_at', -1).skip(skip).limit(per_page))
-            for user in recent_users:
-                user['_id'] = str(user['_id'])
+        for user in paginated:
+            user['_id'] = str(user['_id'])
+            recent_users.append(user)
 
         pagination = {
             'page': page,
@@ -1078,18 +1258,16 @@ def build_dashboard_context():
             'values': []
         }
 
-        # Last 7 days sales using aggregation
+        # Last 7 days sales using user_data_bought
         for i in range(6, -1, -1):
             date = datetime.datetime.now() - datetime.timedelta(days=i)
             start_date = date.replace(hour=0, minute=0, second=0)
             end_date = date.replace(hour=23, minute=59, second=59)
 
-            # Use aggregation for faster calculation
-            daily_sales_pipeline = [
-                {'$match': {'date': {'$gte': start_date, '$lte': end_date}}},
+            daily_result = list(user_data_bought.aggregate([
+                {'$match': {'purchase_date': {'$gte': start_date, '$lte': end_date}, 'total': {'$exists': True, '$ne': None}}},
                 {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
-            ]
-            daily_result = list(products_sold.aggregate(daily_sales_pipeline)) if products_sold is not None else []
+            ])) if user_data_bought is not None else []
             daily_sales = float(daily_result[0]['total']) if daily_result else 0.0
 
             sales_data['dates'].append(date.strftime('%m/%d'))
@@ -1125,49 +1303,22 @@ def build_dashboard_context():
             'values': list(category_sales.values()) if category_sales else [0]
         }
 
-        # Top products (for reports) - using aggregation
-        # Filter to show only Tamil/Indian products
-        tamil_keywords = ['Rice', 'Dosa', 'Idli', 'Sambar', 'Rasam', 'Biryani', 'Vada', 'Pongal', 
-                         'Payasam', 'Kesari', 'Murukku', 'Mixture', 'Vadai', 'Kozhukattai', 
-                         'Sundal', 'Paruppu', 'Thayir', 'Paal', 'Ghee', 'Masala', 'Curry',
-                         'Chutney', 'Pickle', 'Papad', 'Appalam', 'Tamarind', 'Coconut',
-                         'Jaggery', 'Turmeric', 'Chilli', 'Coriander', 'Cumin', 'Cardamom']
-        
-        top_products_pipeline = [
-            {'$group': {
-                '_id': '$product_id',
-                'total_revenue': {'$sum': '$total'},
-                'units_sold': {'$sum': '$quantity'},
-                'product_name': {'$first': '$product_name'}
-            }},
-            {'$sort': {'total_revenue': -1}}
-        ]
-
+        # Top products (for reports) - from user_data_bought (all Tamil names)
         top_products = []
         try:
-            top_products_results = list(products_sold.aggregate(top_products_pipeline)) if products_sold is not None else []
-            # Filter for Tamil/Indian products
+            # Pull top products from user_data_bought (all Tamil names now)
+            top_products_results = list(user_data_bought.aggregate([
+                {'$group': {'_id': '$product_name', 'total_revenue': {'$sum': '$total'}, 'units_sold': {'$sum': '$quantity'}}},
+                {'$sort': {'total_revenue': -1}},
+                {'$limit': 8}
+            ])) if user_data_bought is not None else []
             for result in top_products_results:
-                product_name = result.get('product_name', 'Unknown')
-                # Check if product name contains any Tamil/Indian keyword
-                if any(keyword.lower() in product_name.lower() for keyword in tamil_keywords):
-                    top_products.append({
-                        'name': product_name,
-                        'units_sold': int(result.get('units_sold', 0)),
-                        'revenue': float(result.get('total_revenue', 0.0))
-                    })
-                    if len(top_products) >= 5:  # Limit to top 5
-                        break
-            
-            # If no Tamil products found, show placeholder
-            if not top_products:
-                top_products = [
-                    {'name': 'Basmati Rice', 'units_sold': 0, 'revenue': 0.0},
-                    {'name': 'Idli Rice', 'units_sold': 0, 'revenue': 0.0},
-                    {'name': 'Sambar Powder', 'units_sold': 0, 'revenue': 0.0},
-                    {'name': 'Coconut Oil', 'units_sold': 0, 'revenue': 0.0},
-                    {'name': 'Jaggery', 'units_sold': 0, 'revenue': 0.0}
-                ]
+                product_name = result.get('_id', 'Unknown') or 'Unknown'
+                top_products.append({
+                    'name': product_name,
+                    'units_sold': int(result.get('units_sold', 0)),
+                    'revenue': float(result.get('total_revenue', 0.0))
+                })
         except Exception as e:
             print(f"Error in top products aggregation: {str(e)}")
             top_products = []
@@ -1260,11 +1411,15 @@ def demo_dashboard():
 @admin_required
 def add_worker():
     try:
-        # Get form data
-        name = request.form.get('name', '').strip()
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '').strip()
-        date_of_joining = request.form.get('date_of_joining', '').strip()
+        # Support both JSON and form data
+        if request.is_json:
+            form = request.get_json() or {}
+        else:
+            form = request.form
+        name = (form.get('name') or '').strip()
+        email = (form.get('email') or '').strip()
+        password = (form.get('password') or '').strip()
+        date_of_joining = (form.get('date_of_joining') or '').strip()
         
         # Validate required fields
         if not all([name, email, password]):
@@ -1398,8 +1553,8 @@ def add_worker():
             """
             
             # Send email
-            email_sent = send_email(email, 'Welcome to SalesSense!', email_html)
-            
+            email_sent, _ = send_email(email, 'Welcome to SalesSense!', email_html)
+
             if email_sent:
                 return jsonify({
                     'success': True, 
@@ -1422,16 +1577,30 @@ def add_worker():
 @admin_required
 def user_details(user_id):
     try:
-        # Get user information
+        # Get user information - check both users and users_update collections
         user = users.find_one({'_id': ObjectId(user_id)})
+        if not user and users_update is not None:
+            user = users_update.find_one({'_id': ObjectId(user_id)})
         if not user:
             flash('User not found', 'error')
             return redirect(url_for('admin_dashboard'))
         
         user['_id'] = str(user['_id'])
         
-        # Get user's purchase history
-        user_orders = list(products_sold.find({'user_id': ObjectId(user_id)}))
+        # Get user's purchase history from both collections
+        uid_obj = ObjectId(user_id)
+        orders_from_sold   = list(products_sold.find({'user_id': uid_obj})) if products_sold is not None else []
+        orders_from_bought = list(user_data_bought.find({'user_id': uid_obj})) if user_data_bought is not None else []
+
+        # Merge, de-duplicate by order_id + product_id
+        seen = set()
+        user_orders = []
+        for order in orders_from_bought + orders_from_sold:
+            key = (str(order.get('order_id', '')), str(order.get('product_id', '')), str(order.get('variant_index', '')))
+            if key not in seen:
+                seen.add(key)
+                user_orders.append(order)
+
         total_spent = 0
         total_orders = len(user_orders)
         
@@ -1443,37 +1612,42 @@ def user_details(user_id):
             order['_id'] = str(order['_id'])
             order['user_id'] = str(order['user_id'])
             order['product_id'] = str(order['product_id'])
-            
-            # Calculate order total
-            order_total = float(calculate_sale_amount(order))
+
+            # Normalise total
+            order_total = float(order.get('total') or order.get('total_price') or
+                                 (float(order.get('price', 0)) * float(order.get('quantity', 1))))
             total_spent += order_total
             order['total'] = order_total
-            
+
+            # Normalise date (supports both 'date' and 'purchase_date' fields)
+            order_date = order.get('purchase_date') or order.get('date') or datetime.datetime.now()
+            if isinstance(order_date, str):
+                try:
+                    order_date = datetime.datetime.fromisoformat(order_date.replace('Z', '+00:00'))
+                except Exception:
+                    order_date = datetime.datetime.now()
+            order['date'] = order_date          # ensure template always has .date
+
             # Track product purchases
             product_id = order['product_id']
             if product_id not in product_purchases:
-                product = products_update.find_one({'_id': ObjectId(product_id)})
-                if product:
-                    product_purchases[product_id] = {
-                        'name': product['name'],
-                        'quantity': 0,
-                        'total_spent': 0
-                    }
-            
-            if product_id in product_purchases:
-                quantity = int(extract_numeric_value(order.get('quantity', 0)))
-                product_purchases[product_id]['quantity'] += quantity
-                product_purchases[product_id]['total_spent'] += order_total
-            
-            # Track monthly spending
-            order_date = order.get('date', datetime.datetime.now())
-            if isinstance(order_date, str):
-                order_date = datetime.datetime.fromisoformat(order_date.replace('Z', '+00:00'))
+                try:
+                    product = products_update.find_one({'_id': ObjectId(product_id)}) if products_update else None
+                except Exception:
+                    product = None
+                pname = (product['name'] if product else None) or order.get('product_name', 'Unknown')
+                product_purchases[product_id] = {'name': pname, 'quantity': 0, 'total_spent': 0}
+
+            try:
+                qty = int(float(order.get('quantity', 1)))
+            except Exception:
+                qty = 1
+            product_purchases[product_id]['quantity'] += qty
+            product_purchases[product_id]['total_spent'] += order_total
+
+            # Monthly spending
             month_key = order_date.strftime('%Y-%m')
-            
-            if month_key not in monthly_spending:
-                monthly_spending[month_key] = 0
-            monthly_spending[month_key] += order_total
+            monthly_spending[month_key] = monthly_spending.get(month_key, 0) + order_total
         
         # Get top purchased products
         top_products = sorted(product_purchases.values(), key=lambda x: x['total_spent'], reverse=True)[:5]
@@ -1484,8 +1658,8 @@ def user_details(user_id):
             'total_orders': total_orders,
             'average_order_value': total_spent / total_orders if total_orders > 0 else 0,
             'favorite_product': top_products[0]['name'] if top_products else 'None',
-            'join_date': user.get('join_date', 'Unknown'),
-            'last_order': max([order.get('date', datetime.datetime.min) for order in user_orders]) if user_orders else 'Never'
+            'join_date': user.get('join_date', user.get('created_at', 'Unknown')),
+            'last_order': max([o['date'] for o in user_orders if isinstance(o.get('date'), datetime.datetime)], default='Never')
         }
         
         return render_template('user_detail.html', 
@@ -1654,10 +1828,11 @@ def send_marketing_email(user_id):
                 """
                 
                 # Send email
-                if send_email(user['email'], subject, html_body):
+                ok, err = send_email(user['email'], subject, html_body)
+                if ok:
                     return jsonify({'success': True, 'message': f'Marketing email sent to {user["name"]}!'})
                 else:
-                    return jsonify({'error': 'Failed to send email'}), 500
+                    return jsonify({'error': f'Failed to send email: {err}'}), 500
         
         return jsonify({'error': 'No purchase history found for personalized email'}), 400
     
@@ -1666,6 +1841,11 @@ def send_marketing_email(user_id):
         return jsonify({'error': 'Failed to send marketing email'}), 500
 
 # Chatbot functionality
+@app.route('/chatbot')  # public redirect → admin AI chat
+def chatbot_redirect():
+    return redirect(url_for('admin_ai_chat_page'))
+
+
 @app.route('/admin/chatbot')
 @admin_required
 def chatbot():
@@ -1695,64 +1875,75 @@ def admin_chat():
         print(f"Error in chat: {e}")
         return jsonify({'response': 'Sorry, I encountered an error processing your request.'})
 
+# ─── Fast chatbot cache ────────────────────────────────────────────────────────
+_chat_cache: dict = {}          # key -> (reply_str, expire_timestamp)
+_CHAT_TTL    = 90               # seconds each cached answer stays valid
+
+def _cached_call(key: str, fn):
+    """Return cached result if fresh, else call fn(), cache and return result."""
+    import time
+    now = time.time()
+    if key in _chat_cache:
+        reply, exp = _chat_cache[key]
+        if now < exp:
+            return reply
+    result = fn()
+    _chat_cache[key] = (result, now + _CHAT_TTL)
+    return result
+# ──────────────────────────────────────────────────────────────────────────────
+
+
 def process_admin_query(query):
-    """Process admin queries and return appropriate responses"""
+    """Process admin queries and return appropriate responses (with fast cache)."""
     try:
-        # Sales related queries
-        if any(word in query for word in ['sales', 'revenue', 'money', 'earning']):
-            return get_sales_summary()
-        
-        # User related queries
-        elif any(word in query for word in ['user', 'customer', 'client']):
-            return get_user_summary()
-        
-        # Product related queries
-        elif any(word in query for word in ['product', 'inventory', 'stock']):
-            return get_product_summary()
-        
-        # Worker related queries
-        elif any(word in query for word in ['worker', 'employee', 'staff']):
-            return get_worker_summary()
-        
-        # Top products
-        elif any(word in query for word in ['top', 'best', 'popular']):
-            return get_top_products_summary()
-        
-        # Low stock
-        elif any(word in query for word in ['low stock', 'shortage', 'running out']):
-            return get_low_stock_summary()
-        
-        # Recent activity
-        elif any(word in query for word in ['recent', 'today', 'latest']):
-            return get_recent_activity_summary()
-        
-        # General greetings
-        elif any(word in query for word in ['hello', 'hi', 'hey', 'help']):
-            return """Hello! I'm your Sales Sense AI assistant. I can help you with:
-            
-            📊 Sales data and revenue information
-            👥 User and customer analytics  
-            📦 Product and inventory status
-            👷 Worker management information
-            🏆 Top performing products
-            ⚠️ Low stock alerts
-            📅 Recent activity updates
-            
-            Just ask me anything about your business!"""
-        
+        q = query.lower().strip()
+
+        # ── Instant no-DB greetings / help ────────────────────────────────────
+        if any(w in q for w in ['hello', 'hi', 'hey', 'help', 'what can', 'who are']):
+            return ("👋 Hi! I'm your SalesSense AI assistant.\n\n"
+                    "Ask me about:\n"
+                    "📊 **Sales & Revenue** — total / today's figures\n"
+                    "👥 **Users & Customers** — count, top buyers\n"
+                    "📦 **Products & Inventory** — stock levels\n"
+                    "👷 **Workers & Staff** — activity\n"
+                    "🏆 **Top Selling** products right now\n"
+                    "⚠️ **Low Stock** alerts\n"
+                    "📅 **Recent Activity** — latest orders\n\n"
+                    "Just type your question!")
+
+        # ── Cached DB queries ──────────────────────────────────────────────────
+        if any(w in q for w in ['sales', 'revenue', 'money', 'earning']):
+            return _cached_call('sales', get_sales_summary)
+
+        elif any(w in q for w in ['top', 'best', 'popular', 'trending']):
+            return _cached_call('top_products', get_top_products_summary)
+
+        elif any(w in q for w in ['low stock', 'shortage', 'running out', 'out of stock']):
+            return _cached_call('low_stock', get_low_stock_summary)
+
+        elif any(w in q for w in ['recent', 'today', 'latest', 'last order']):
+            return _cached_call('recent', get_recent_activity_summary)
+
+        elif any(w in q for w in ['user', 'customer', 'client', 'buyer', 'how many user']):
+            return _cached_call('users', get_user_summary)
+
+        elif any(w in q for w in ['product', 'inventory', 'stock', 'item']):
+            return _cached_call('products', get_product_summary)
+
+        elif any(w in q for w in ['worker', 'employee', 'staff']):
+            return _cached_call('workers', get_worker_summary)
+
         else:
-            return """I'm not sure about that specific query. Try asking about:
-            - Sales and revenue
-            - Users and customers
-            - Products and inventory
-            - Workers and staff
-            - Top performing items
-            - Stock levels
-            - Recent activity"""
-    
+            return ("🤔 I didn't quite catch that. Try asking:\n"
+                    "- *Today's sales total*\n"
+                    "- *How many users do we have?*\n"
+                    "- *Top selling products*\n"
+                    "- *Low stock alerts*\n"
+                    "- *Recent orders*")
+
     except Exception as e:
         print(f"Error processing query: {e}")
-        return "Sorry, I encountered an error processing your request."
+        return "Sorry, I encountered an error. Please try again."
 
 def get_sales_summary():
     """Get sales summary for chatbot"""
@@ -1954,195 +2145,171 @@ def business_stats_api():
         # Return empty stats if database is not connected
         if db is None or user_data_bought is None:
             return jsonify({
-                'total_users': 0,
-                'new_users_today': 0,
-                'active_users': 0,
-                'total_sales': 0.0,
-                'sales_today': 0.0,
-                'total_orders': 0,
-                'orders_today': 0,
-                'total_products': 0,
-                'total_workers': 0,
-                'top_products': [],
-                'sales_trend': [],
-                'avg_order_value': 0,
-                'error': 'Database not connected'
+                'total_users': 0, 'new_users_today': 0, 'active_users': 0,
+                'total_sales': 0.0, 'sales_today': 0.0, 'total_orders': 0,
+                'orders_today': 0, 'total_products': 0, 'total_workers': 0,
+                'top_products': [], 'sales_trend': [], 'category_breakdown': [],
+                'avg_order_value': 0, 'error': 'Database not connected'
             })
-        
-        today = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        
-        # Calculate total revenue from ALL customer purchases (user_data_bought collection)
-        # This includes all purchases made by all customers across all time
-        total_sales_pipeline = [
-            {'$match': {'total': {'$ne': None, '$exists': True}}},
-            {'$group': {'_id': None, 'total_revenue': {'$sum': '$total'}, 'total_count': {'$sum': 1}}}
+
+        # ── date range from query param (default 30 days) ──────────────
+        days = request.args.get('days', 30, type=int)
+        if days not in (7, 30, 90, 365):
+            days = 30
+
+        now          = datetime.datetime.now()
+        today        = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        period_start = now - datetime.timedelta(days=days)
+
+        # ── revenue for the selected period ────────────────────────────
+        period_sales_pipeline = [
+            {'$match': {'purchase_date': {'$gte': period_start}, 'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': None, 'total_revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}}
         ]
-        total_sales_result = list(user_data_bought.aggregate(total_sales_pipeline))
-        total_sales = float(total_sales_result[0]['total_revenue']) if total_sales_result and total_sales_result[0].get('total_revenue') else 0.0
-        total_purchase_count = int(total_sales_result[0]['total_count']) if total_sales_result and total_sales_result[0].get('total_count') else 0
-        
-        # Calculate today's sales from user_data_bought
-        sales_today_pipeline = [
-            {'$match': {
-                'purchase_date': {'$gte': today},
-                'total': {'$ne': None, '$exists': True}
-            }},
+        period_result    = list(user_data_bought.aggregate(period_sales_pipeline))
+        total_sales      = float(period_result[0]['total_revenue']) if period_result else 0.0
+        total_purchase_count = int(period_result[0]['count']) if period_result else 0
+
+        # ── today's sales (always fixed to today regardless of period) ─
+        sales_today_result = list(user_data_bought.aggregate([
+            {'$match': {'purchase_date': {'$gte': today}, 'total': {'$exists': True, '$ne': None}}},
             {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
-        ]
-        sales_today_result = list(user_data_bought.aggregate(sales_today_pipeline))
-        sales_today = float(sales_today_result[0]['total']) if sales_today_result and sales_today_result[0].get('total') else 0.0
-        
-        print(f"[Analytics] Total revenue from all customers: ₹{total_sales:.2f} ({total_purchase_count} purchases)")
-        print(f"[Analytics] Today's sales: ₹{sales_today:.2f}")
-        
-        # Get total orders from products_sold (each sale)
-        total_orders = products_sold.count_documents({})
-        orders_today = products_sold.count_documents({'sale_date': {'$gte': today}})
-        
-        # Count UNIQUE products across all collections by product name
+        ]))
+        sales_today = float(sales_today_result[0]['total']) if sales_today_result else 0.0
+
+        print(f"[Analytics] Period={days}d, Revenue=₹{total_sales:.2f}, Today=₹{sales_today:.2f}")
+
+        # ── orders in selected period ───────────────────────────────────
+        total_orders  = user_data_bought.count_documents({'purchase_date': {'$gte': period_start}}) if user_data_bought is not None else 0
+        orders_today  = user_data_bought.count_documents({'purchase_date': {'$gte': today}})        if user_data_bought is not None else 0
+
+        # ── unique products ─────────────────────────────────────────────
         unique_products = set()
-        if products is not None:
-            for p in products.find({}, {'name': 1}):
-                if 'name' in p:
-                    unique_products.add(p['name'])
-        if products_update is not None:
-            for p in products_update.find({}, {'name': 1}):
-                if 'name' in p:
-                    unique_products.add(p['name'])
-        if products_by_user is not None:
-            for p in products_by_user.find({}, {'name': 1}):
-                if 'name' in p:
-                    unique_products.add(p['name'])
-        
+        for col in [products, products_update, products_by_user]:
+            if col is not None:
+                for p in col.find({}, {'name': 1}):
+                    if 'name' in p:
+                        unique_products.add(p['name'])
         total_products = len(unique_products)
-        
-        # Get active users (users and users_update combined)
-        thirty_days_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+
+        # ── active / total users ────────────────────────────────────────
         active_users_count = 0
+        total_users_count  = 0
+        new_users_today    = 0
+        for col in [users, users_update]:
+            if col is not None:
+                active_users_count += col.count_documents({})
+                total_users_count  += col.count_documents({})
         if users is not None:
-            active_users_count += users.count_documents({})
-        if users_update is not None:
-            active_users_count += users_update.count_documents({})
-        
-        # Get top selling products from user_data_bought (last 30 days)
-        top_products_pipeline = [
-            {'$match': {
-                'purchase_date': {'$gte': thirty_days_ago},
-                'total': {'$ne': None, '$exists': True}
-            }},
-            {'$group': {
-                '_id': '$product_name',
-                'total_revenue': {'$sum': '$total'},
-                'units_sold': {'$sum': '$quantity'}
-            }},
+            new_users_today = users.count_documents({'created_at': {'$gte': today}})
+
+        # ── top products for the selected period ────────────────────────
+        top_products_result = list(user_data_bought.aggregate([
+            {'$match': {'purchase_date': {'$gte': period_start}, 'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': '$product_name', 'total_revenue': {'$sum': '$total'}, 'units_sold': {'$sum': '$quantity'}}},
             {'$sort': {'total_revenue': -1}},
-            {'$limit': 5}
-        ]
-        top_products_result = list(user_data_bought.aggregate(top_products_pipeline))
+            {'$limit': 8}
+        ]))
         top_products = [
-            {
-                'name': p['_id'],
-                'revenue': float(p.get('total_revenue', 0)),
-                'units': int(p.get('units_sold', 0))
-            }
+            {'name': p['_id'], 'revenue': float(p.get('total_revenue', 0)), 'units': int(p.get('units_sold', 0))}
             for p in top_products_result
         ]
-        
-        # Last 7 days sales trend
-        sales_trend = []
-        for i in range(6, -1, -1):
-            date = datetime.datetime.now() - datetime.timedelta(days=i)
-            start = date.replace(hour=0, minute=0, second=0, microsecond=0)
-            end = date.replace(hour=23, minute=59, second=59, microsecond=999999)
-            
-            daily_pipeline = [
-                {'$match': {
-                    'purchase_date': {'$gte': start, '$lte': end},
-                    'total': {'$ne': None, '$exists': True}
-                }},
-                {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
-            ]
-            daily_result = list(user_data_bought.aggregate(daily_pipeline))
-            daily_sales = float(daily_result[0]['total']) if daily_result and daily_result[0].get('total') else 0.0
-            
-            sales_trend.append({
-                'date': date.strftime('%m/%d'),
-                'sales': daily_sales
-            })
-        
-        # Get total users from both collections
-        total_users_count = 0
-        if users is not None:
-            total_users_count += users.count_documents({})
-        if users_update is not None:
-            total_users_count += users_update.count_documents({})
-        
-        # New users today
-        new_users_today = 0
-        if users is not None:
-            new_users_today += users.count_documents({'created_at': {'$gte': today}})
-        
-        # Get category-wise sales for last 30 days
-        category_sales_pipeline = [
-            {'$match': {
-                'purchase_date': {'$gte': thirty_days_ago},
-                'total': {'$ne': None, '$exists': True}
-            }},
+
+        # ── top users by spending ────────────────────────────────────────
+        top_users_result = list(user_data_bought.aggregate([
+            {'$match': {'purchase_date': {'$gte': period_start}, 'total': {'$exists': True, '$ne': None}}},
             {'$group': {
-                '_id': '$category',
-                'total_revenue': {'$sum': '$total'},
-                'count': {'$sum': 1}
+                '_id': '$user_name',
+                'total_spent': {'$sum': '$total'},
+                'order_count': {'$sum': 1}
             }},
-            {'$sort': {'total_revenue': -1}},
-            {'$limit': 10}
-        ]
-        category_sales_result = list(user_data_bought.aggregate(category_sales_pipeline))
-        category_sales = [
+            {'$sort': {'total_spent': -1}},
+            {'$limit': 5}
+        ]))
+        top_users = [
             {
-                'category': c['_id'] if c['_id'] else 'Uncategorized',
-                'revenue': float(c.get('total_revenue', 0)),
-                'count': int(c.get('count', 0))
+                'name':   (u['_id'] or 'Guest'),
+                'spent':  float(u.get('total_spent', 0)),
+                'orders': int(u.get('order_count', 0))
             }
-            for c in category_sales_result
+            for u in top_users_result
         ]
-        
+
+        # ── sales trend (daily for ≤30d; weekly for >30d) ───────────────
+        sales_trend = []
+        if days <= 30:
+            # Daily data points
+            for i in range(days - 1, -1, -1):
+                d     = now - datetime.timedelta(days=i)
+                start = d.replace(hour=0, minute=0, second=0, microsecond=0)
+                end   = d.replace(hour=23, minute=59, second=59, microsecond=999999)
+                res   = list(user_data_bought.aggregate([
+                    {'$match': {'purchase_date': {'$gte': start, '$lte': end}, 'total': {'$exists': True, '$ne': None}}},
+                    {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+                ]))
+                sales_trend.append({
+                    'date':  d.strftime('%d %b'),
+                    'sales': float(res[0]['total']) if res else 0.0
+                })
+        else:
+            # Weekly data points (group by ISO week)
+            num_weeks = days // 7
+            for w in range(num_weeks - 1, -1, -1):
+                start = today - datetime.timedelta(days=(w + 1) * 7 - 1)
+                end   = today - datetime.timedelta(days=w * 7)
+                end   = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+                res   = list(user_data_bought.aggregate([
+                    {'$match': {'purchase_date': {'$gte': start, '$lte': end}, 'total': {'$exists': True, '$ne': None}}},
+                    {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+                ]))
+                sales_trend.append({
+                    'date':  start.strftime('%d %b'),
+                    'sales': float(res[0]['total']) if res else 0.0
+                })
+
+        # ── category breakdown for the selected period ──────────────────
+        category_result = list(user_data_bought.aggregate([
+            {'$match': {'purchase_date': {'$gte': period_start}, 'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': '$category', 'total_revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}},
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 8}
+        ]))
+        category_breakdown = [
+            {'name': c['_id'] if c['_id'] else 'Uncategorized', 'total': float(c.get('total_revenue', 0)), 'count': int(c.get('count', 0))}
+            for c in category_result
+        ]
+
         stats = {
-            'total_users': total_users_count,
-            'new_users_today': new_users_today,
-            'active_users': active_users_count,
-            'total_sales': total_sales,  # Total revenue from all customers
-            'total_revenue': total_sales,  # Alias for clarity
-            'sales_today': sales_today,
-            'total_orders': total_orders,
-            'orders_today': orders_today,
-            'total_products': total_products,
-            'total_workers': workers_update.count_documents({}) if workers_update is not None else 0,
-            'top_products': top_products,
-            'sales_trend': sales_trend,
-            'category_sales': category_sales,
-            'avg_order_value': round(total_sales / total_orders, 2) if total_orders > 0 else 0,
-            'total_purchases': total_purchase_count  # Total number of purchases
+            'days':             days,
+            'total_users':      total_users_count,
+            'new_users_today':  new_users_today,
+            'active_users':     active_users_count,
+            'total_sales':      total_sales,
+            'total_revenue':    total_sales,
+            'sales_today':      sales_today,
+            'total_orders':     total_orders,
+            'orders_today':     orders_today,
+            'total_products':   total_products,
+            'total_workers':    workers_update.count_documents({}) if workers_update is not None else 0,
+            'top_products':     top_products,
+            'top_users':        top_users,
+            'sales_trend':      sales_trend,
+            'category_breakdown': category_breakdown,
+            'category_sales':   category_breakdown,   # legacy alias
+            'avg_order_value':  round(total_sales / total_orders, 2) if total_orders > 0 else 0,
+            'total_purchases':  total_purchase_count,
         }
-        
-        print(f"[Analytics] Returning stats with total revenue: ₹{total_sales:.2f}")
-        
+
         return jsonify(stats)
     except Exception as e:
         print(f"Error getting business stats: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
-            'total_users': 0,
-            'new_users_today': 0,
-            'active_users': 0,
-            'total_sales': 0.0,
-            'sales_today': 0.0,
-            'total_orders': 0,
-            'orders_today': 0,
-            'total_products': 0,
-            'total_workers': 0,
-            'top_products': [],
-            'sales_trend': [],
+            'total_users': 0, 'new_users_today': 0, 'active_users': 0,
+            'total_sales': 0.0, 'sales_today': 0.0, 'total_orders': 0,
+            'orders_today': 0, 'total_products': 0, 'total_workers': 0,
+            'top_products': [], 'sales_trend': [], 'category_breakdown': [],
             'avg_order_value': 0
         })
 
@@ -2165,6 +2332,92 @@ def public_product_insights():
     except Exception as e:
         print(f"Error in public product insights API: {e}")
         return jsonify({'error': str(e), 'top_performers': [], 'poor_performers': []}), 500
+
+
+@app.route('/api/product-detail')
+def product_detail_api():
+    """Get all purchase records for a specific product"""
+    try:
+        product_name = request.args.get('name', '').strip()
+        if not product_name or user_data_bought is None:
+            return jsonify({'error': 'Product name required or DB not connected'}), 400
+
+        purchases = list(user_data_bought.find(
+            {'product_name': product_name},
+            {'_id': 0, 'user_name': 1, 'buyer_name': 1, 'quantity': 1,
+             'total': 1, 'purchase_date': 1, 'category': 1, 'price': 1}
+        ).sort('purchase_date', -1).limit(60))
+
+        total_revenue = sum(float(p.get('total', 0)) for p in purchases)
+        total_units   = sum(int(p.get('quantity', 0)) for p in purchases)
+        unique_buyers = len(set(p.get('user_name') or p.get('buyer_name', 'Guest') for p in purchases))
+
+        records = []
+        for p in purchases:
+            pd_val = p.get('purchase_date')
+            date_str = pd_val.strftime('%d %b %Y') if hasattr(pd_val, 'strftime') else str(pd_val)[:10]
+            records.append({
+                'buyer':    p.get('user_name') or p.get('buyer_name') or 'Guest',
+                'quantity': int(p.get('quantity', 0)),
+                'total':    float(p.get('total', 0)),
+                'date':     date_str,
+                'category': p.get('category', ''),
+            })
+
+        return jsonify({
+            'product_name':  product_name,
+            'total_revenue': total_revenue,
+            'total_units':   total_units,
+            'unique_buyers': unique_buyers,
+            'total_orders':  len(purchases),
+            'records':       records
+        })
+    except Exception as e:
+        print(f"Error in product-detail API: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/user-detail')
+def user_detail_api():
+    """Get full purchase history for a specific user"""
+    try:
+        user_name = request.args.get('name', '').strip()
+        if not user_name or user_data_bought is None:
+            return jsonify({'error': 'User name required or DB not connected'}), 400
+
+        purchases = list(user_data_bought.find(
+            {'$or': [{'user_name': user_name}, {'buyer_name': user_name}]},
+            {'_id': 0, 'product_name': 1, 'quantity': 1, 'total': 1,
+             'purchase_date': 1, 'category': 1, 'price': 1}
+        ).sort('purchase_date', -1).limit(60))
+
+        total_spent   = sum(float(p.get('total', 0)) for p in purchases)
+        total_units   = sum(int(p.get('quantity', 0)) for p in purchases)
+        categories    = list({p.get('category', 'N/A') for p in purchases if p.get('category')})
+
+        records = []
+        for p in purchases:
+            pd_val = p.get('purchase_date')
+            date_str = pd_val.strftime('%d %b %Y') if hasattr(pd_val, 'strftime') else str(pd_val)[:10]
+            records.append({
+                'product':  p.get('product_name', 'Unknown'),
+                'category': p.get('category', ''),
+                'quantity': int(p.get('quantity', 0)),
+                'total':    float(p.get('total', 0)),
+                'date':     date_str,
+            })
+
+        return jsonify({
+            'user_name':    user_name,
+            'total_spent':  total_spent,
+            'total_units':  total_units,
+            'total_orders': len(purchases),
+            'categories':   categories,
+            'records':      records
+        })
+    except Exception as e:
+        print(f"Error in user-detail API: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/festival-calendar')
 def public_festival_calendar():
@@ -3057,6 +3310,194 @@ def admin_send_email():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
+@app.route('/admin/send-custom-email', methods=['POST'])
+@admin_required
+def admin_send_custom_email():
+    """Send custom email to selected recipients (reads JSON from frontend)"""
+    try:
+        data = request.get_json() or {}
+        recipient_type  = data.get('recipient_type', 'all_users')
+        custom_recs     = data.get('custom_recipients', '')
+        subject         = data.get('subject', 'Message from Sales Sense AI')
+        body            = data.get('body', '')
+
+        # ── Email validator ───────────────────────────────────────────────────
+        import re as _re
+        _EMAIL_RE = _re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+        def is_valid_email(addr):
+            return bool(addr and _EMAIL_RE.match(addr.strip()))
+        # ─────────────────────────────────────────────────────────────────────
+
+        # Build recipient list
+        if recipient_type == 'all_users':
+            all_cols = [col for col in [users, users_update] if col is not None]
+            recipient_list = []
+            for col in all_cols:
+                for u in col.find({}, {'email': 1}):
+                    e = u.get('email', '')
+                    if e and e not in recipient_list:
+                        recipient_list.append(e)
+        elif recipient_type == 'all_workers':
+            recipient_list = [w['email'] for w in workers_update.find({}, {'email': 1}) if w.get('email')]
+        else:  # custom
+            recipient_list = [e.strip() for e in custom_recs.split(',') if e.strip()]
+
+        # Filter: keep only valid emails, collect invalid ones for reporting
+        valid_list   = [e for e in recipient_list if is_valid_email(e)]
+        invalid_list = [e for e in recipient_list if not is_valid_email(e)]
+
+        if not valid_list:
+            return jsonify({'success': False, 'message': 'No valid email addresses found.' +
+                            (f' Skipped invalid: {", ".join(invalid_list[:5])}' if invalid_list else '')}), 400
+
+        # Wrap plain text in HTML if needed
+        if not body.strip().startswith('<'):
+            html_body = f'<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;">{body.replace(chr(10), "<br>")}</div>'
+        else:
+            html_body = body
+
+        # Check SMTP config before looping
+        smtp_configured = all([
+            os.getenv('SMTP_SERVER'), os.getenv('SMTP_USERNAME'),
+            os.getenv('SMTP_PASSWORD'), os.getenv('SENDER_EMAIL')
+        ])
+        if not smtp_configured:
+            return jsonify({
+                'success': False,
+                'message': 'Email not configured: Please set SMTP_SERVER, SMTP_USERNAME, SMTP_PASSWORD and SENDER_EMAIL in your .env file.'
+            }), 503
+
+        # ── Fire background thread — return instantly ──────────────────────
+        import uuid as _uuid
+        job_id = str(_uuid.uuid4())[:8]
+        _bulk_jobs[job_id] = {
+            'status': 'sending', 'sent': 0, 'failed': 0,
+            'total': len(valid_list), 'error': '', 'done': False
+        }
+        t = threading.Thread(
+            target=_run_bulk_send,
+            args=(job_id, valid_list, subject, html_body,
+                  recipient_type, len(invalid_list),
+                  (body[:120] + '…') if len(body) > 120 else body),
+            daemon=True
+        )
+        t.start()
+
+        inv_note = f' {len(invalid_list)} invalid address(es) will be skipped.' if invalid_list else ''
+        return jsonify({
+            'success':  True,
+            'queued':   True,
+            'job_id':   job_id,
+            'total':    len(valid_list),
+            'message':  f'Sending to {len(valid_list)} recipient(s) in background.{inv_note}',
+            'invalid':  len(invalid_list),
+            'invalid_emails': invalid_list
+        })
+    except Exception as e:
+        print(f'send-custom-email error: {e}')
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/email-send-status/<job_id>')
+@admin_required
+def email_send_status(job_id):
+    """Poll: return current state of a background bulk-send job."""
+    job = _bulk_jobs.get(job_id)
+    if not job:
+        return jsonify({'error': 'Job not found'}), 404
+    return jsonify(job)
+
+@app.route('/api/chart-data')
+def chart_data_api():
+    if 'admin_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 403
+    """Return sales_trend + category_breakdown for an arbitrary date range.
+       Query params: ?from=YYYY-MM-DD&to=YYYY-MM-DD
+    """
+    try:
+        if user_data_bought is None:
+            return jsonify({'sales_trend': [], 'category_breakdown': []})
+
+        from_str = request.args.get('from', '')
+        to_str   = request.args.get('to',   '')
+
+        now = datetime.datetime.now()
+        try:
+            date_from = datetime.datetime.strptime(from_str, '%Y-%m-%d')
+        except (ValueError, TypeError):
+            date_from = now - datetime.timedelta(days=30)
+        try:
+            date_to = datetime.datetime.strptime(to_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+        except (ValueError, TypeError):
+            date_to = now
+
+        delta_days = (date_to - date_from).days + 1
+
+        # ── Sales trend ────────────────────────────────────────────────────────
+        sales_trend = []
+        if delta_days <= 31:
+            # Daily
+            for i in range(delta_days):
+                d     = date_from + datetime.timedelta(days=i)
+                start = d.replace(hour=0,  minute=0,  second=0,  microsecond=0)
+                end   = d.replace(hour=23, minute=59, second=59, microsecond=999999)
+                res   = list(user_data_bought.aggregate([
+                    {'$match': {'purchase_date': {'$gte': start, '$lte': end},
+                                'total': {'$exists': True, '$ne': None}}},
+                    {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+                ]))
+                sales_trend.append({'date': d.strftime('%d %b'), 'sales': float(res[0]['total']) if res else 0.0})
+        else:
+            # Weekly
+            num_weeks = max(1, delta_days // 7)
+            for w in range(num_weeks):
+                start = date_from + datetime.timedelta(weeks=w)
+                end   = (date_from + datetime.timedelta(weeks=w+1) - datetime.timedelta(seconds=1))
+                if end > date_to:
+                    end = date_to
+                res = list(user_data_bought.aggregate([
+                    {'$match': {'purchase_date': {'$gte': start, '$lte': end},
+                                'total': {'$exists': True, '$ne': None}}},
+                    {'$group': {'_id': None, 'total': {'$sum': '$total'}}}
+                ]))
+                sales_trend.append({'date': start.strftime('%d %b'), 'sales': float(res[0]['total']) if res else 0.0})
+
+        # ── Category breakdown ─────────────────────────────────────────────────
+        cat_result = list(user_data_bought.aggregate([
+            {'$match': {'purchase_date': {'$gte': date_from, '$lte': date_to},
+                        'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': '$category', 'total_revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}},
+            {'$sort': {'total_revenue': -1}},
+            {'$limit': 8}
+        ]))
+        category_breakdown = [
+            {'name': c['_id'] or 'Uncategorized',
+             'total': float(c.get('total_revenue', 0)),
+             'count': int(c.get('count', 0))}
+            for c in cat_result
+        ]
+
+        return jsonify({'sales_trend': sales_trend, 'category_breakdown': category_breakdown})
+    except Exception as e:
+        print(f'chart-data error: {e}')
+        return jsonify({'sales_trend': [], 'category_breakdown': []})
+
+
+@app.route('/api/email-history')
+@admin_required
+def email_history_api():
+    """Return last 50 email sends"""
+    try:
+        if email_logs is None:
+            return jsonify([])
+        logs = list(email_logs.find({}, {'_id': 0}).sort('sent_at', -1).limit(50))
+        for l in logs:
+            l['sent_at'] = l['sent_at'].strftime('%d %b %Y, %H:%M') if hasattr(l.get('sent_at'), 'strftime') else str(l.get('sent_at', ''))[:16]
+        return jsonify(logs)
+    except Exception as e:
+        return jsonify([])
+
+
 @app.route('/admin/export-data', methods=['POST'])
 def admin_export_data():
     try:
@@ -3425,6 +3866,13 @@ def worker_dashboard():
     # Calculate total pages
     total_pages = max(1, (total_products + per_page - 1) // per_page)
     
+    # All products from products_update for the restock dropdown
+    all_products_list = []
+    if products_update is not None:
+        for p in products_update.find({'name': {'$exists': True}}, {'name': 1, 'category': 1, 'variants': 1}).sort('name', 1):
+            p['_id'] = str(p['_id'])
+            all_products_list.append(p)
+
     return render_template('worker_dashboard.html', 
                          worker=worker,
                          products=worker_products,
@@ -3437,7 +3885,8 @@ def worker_dashboard():
                          today_sales=today_sales_amount,
                          today_orders=today_orders_count,
                          total_sales=total_sales_amount,
-                         total_orders=total_orders_count)
+                         total_orders=total_orders_count,
+                         all_products_list=all_products_list)
 
 @app.route('/worker/add-product', methods=['POST'])
 def add_product():
@@ -3541,6 +3990,53 @@ def add_product():
             })
     except Exception as e:
         print(f"Error adding product: {e}")
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/worker/restock', methods=['POST'])
+def worker_restock():
+    """Worker increases stock of an existing product variant."""
+    if 'worker_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        data          = request.get_json() or {}
+        product_id    = data.get('product_id', '').strip()
+        variant_index = int(data.get('variant_index', -1))
+        add_qty       = int(data.get('add_qty', 0))
+
+        if not product_id or variant_index < 0 or add_qty < 1:
+            return jsonify({'error': 'Invalid data'}), 400
+
+        product = products_update.find_one({'_id': ObjectId(product_id)})
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+
+        variants = product.get('variants', [])
+        if variant_index >= len(variants):
+            return jsonify({'error': 'Invalid variant'}), 400
+
+        # Increase stock
+        products_update.update_one(
+            {'_id': ObjectId(product_id)},
+            {'$inc': {f'variants.{variant_index}.stock': add_qty}}
+        )
+
+        # Log the restock activity
+        worker_specific_added.insert_one({
+            'worker_id':   ObjectId(session['worker_id']),
+            'worker_name': session.get('worker_name', 'Worker'),
+            'action':      'restock',
+            'product_id':  ObjectId(product_id),
+            'product_name': product.get('name', ''),
+            'variant_index': variant_index,
+            'qty_added':   add_qty,
+            'date':        datetime.datetime.now(),
+        })
+
+        new_stock = int(variants[variant_index].get('stock', 0)) + add_qty
+        return jsonify({'success': True, 'new_stock': new_stock})
+
+    except Exception as e:
+        print(f"Restock error: {e}")
         return jsonify({'error': str(e)}), 400
 
 @app.route('/worker/delete-product/<product_id>', methods=['DELETE', 'POST'])
@@ -3969,12 +4465,12 @@ def process_purchase():
             """
             
             # Send email
-            email_sent = send_email(
+            email_sent, _ = send_email(
                 to_email=customer_email,
                 subject=f"Purchase Confirmation - Order from {datetime.datetime.utcnow().strftime('%B %d, %Y')}",
                 html_body=email_html
             )
-            
+
             if email_sent:
                 print(f"Purchase confirmation email sent to {customer_email}")
             else:
@@ -4072,13 +4568,11 @@ def labor_register():
 def labor_login():
     identifier = request.form.get('identifier')  # This can be email or mobile
     
-    # Try to find user by email or mobile
-    user = users.find_one({
-        '$or': [
-            {'email': identifier},
-            {'mobile': identifier}
-        ]
-    })
+    # Try to find user by email or mobile in both users collections
+    query = {'$or': [{'email': identifier}, {'mobile': identifier}, {'phone': identifier}]}
+    user = users.find_one(query)
+    if not user and users_update is not None:
+        user = users_update.find_one(query)
     
     if user:
         session['user_id'] = str(user['_id'])
@@ -4095,8 +4589,35 @@ def user_products():
     
     user = users.find_one({'_id': ObjectId(session['user_id'])})
     all_products = list(products_update.find())
-    cart = session.get('cart', {})
+    # Apply active festival discounts in-memory (non-destructive)
+    all_products = _apply_festival_discounts(all_products)
+    cart = _get_cart(str(session['user_id']))
     return render_template('user_products.html', products=all_products, user=user, cart=cart)
+
+# ── MongoDB cart helpers ───────────────────────────────────────────────────────
+def _get_cart(user_id):
+    """Load cart dict from MongoDB for a given user_id string."""
+    if carts is None:
+        return {}
+    doc = carts.find_one({'user_id': user_id})
+    return doc.get('items', {}) if doc else {}
+
+def _save_cart(user_id, cart_dict):
+    """Upsert cart dict to MongoDB."""
+    if carts is None:
+        return
+    carts.update_one(
+        {'user_id': user_id},
+        {'$set': {'items': cart_dict, 'updated_at': datetime.datetime.now()}},
+        upsert=True
+    )
+
+def _clear_cart(user_id):
+    """Remove cart from MongoDB."""
+    if carts is None:
+        return
+    carts.delete_one({'user_id': user_id})
+# ────────────────────────────────────────────────────────────────────────────────
 
 @app.route('/cart/add', methods=['POST'])
 def add_to_cart():
@@ -4112,9 +4633,8 @@ def add_to_cart():
         if not product:
             return jsonify({'error': 'Invalid product'}), 400
 
-        # Initialize cart if it doesn't exist
-        if 'cart' not in session:
-            session['cart'] = {}
+        user_id = str(session['user_id'])
+        cart = _get_cart(user_id)
 
         for variant_data in selected_variants:
             variant_index = int(variant_data['variant_index'])
@@ -4130,17 +4650,15 @@ def add_to_cart():
                 }), 400
 
             cart_key = f"{product_id}_{variant_index}"
-            if cart_key in session['cart']:
-                # Update existing cart item
-                new_quantity = session['cart'][cart_key]['quantity'] + quantity
+            if cart_key in cart:
+                new_quantity = cart[cart_key]['quantity'] + quantity
                 if new_quantity > variant['stock']:
                     return jsonify({
                         'error': f'Cannot add {quantity} more of {product["name"]} ({variant["quantity"]}). Stock limit exceeded.'
                     }), 400
-                session['cart'][cart_key]['quantity'] = new_quantity
+                cart[cart_key]['quantity'] = new_quantity
             else:
-                # Add new cart item
-                session['cart'][cart_key] = {
+                cart[cart_key] = {
                     'product_id': product_id,
                     'product_name': product['name'],
                     'variant_index': variant_index,
@@ -4150,23 +4668,15 @@ def add_to_cart():
                     'cart_key': cart_key
                 }
 
-        session.modified = True
-        
-        # Calculate total items and amount
-        cart_total = sum(item['price'] * item['quantity'] for item in session['cart'].values())
-        cart_items = len(session['cart'])
-        
+        _save_cart(user_id, cart)
+
+        cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
+        cart_items = len(cart)
+
         return jsonify({
             'message': 'Items added to cart successfully',
             'cart_total': cart_total,
             'cart_items': cart_items
-        })
-
-        cart_total = sum(item['price'] * item['quantity'] for item in session['cart'].values())
-        return jsonify({
-            'success': True,
-            'message': f'Added {quantity} {product["name"]} ({variant["quantity"]}) to cart',
-            'cart_total': cart_total
         })
 
     except Exception as e:
@@ -4180,12 +4690,14 @@ def remove_from_cart():
     try:
         data = request.get_json()
         cart_key = data['cart_key']
+        user_id = str(session['user_id'])
+        cart = _get_cart(user_id)
 
-        if 'cart' in session and cart_key in session['cart']:
-            del session['cart'][cart_key]
-            session.modified = True
+        if cart_key in cart:
+            del cart[cart_key]
+            _save_cart(user_id, cart)
 
-        cart_total = sum(item['price'] * item['quantity'] for item in session['cart'].values())
+        cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
         return jsonify({
             'success': True,
             'cart_total': cart_total
@@ -4199,9 +4711,31 @@ def view_cart():
     if 'user_id' not in session:
         return redirect(url_for('labor_panel'))
 
-    cart = session.get('cart', {})
+    user_id = str(session['user_id'])
+    cart = _get_cart(user_id)
+
+    # Migrate any legacy session-based cart items into MongoDB
+    for src_key in ('cart', 'guest_cart'):
+        session_cart = session.get(src_key, {})
+        if session_cart:
+            for k, v in session_cart.items():
+                if k not in cart:
+                    cart[k] = v
+            _save_cart(user_id, cart)
+            session.pop(src_key, None)
+            session.modified = True
+
     cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
-    return render_template('cart.html', cart=cart, cart_total=cart_total)
+    current_user = None
+    try:
+        current_user = users.find_one({'_id': ObjectId(session['user_id'])})
+        if current_user is None and users_update is not None:
+            current_user = users_update.find_one({'_id': ObjectId(session['user_id'])})
+        if current_user:
+            current_user['_id'] = str(current_user['_id'])
+    except Exception:
+        pass
+    return render_template('cart.html', cart=cart, cart_total=cart_total, current_user=current_user)
 
 # Guest cart routes
 @app.route('/cart/guest-add', methods=['POST'])
@@ -4250,6 +4784,9 @@ def guest_add_to_cart():
 
 @app.route('/cart/guest-view')
 def guest_view_cart():
+    # If user is logged in, redirect to the proper cart view
+    if 'user_id' in session:
+        return redirect(url_for('view_cart'))
     cart = session.get('guest_cart', {})
     cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
     return render_template('cart.html', cart=cart, cart_total=cart_total)
@@ -4272,6 +4809,147 @@ def guest_remove_from_cart():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+@app.route('/user/purchase', methods=['POST'])
+def user_purchase():
+    """Logged-in labour/user checkout: no need to re-enter name/email/phone."""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Please log in first'}), 401
+    try:
+        data = request.get_json() or {}
+        delivery_address = (data.get('delivery_address') or '').strip()
+        payment_method   = (data.get('payment_method') or 'COD').strip()
+
+        if not delivery_address:
+            return jsonify({'success': False, 'error': 'Delivery address is required'}), 400
+
+        # ── Get logged-in user ────────────────────────────────────────
+        user_id_str = str(session['user_id'])   # keep as string for cart key
+        uid = ObjectId(user_id_str)
+        current_user = users.find_one({'_id': uid})
+        if current_user is None and users_update is not None:
+            current_user = users_update.find_one({'_id': uid})
+        if not current_user:
+            return jsonify({'success': False, 'error': 'User not found'}), 400
+
+        user_name  = current_user.get('name', 'Customer')
+        user_email = current_user.get('email', '')
+        user_phone = current_user.get('mobile') or current_user.get('phone', '')
+
+        # ── Cart ──────────────────────────────────────────────────────
+        cart = _get_cart(user_id_str)   # ALWAYS use the string key, never ObjectId
+        print(f"[purchase] user_id_str={user_id_str!r}  cart_keys={list(cart.keys())}", flush=True)
+        if not cart:
+            # Fallback: check session cart (for clients that added items before MongoDB migration)
+            cart = session.get('cart', {})
+            print(f"[purchase] fallback session cart keys={list(cart.keys())}", flush=True)
+        if not cart:
+            # Fallback 2: check guest_cart (user added items before logging in)
+            cart = session.get('guest_cart', {})
+            print(f"[purchase] fallback guest_cart keys={list(cart.keys())}", flush=True)
+        if not cart:
+            return jsonify({'success': False, 'error': 'Your basket is empty'}), 400
+
+        order_id  = f'ORD{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+        now       = datetime.datetime.now()
+        purchases = []
+        total_amount = 0.0
+
+        # ── Validate stock ────────────────────────────────────────────
+        for cart_key, item in cart.items():
+            product = products_update.find_one({'_id': ObjectId(item['product_id'])})
+            if not product:
+                return jsonify({'success': False, 'error': f'Product "{item["product_name"]}" not found'}), 400
+            try:
+                variant = product['variants'][int(item['variant_index'])]
+            except (KeyError, IndexError, TypeError):
+                variant = {'stock': product.get('stock', 0), 'quantity': 'Regular', 'price': product.get('price', 0)}
+            if int(variant.get('stock', 0)) < int(item['quantity']):
+                return jsonify({'success': False, 'error': f'Only {variant.get("stock",0)} left for {item["product_name"]} ({item["variant_name"]})'}), 400
+
+            line_total = float(item['price']) * int(item['quantity'])
+            purchases.append({
+                'product': product,
+                'item': item,
+                'variant_index': int(item['variant_index']),
+                'line_total': line_total,
+                'category': product.get('category', 'General'),
+            })
+            total_amount += line_total
+
+        # ── Save purchases & reduce stock ─────────────────────────────
+        for p in purchases:
+            item = p['item']
+            rec = {
+                'order_id':       order_id,
+                'user_id':        uid,
+                'user_name':      user_name,
+                'buyer_name':     user_name,
+                'buyer_email':    user_email,
+                'buyer_phone':    user_phone,
+                'product_id':     ObjectId(item['product_id']),
+                'product_name':   item['product_name'],
+                'category':       p['category'],
+                'variant_index':  p['variant_index'],
+                'variant_name':   item.get('variant_name') or item.get('variant_quantity', ''),
+                'quantity':       int(item['quantity']),
+                'price':          float(item['price']),
+                'total':          p['line_total'],
+                'total_price':    p['line_total'],
+                'payment_method': payment_method,
+                'payment_status': 'Paid',
+                'delivery_address': delivery_address,
+                'purchase_date':  now,
+                'date':           now,
+                'status':         'confirmed',
+                'sold_by_name':   'Self',
+            }
+            # Save to both collections so admin analytics + user history both work
+            user_data_bought.insert_one(dict(rec))
+            products_sold.insert_one(dict(rec))
+
+            # Decrease stock
+            products_update.update_one(
+                {'_id': ObjectId(item['product_id'])},
+                {'$inc': {f'variants.{p["variant_index"]}.stock': -int(item['quantity'])}}
+            )
+
+        # ── Update user purchase counters ─────────────────────────────
+        upd = {'$set': {'last_purchase': now}, '$inc': {'total_purchases': 1}}
+        users.update_one({'_id': uid}, upd)
+        if users_update is not None:
+            users_update.update_one({'_id': uid}, upd)
+
+        # ── Send confirmation email ───────────────────────────────────
+        if user_email:
+            try:
+                purchase_list = [{
+                    'product_name':  p['item']['product_name'],
+                    'variant_name':  p['item'].get('variant_name', ''),
+                    'quantity':      p['item']['quantity'],
+                    'price':         p['item']['price'],
+                    'total':         p['line_total'],
+                    'total_price':   p['line_total'],
+                } for p in purchases]
+                send_purchase_confirmation_email(
+                    user_email, user_name, order_id,
+                    purchase_list, total_amount, delivery_address, payment_method
+                )
+            except Exception as email_err:
+                print(f'⚠️ Order email error: {email_err}')
+
+        # ── Clear cart ────────────────────────────────────────────────────────────────────────
+        _clear_cart(user_id_str)
+        session.pop('cart', None)
+        session.pop('guest_cart', None)
+        session.modified = True
+
+        return jsonify({'success': True, 'order_id': order_id, 'total_amount': total_amount,
+                        'message': 'Purchase completed!', 'user_email': user_email})
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/guest/purchase', methods=['POST'])
 def guest_purchase():
@@ -4639,9 +5317,21 @@ def admin_festival_notifications():
         # Get upcoming festivals (within 30 days)
         upcoming = [f for f in all_festivals if 0 <= f['days_until'] <= 30]
         
+        # Also load custom festivals from DB
+        custom_festivals_raw = list(db.custom_festivals.find({}, {'_id': 1, 'name': 1, 'emoji': 1,
+                                                                   'start_date': 1, 'end_date': 1,
+                                                                   'discount': 1, 'products': 1,
+                                                                   'description': 1,
+                                                                   'product_prices': 1}))
+        custom_festivals = []
+        for cf in custom_festivals_raw:
+            cf['_id'] = str(cf['_id'])
+            custom_festivals.append(cf)
+
         return render_template('festival_notifications.html', 
                              all_festivals=all_festivals,
-                             upcoming_festivals=upcoming)
+                             upcoming_festivals=upcoming,
+                             custom_festivals=custom_festivals)
     except Exception as e:
         flash(f'Error loading festival notifications: {e}', 'error')
         return redirect(url_for('admin_dashboard'))
@@ -4658,6 +5348,84 @@ def admin_send_festival_notifications():
         
         flash('Festival notification check completed successfully!', 'success')
         return jsonify({'success': True, 'message': 'Festival notifications sent!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/add-custom-festival', methods=['POST'])
+@admin_required
+def admin_add_custom_festival():
+    """Add a custom festival entry with products and discount"""
+    try:
+        data = request.get_json() or {}
+        name = (data.get('name') or '').strip()
+        emoji = (data.get('emoji') or '🎉').strip()
+        start_date_str = data.get('start_date') or ''
+        end_date_str = data.get('end_date') or start_date_str
+        discount = (data.get('discount') or '10%').strip()
+        products = data.get('products') or []
+        description = (data.get('description') or '').strip()
+
+        if not name or not start_date_str:
+            return jsonify({'success': False, 'error': 'Festival name and start date are required'}), 400
+
+        try:
+            start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else start_date
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+
+        doc = {
+            'name': name,
+            'emoji': emoji,
+            'start_date': start_date,
+            'end_date': end_date,
+            'discount': discount,
+            'products': products,
+            'description': description,
+            'created_at': datetime.datetime.now(),
+            'is_custom': True
+        }
+        product_prices_raw = data.get('product_prices') or {}
+        # Coerce values to float, drop empty ones
+        product_prices = {}
+        for pn, pv in product_prices_raw.items():
+            try:
+                if pv != '' and pv is not None:
+                    product_prices[pn] = float(pv)
+            except (TypeError, ValueError):
+                pass
+        doc['product_prices'] = product_prices
+
+        result = db.custom_festivals.insert_one(doc)
+        return jsonify({'success': True, 'message': f'Custom festival "{name}" added!', 'id': str(result.inserted_id)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/delete-custom-festival/<festival_id>', methods=['POST', 'DELETE'])
+@admin_required
+def admin_delete_custom_festival(festival_id):
+    """Delete a custom festival by ID"""
+    try:
+        from bson import ObjectId
+        result = db.custom_festivals.delete_one({'_id': ObjectId(festival_id)})
+        if result.deleted_count:
+            return jsonify({'success': True, 'message': 'Festival deleted.'})
+        return jsonify({'success': False, 'error': 'Festival not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/get-products-list', methods=['GET'])
+@admin_required
+def admin_get_products_list():
+    """Return list of product names for festival form select"""
+    try:
+        products = []
+        for col in ['products_update', 'products', 'products_by_user']:
+            for p in db[col].find({}, {'name': 1, '_id': 0}):
+                n = p.get('name')
+                if n and n not in products:
+                    products.append(n)
+        return jsonify({'success': True, 'products': sorted(products)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -4861,7 +5629,7 @@ def admin_send_test_notifications_all():
                 """
                 
                 # Send email
-                if send_email(user_email, f"🎉 {festival_info['name']} Special Offers - Exclusive Discounts!", html_body):
+                if send_email(user_email, f"🎉 {festival_info['name']} Special Offers - Exclusive Discounts!", html_body)[0]:
                     success_count += 1
                 else:
                     failed_count += 1
@@ -5097,7 +5865,7 @@ def admin_send_personalized_offers():
                 """
                 
                 # Send email
-                if send_email(user_email, f"🎯 {user_name}, Special Offers Curated for You!", html_body):
+                if send_email(user_email, f"🎯 {user_name}, Special Offers Curated for You!", html_body)[0]:
                     success_count += 1
                 else:
                     failed_count += 1
@@ -5138,6 +5906,382 @@ def test_db_connection():
             'message': str(e),
             'type': type(e).__name__
         }), 500
+
+# ============================================
+# ADMIN AI CHAT (DeepSeek-style RAG Chatbot)
+# ============================================
+
+def _rag_query(question: str) -> str:
+    """Query MongoDB collections relevant to the question and build a context string."""
+    import re
+    q = question.lower()
+    ctx_parts = []
+
+    try:
+        now = datetime.datetime.utcnow()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start  = today_start - datetime.timedelta(days=7)
+        month_start = today_start.replace(day=1)
+
+        # ── Sales / revenue queries ──────────────────────────────────
+        if any(w in q for w in ['sale','revenue','sold','purchase','order','total','today','weekly','monthly','income','earning']):
+            # Today
+            today_pipe = [
+                {'$match': {'purchase_date': {'$gte': today_start}}},
+                {'$group': {'_id': None, 'total': {'$sum': '$total'}, 'count': {'$sum': 1}}}
+            ]
+            r = list(db.user_data_bought.aggregate(today_pipe))
+            ctx_parts.append(f"TODAY'S SALES: count={r[0]['count'] if r else 0}, revenue=₹{r[0]['total'] if r else 0:.2f}")
+
+            # This week
+            week_pipe = [
+                {'$match': {'purchase_date': {'$gte': week_start}}},
+                {'$group': {'_id': None, 'total': {'$sum': '$total'}, 'count': {'$sum': 1}}}
+            ]
+            r = list(db.user_data_bought.aggregate(week_pipe))
+            ctx_parts.append(f"THIS WEEK'S SALES: count={r[0]['count'] if r else 0}, revenue=₹{r[0]['total'] if r else 0:.2f}")
+
+            # This month
+            month_pipe = [
+                {'$match': {'purchase_date': {'$gte': month_start}}},
+                {'$group': {'_id': None, 'total': {'$sum': '$total'}, 'count': {'$sum': 1}}}
+            ]
+            r = list(db.user_data_bought.aggregate(month_pipe))
+            ctx_parts.append(f"THIS MONTH'S SALES: count={r[0]['count'] if r else 0}, revenue=₹{r[0]['total'] if r else 0:.2f}")
+
+            # All-time
+            all_pipe = [{'$group': {'_id': None, 'total': {'$sum': '$total'}, 'count': {'$sum': 1}}}]
+            r = list(db.user_data_bought.aggregate(all_pipe))
+            ctx_parts.append(f"ALL-TIME SALES: count={r[0]['count'] if r else 0}, revenue=₹{r[0]['total'] if r else 0:.2f}")
+
+        # ── Top products ─────────────────────────────────────────────
+        if any(w in q for w in ['product','top','best','popular','sell','item','category']):
+            top_pipe = [
+                {'$group': {'_id': '$product_name', 'units': {'$sum': '$quantity'}, 'revenue': {'$sum': '$total'}}},
+                {'$sort': {'revenue': -1}},
+                {'$limit': 8}
+            ]
+            rows = list(db.user_data_bought.aggregate(top_pipe))
+            if rows:
+                ctx_parts.append("TOP PRODUCTS BY REVENUE:\n" +
+                    "\n".join([f"  • {r['_id']}: {r['units']} units, ₹{r['revenue']:.2f}" for r in rows]))
+
+            # Category breakdown
+            cat_pipe = [
+                {'$group': {'_id': '$category', 'revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}},
+                {'$sort': {'revenue': -1}}, {'$limit': 6}
+            ]
+            cats = list(db.user_data_bought.aggregate(cat_pipe))
+            if cats:
+                ctx_parts.append("TOP CATEGORIES:\n" +
+                    "\n".join([f"  • {c['_id'] or 'Uncategorized'}: ₹{c['revenue']:.2f} ({c['count']} orders)" for c in cats]))
+
+            # Total products in inventory
+            count = 0
+            for col in ['products_update', 'products', 'products_by_user']:
+                count += db[col].count_documents({})
+            ctx_parts.append(f"TOTAL PRODUCTS IN INVENTORY: {count}")
+
+            # Low stock (< 10 units)
+            low_stock = []
+            for col in ['products_update', 'products']:
+                for p in db[col].find({}, {'name': 1, 'variants': 1, 'stock': 1}):
+                    name = p.get('name', '?')
+                    if p.get('variants'):
+                        for v in p['variants']:
+                            if (v.get('stock') or 0) < 10:
+                                low_stock.append(f"{name} ({v.get('quantity','?')}): {v.get('stock',0)} left")
+                    elif (p.get('stock') or 0) < 10:
+                        low_stock.append(f"{name}: {p.get('stock',0)} left")
+            if low_stock:
+                ctx_parts.append("LOW STOCK ITEMS (<10):\n" + "\n".join([f"  • {x}" for x in low_stock[:10]]))
+
+        # ── Users / customers ────────────────────────────────────────
+        if any(w in q for w in ['user','customer','register','signup','member','buyer','new','people']):
+            total_u = 0
+            for col in ['users', 'users_update']:
+                try: total_u += db[col].count_documents({})
+                except: pass
+            ctx_parts.append(f"TOTAL USERS: {total_u}")
+
+            # New users today
+            new_today = 0
+            for col in ['users', 'users_update']:
+                try:
+                    new_today += db[col].count_documents({'created_at': {'$gte': today_start}})
+                except: pass
+            ctx_parts.append(f"NEW USERS TODAY: {new_today}")
+
+            # New users this week
+            new_week = 0
+            for col in ['users', 'users_update']:
+                try:
+                    new_week += db[col].count_documents({'created_at': {'$gte': week_start}})
+                except: pass
+            ctx_parts.append(f"NEW USERS THIS WEEK: {new_week}")
+
+            # Top buyers
+            top_buyers = list(db.user_data_bought.aggregate([
+                {'$group': {'_id': '$user_name', 'spent': {'$sum': '$total'}, 'orders': {'$sum': 1}}},
+                {'$sort': {'spent': -1}}, {'$limit': 5}
+            ]))
+            if top_buyers:
+                ctx_parts.append("TOP BUYERS:\n" +
+                    "\n".join([f"  • {b['_id']}: ₹{b['spent']:.2f} ({b['orders']} orders)" for b in top_buyers]))
+
+        # ── Workers ──────────────────────────────────────────────────
+        if any(w in q for w in ['worker','staff','employee','agent','seller','team']):
+            w_count = 0
+            for col in ['workers_update', 'workers', 'Workers']:
+                try: w_count += db[col].count_documents({})
+                except: pass
+            ctx_parts.append(f"TOTAL WORKERS: {w_count}")
+
+            # Top workers by sales
+            top_workers = list(db.user_data_bought.aggregate([
+                {'$match': {'sold_by_name': {'$exists': True, '$ne': None}}},
+                {'$group': {'_id': '$sold_by_name', 'revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}},
+                {'$sort': {'revenue': -1}}, {'$limit': 5}
+            ]))
+            if top_workers:
+                ctx_parts.append("TOP WORKERS BY SALES:\n" +
+                    "\n".join([f"  • {w['_id']}: ₹{w['revenue']:.2f} ({w['count']} sales)" for w in top_workers]))
+
+        # ── Daily trend ──────────────────────────────────────────────
+        if any(w in q for w in ['trend','daily','per day','chart','graph','last 7','last seven','week']):
+            daily_pipe = [
+                {'$match': {'purchase_date': {'$gte': week_start}}},
+                {'$group': {
+                    '_id': {'$dateToString': {'format': '%Y-%m-%d', 'date': '$purchase_date'}},
+                    'revenue': {'$sum': '$total'}, 'count': {'$sum': 1}
+                }},
+                {'$sort': {'_id': 1}}
+            ]
+            days = list(db.user_data_bought.aggregate(daily_pipe))
+            if days:
+                ctx_parts.append("DAILY SALES (last 7 days):\n" +
+                    "\n".join([f"  {d['_id']}: ₹{d['revenue']:.2f} ({d['count']} orders)" for d in days]))
+
+        # ── Payment status breakdown ─────────────────────────────────
+        if any(w in q for w in ['payment','pending','completed','status','paid']):
+            pay_pipe = [
+                {'$group': {'_id': '$payment_status', 'count': {'$sum': 1}, 'total': {'$sum': '$total'}}},
+                {'$sort': {'total': -1}}
+            ]
+            pays = list(db.user_data_bought.aggregate(pay_pipe))
+            if pays:
+                ctx_parts.append("PAYMENT STATUS BREAKDOWN:\n" +
+                    "\n".join([f"  • {p['_id'] or 'unknown'}: {p['count']} orders, ₹{p['total']:.2f}" for p in pays]))
+
+    except Exception as e:
+        ctx_parts.append(f"[DB query error: {e}]")
+
+    return "\n\n".join(ctx_parts) if ctx_parts else "No relevant data found in database."
+
+
+@app.route('/admin/ai-chat')
+@admin_required
+def admin_ai_chat_page():
+    """Render the DeepSeek-style AI chat page for admin."""
+    api_key = os.getenv('GROQ_API_KEY', '').strip()
+    api_key_missing = not api_key or api_key == 'your_groq_api_key_here'
+    return render_template('admin_ai_chat.html', api_key_missing=api_key_missing)
+
+
+@app.route('/admin/ai-chat/send', methods=['POST'])
+@admin_required
+def admin_ai_chat_send():
+    """RAG + Groq LLM endpoint for the admin AI chat."""
+    try:
+        import requests as _requests
+
+        data    = request.get_json() or {}
+        question = (data.get('question') or '').strip()
+        history  = data.get('history') or []
+        deep_think = bool(data.get('deep_think', False))
+
+        if not question:
+            return jsonify({'answer': 'Please ask a question.'})
+
+        # ── Check API key ────────────────────────────────────────────
+        api_key = os.getenv('GROQ_API_KEY', '').strip()
+        if not api_key or api_key == 'your_groq_api_key_here':
+            return jsonify({
+                'answer': (
+                    "⚠️ **Groq API key not configured.**\n\n"
+                    "To enable AI responses:\n"
+                    "1. Visit [console.groq.com](https://console.groq.com) — it's **free**\n"
+                    "2. Create an API key\n"
+                    "3. Add to your `.env` file:\n```\nGROQ_API_KEY=gsk_...\n```\n"
+                    "4. Restart Flask\n\n"
+                    "ℹ️ *Groq uses DeepSeek-R1 model under the hood for free (no credit card needed).*"
+                )
+            })
+
+        # ── RAG: fetch database context ──────────────────────────────
+        db_context = _rag_query(question)
+
+        # ── System prompt ────────────────────────────────────────────
+        system_prompt = """You are an intelligent Sales Database Assistant.
+
+You answer questions strictly using the provided database context.
+The database name is "saless".
+
+Collections in the database:
+- users / users_update
+- products / products_update / products_by_user
+- user_data_bought  (primary sales collection — has purchase_date, total, product_name, category, quantity, user_name, sold_by_name, payment_status)
+- workers_update / Workers / Worker_added_products
+- admins
+- custom_festivals
+
+Rules:
+1. Only answer using the given context.
+2. Do NOT assume or hallucinate missing data.
+3. If the answer is not found in context, respond: "The requested information is not available in the database."
+4. If the question requires calculation (e.g., total sales, revenue, counts), compute using the retrieved data.
+5. Keep answers clear, structured, and professional.
+6. If the question relates to:
+   - Sales → prioritize user_data_bought
+   - Customers → prioritize users or user_data_bought
+   - Inventory → prioritize products / products_update
+   - Worker activity → prioritize workers_update or sold_by_name in user_data_bought
+7. When listing data, present in bullet points or tables (Markdown).
+8. Always stay within database scope. Do not provide general knowledge answers.
+
+Answer format:
+- Short summary first
+- Then structured details (if needed)
+- Use Markdown for formatting (tables, bold, bullets)"""
+
+        # ── Build messages ───────────────────────────────────────────
+        messages = [{'role': 'system', 'content': system_prompt}]
+
+        # Add recent history (last 6 turns)
+        for m in history[-6:]:
+            if m.get('role') in ('user', 'assistant') and m.get('content'):
+                messages.append({'role': m['role'], 'content': m['content']})
+
+        # Inject DB context into the current user question
+        user_content = f"""Database Context (retrieved from MongoDB):
+```
+{db_context}
+```
+
+User Question: {question}"""
+        messages.append({'role': 'user', 'content': user_content})
+
+        # ── Pick model ───────────────────────────────────────────────
+        # deepseek-r1-distill-llama-70b is DeepSeek's model on Groq (free)
+        model = 'deepseek-r1-distill-llama-70b' if deep_think else 'llama-3.3-70b-versatile'
+
+        # ── Call Groq API (OpenAI-compatible) ────────────────────────
+        resp = _requests.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': model,
+                'messages': messages,
+                'temperature': 0.2,
+                'max_tokens': 1500,
+                'stream': False
+            },
+            timeout=30
+        )
+
+        if resp.status_code != 200:
+            err = resp.json().get('error', {}).get('message', resp.text)
+            return jsonify({'answer': f'⚠️ Groq API error: {err}'}), 200
+
+        answer = resp.json()['choices'][0]['message']['content'].strip()
+
+        # Strip <think>...</think> tags that DeepSeek-R1 sometimes returns
+        import re as _re
+        answer = _re.sub(r'<think>.*?</think>', '', answer, flags=_re.DOTALL).strip()
+
+        # ── Persist Q&A to MongoDB ───────────────────────────────────
+        session_id = (data.get('session_id') or '').strip()
+        try:
+            if admin_ai_chats is not None and session_id:
+                existing = admin_ai_chats.find_one({'session_id': session_id})
+                new_msgs = [
+                    {'role': 'user', 'text': question, 'ts': datetime.datetime.utcnow()},
+                    {'role': 'ai',   'text': answer,   'ts': datetime.datetime.utcnow()}
+                ]
+                if existing:
+                    admin_ai_chats.update_one(
+                        {'session_id': session_id},
+                        {'$push': {'messages': {'$each': new_msgs}},
+                         '$set':  {'updated_at': datetime.datetime.utcnow()}}
+                    )
+                else:
+                    admin_ai_chats.insert_one({
+                        'session_id': session_id,
+                        'title':      question[:60],
+                        'messages':   new_msgs,
+                        'created_at': datetime.datetime.utcnow(),
+                        'updated_at': datetime.datetime.utcnow()
+                    })
+        except Exception as _db_err:
+            print(f'AI chat save error: {_db_err}')
+
+        return jsonify({'answer': answer, 'session_id': session_id})
+
+    except Exception as e:
+        return jsonify({'answer': f'⚠️ Server error: {str(e)}'}), 200
+
+
+@app.route('/api/ai-chat-sessions')
+@admin_required
+def ai_chat_sessions_list():
+    """Return all AI chat sessions (title + session_id + updated_at), newest first."""
+    try:
+        if admin_ai_chats is None:
+            return jsonify([])
+        docs = list(admin_ai_chats.find(
+            {}, {'session_id': 1, 'title': 1, 'updated_at': 1, '_id': 0}
+        ).sort('updated_at', -1).limit(50))
+        for d in docs:
+            if hasattr(d.get('updated_at'), 'strftime'):
+                d['updated_at'] = d['updated_at'].strftime('%d %b %Y, %H:%M')
+        return jsonify(docs)
+    except Exception as e:
+        return jsonify([])
+
+
+@app.route('/api/ai-chat-sessions/<session_id>')
+@admin_required
+def ai_chat_session_messages(session_id):
+    """Return all messages for a given session_id."""
+    try:
+        if admin_ai_chats is None:
+            return jsonify([])
+        doc = admin_ai_chats.find_one({'session_id': session_id}, {'messages': 1, '_id': 0})
+        if not doc:
+            return jsonify([])
+        msgs = doc.get('messages', [])
+        for m in msgs:
+            if hasattr(m.get('ts'), 'strftime'):
+                m['ts'] = m['ts'].strftime('%d %b %Y, %H:%M')
+        return jsonify(msgs)
+    except Exception as e:
+        return jsonify([])
+
+
+@app.route('/api/ai-chat-sessions/<session_id>/delete', methods=['POST'])
+@admin_required
+def ai_chat_session_delete(session_id):
+    """Delete a chat session by session_id."""
+    try:
+        if admin_ai_chats is not None:
+            admin_ai_chats.delete_one({'session_id': session_id})
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)})
+
 
 # ============================================
 # PROJECT ASSISTANT CHATBOT API
