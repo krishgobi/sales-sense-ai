@@ -196,31 +196,19 @@ def datetime_filter(date, format='%Y-%m-%d'):
 # MongoDB connection setup with error handling
 def get_database_connection():
     try:
-        # Get MongoDB connection details from environment variables
-        mongodb_url = os.getenv('MONGODB_URL')
-        database_name = os.getenv('MONGODB_DATABASE')
-        
-        if not mongodb_url or not database_name:
-            raise ValueError("MongoDB connection details not found in environment variables")
-        
-        # Set up MongoDB client with proper configurations
-        client = MongoClient(
-            mongodb_url,
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connectTimeoutMS=5000,
-            socketTimeoutMS=5000,
-            maxPoolSize=50,
-            retryWrites=True,
-            retryReads=True
-        )
-        
+        mongo_url = os.getenv('MONGODB_URL')
+
+        if not mongo_url:
+            raise Exception("MONGODB_URL not found in environment variables")
+
+        client = MongoClient(mongo_url)
+
         # Test the connection
         client.admin.command('ping')
-        
-        # Get database
-        db = client[database_name]
+
+        db = client["saless"]
         return db
-    
+
     except Exception as e:
         print(f"Error connecting to MongoDB: {str(e)}")
         print("Please check your MongoDB connection string and ensure the service is running.")

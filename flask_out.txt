@@ -1059,3 +1059,175 @@ p:\Sales-sense-ai-pro\sales-sense-ai\app.py:3704: DeprecationWarning: datetime.d
 127.0.0.1 - - [22/Feb/2026 21:16:51] "GET /static/js/main.js HTTP/1.1" 304 -
 127.0.0.1 - - [22/Feb/2026 21:16:51] "GET /api/email-history HTTP/1.1" 200 -
 127.0.0.1 - - [22/Feb/2026 21:16:52] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:16] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:28:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:28:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:16] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:28:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:28:17] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:20] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:24] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:24] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:24] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:28] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:28:28] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:31:55] "GET /admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:31:55] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:31:55] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:31:55] "GET /api/email-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:31:57] "GET /api/chart-data?from=2026-01-24&to=2026-02-22 HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\_write_ai_chat.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 20:38:24
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+[Analytics] Period=7d, Revenue=₹101973.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=30d, Revenue=₹344353.52, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+[Analytics] Period=365d, Revenue=₹665669.97, Today=₹10948.00
+[Analytics] Period=90d, Revenue=₹665669.97, Today=₹10948.00
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found existing admin user
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Refreshing data cache...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+🔍 DEBUG: Dashboard Context - Total Users: 1760, Recent Users Count: 20
+Refreshing data cache...
+Data cache refreshed successfully
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [22/Feb/2026 21:43:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:43:16] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:16] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:43:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:43:17] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:20] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:24] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:24] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:24] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:27] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:43:27] "GET /api/festival-calendar HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 21:39:25
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "C:\Program Files\Python312\Lib\threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\werkzeug\serving.py", line 819, in serve_forever
+    super().serve_forever(poll_interval=poll_interval)
+  File "C:\Program Files\Python312\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 323, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\selectors.py", line 314, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10038] An operation was attempted on something that is not a socket
+ * Restarting with stat
