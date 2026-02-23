@@ -1261,29 +1261,22 @@ def build_dashboard_context():
             sales_data['dates'].append(date.strftime('%m/%d'))
             sales_data['values'].append(daily_sales)
 
-        # Category data for pie chart - using aggregation with lookup
-        category_sales_pipeline = [
-            {'$lookup': {
-                'from': 'products_update',
-                'localField': 'product_id',
-                'foreignField': '_id',
-                'as': 'product'
-            }},
-            {'$unwind': {'path': '$product', 'preserveNullAndEmptyArrays': True}},
-            {'$group': {
-                '_id': {'$ifNull': ['$product.category', 'Other']},
-                'total': {'$sum': '$total'}
-            }}
-        ]
-
+        # Category data for pie chart — from user_data_bought (all sales recorded here)
         category_sales = {}
         try:
-            category_results = list(products_sold.aggregate(category_sales_pipeline)) if products_sold is not None else []
+            cat_pipeline = [
+                {'$match': {'total': {'$exists': True, '$ne': None}}},
+                {'$group': {
+                    '_id': {'$ifNull': ['$category', 'Other']},
+                    'total': {'$sum': '$total'}
+                }},
+                {'$sort': {'total': -1}}
+            ]
+            category_results = list(user_data_bought.aggregate(cat_pipeline)) if user_data_bought is not None else []
             for result in category_results:
-                category_sales[result['_id']] = float(result['total'])
+                category_sales[result['_id'] or 'Other'] = float(result['total'])
         except Exception as e:
             print(f"Error in category aggregation: {str(e)}")
-            # Fallback to simpler method
             category_sales = {'Other': total_sales}
 
         category_data = {
@@ -2149,14 +2142,22 @@ def business_stats_api():
         today        = now.replace(hour=0, minute=0, second=0, microsecond=0)
         period_start = now - datetime.timedelta(days=days)
 
-        # ── revenue for the selected period ────────────────────────────
+        # ── ALL-TIME total revenue (no date filter) ─────────────────────
+        alltime_result = list(user_data_bought.aggregate([
+            {'$match': {'total': {'$exists': True, '$ne': None}}},
+            {'$group': {'_id': None, 'total_revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}}
+        ]))
+        total_sales          = float(alltime_result[0]['total_revenue']) if alltime_result else 0.0
+        total_purchase_count = int(alltime_result[0]['count']) if alltime_result else 0
+
+        # ── revenue for the selected period (used for avg order value) ──
         period_sales_pipeline = [
             {'$match': {'purchase_date': {'$gte': period_start}, 'total': {'$exists': True, '$ne': None}}},
             {'$group': {'_id': None, 'total_revenue': {'$sum': '$total'}, 'count': {'$sum': 1}}}
         ]
-        period_result    = list(user_data_bought.aggregate(period_sales_pipeline))
-        total_sales      = float(period_result[0]['total_revenue']) if period_result else 0.0
-        total_purchase_count = int(period_result[0]['count']) if period_result else 0
+        period_result  = list(user_data_bought.aggregate(period_sales_pipeline))
+        period_revenue = float(period_result[0]['total_revenue']) if period_result else 0.0
+        period_orders  = int(period_result[0]['count']) if period_result else 0
 
         # ── today's sales (always fixed to today regardless of period) ─
         sales_today_result = list(user_data_bought.aggregate([
@@ -2274,8 +2275,9 @@ def business_stats_api():
             'active_users':     active_users_count,
             'total_sales':      total_sales,
             'total_revenue':    total_sales,
+            'period_revenue':   period_revenue,
             'sales_today':      sales_today,
-            'total_orders':     total_orders,
+            'total_orders':     total_purchase_count,
             'orders_today':     orders_today,
             'total_products':   total_products,
             'total_workers':    workers_update.count_documents({}) if workers_update is not None else 0,
@@ -2284,7 +2286,7 @@ def business_stats_api():
             'sales_trend':      sales_trend,
             'category_breakdown': category_breakdown,
             'category_sales':   category_breakdown,   # legacy alias
-            'avg_order_value':  round(total_sales / total_orders, 2) if total_orders > 0 else 0,
+            'avg_order_value':  round(period_revenue / period_orders, 2) if period_orders > 0 else 0,
             'total_purchases':  total_purchase_count,
         }
 
@@ -4513,7 +4515,10 @@ def cleanup_products():
 
 @app.route('/labor')
 def labor_panel():
-    return render_template('labor.html', logged_in='user_id' in session)
+    festivals = get_active_festival_discounts()
+    upcoming  = get_upcoming_festivals()
+    return render_template('labor.html', logged_in='user_id' in session,
+                           festivals=festivals, upcoming_festivals=upcoming)
 
 @app.route('/labor/register', methods=['POST'])
 def labor_register():
@@ -6110,37 +6115,28 @@ def admin_ai_chat_send():
         db_context = _rag_query(question)
 
         # ── System prompt ────────────────────────────────────────────
-        system_prompt = """You are an intelligent Sales Database Assistant.
+        system_prompt = """You are SalesSense AI Assistant — a helpful, friendly assistant for a grocery retail business.
 
-You answer questions strictly using the provided database context.
-The database name is "saless".
+You can:
+- Answer greetings and casual conversation naturally and warmly
+- Help with general questions about the application or grocery business
+- Answer data questions using the provided database context
 
-Collections in the database:
+Database name: "saless". Collections:
 - users / users_update
 - products / products_update / products_by_user
-- user_data_bought  (primary sales collection — has purchase_date, total, product_name, category, quantity, user_name, sold_by_name, payment_status)
+- user_data_bought  (purchase_date, total, product_name, category, quantity, user_name, sold_by_name, payment_status)
 - workers_update / Workers / Worker_added_products
-- admins
-- custom_festivals
+- admins, custom_festivals
 
 Rules:
-1. Only answer using the given context.
-2. Do NOT assume or hallucinate missing data.
-3. If the answer is not found in context, respond: "The requested information is not available in the database."
-4. If the question requires calculation (e.g., total sales, revenue, counts), compute using the retrieved data.
-5. Keep answers clear, structured, and professional.
-6. If the question relates to:
-   - Sales → prioritize user_data_bought
-   - Customers → prioritize users or user_data_bought
-   - Inventory → prioritize products / products_update
-   - Worker activity → prioritize workers_update or sold_by_name in user_data_bought
-7. When listing data, present in bullet points or tables (Markdown).
-8. Always stay within database scope. Do not provide general knowledge answers.
-
-Answer format:
-- Short summary first
-- Then structured details (if needed)
-- Use Markdown for formatting (tables, bold, bullets)"""
+1. For greetings ("hi", "hello", "hey") — respond warmly and offer to help with sales, products, customers or business insights.
+2. For general questions (not DB-related) — answer helpfully and concisely.
+3. For data questions — use the provided database context to answer accurately. Do NOT hallucinate missing data.
+4. If DB data is needed but not in context, say: “I couldn’t find that in the database. Try a more specific question.”
+5. For calculations (revenue, totals, counts) — compute from retrieved data.
+6. Format answers with Markdown (tables, bold, bullet lists) when helpful.
+7. Keep answers clear, structured, and professional but friendly."""
 
         # ── Build messages ───────────────────────────────────────────
         messages = [{'role': 'system', 'content': system_prompt}]

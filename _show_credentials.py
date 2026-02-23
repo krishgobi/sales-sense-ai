@@ -2,7 +2,7 @@ from dotenv import load_dotenv; load_dotenv()
 import os
 from pymongo import MongoClient
 
-client = MongoClient(os.getenv('MONGODB_URI') or os.getenv('MONGO_URI'))
+client = MongoClient(os.getenv('MONGODB_URL') or os.getenv('MONGODB_URI') or os.getenv('MONGO_URI'))
 db = client['saless']
 
 print("=== workers_update (raw) ===")

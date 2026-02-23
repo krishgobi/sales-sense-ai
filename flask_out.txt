@@ -1231,3 +1231,200 @@ Traceback (most recent call last):
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 OSError: [WinError 10038] An operation was attempted on something that is not a socket
  * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [22/Feb/2026 21:58:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:16] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:58:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:58:16] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:58:16] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 21:58:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:20] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:24] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:24] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:24] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:28] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 21:58:28] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:17] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 22:13:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:17] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 22:13:17] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 22:13:17] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 22:13:18] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:19] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:20] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:24] "GET /api/notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:24] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:24] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:27] "GET /api/product-insights HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 22:13:27] "GET /api/festival-calendar HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 23:03:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 23:03:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 23:03:11] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 23:03:12] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 23:03:12] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 23:03:12] "GET /static/js/main.js HTTP/1.1" 304 -
+Traceback (most recent call last):
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\app.py", line 298, in analyze_product_performance
+    sales_data = list(db.products_sold.find({
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\cursor.py", line 1262, in next
+    if len(self.__data) or self._refresh():
+                           ^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\cursor.py", line 1153, in _refresh
+    self.__session = self.__collection.database.client._ensure_session()
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\mongo_client.py", line 1868, in _ensure_session
+    return self.__start_session(True, causal_consistency=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\mongo_client.py", line 1811, in __start_session
+    self._topology._check_implicit_session_support()
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\topology.py", line 583, in _check_implicit_session_support
+    self._check_session_support()
+Traceback (most recent call last):
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\topology.py", line 599, in _check_session_support
+    self._select_servers_loop(
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\topology.py", line 269, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed, Timeout: 30s, Topology Description: <TopologyDescription id: 699b2b4ccf5c9251f2f08c51, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-khl4bla-shard-00-00.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-01.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-02.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>]>
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\app.py", line 2157, in business_stats_api
+    period_result    = list(user_data_bought.aggregate(period_sales_pipeline))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\collection.py", line 2721, in aggregate
+    with self.__database.client._tmp_session(session, close=False) as s:
+  File "C:\Program Files\Python312\Lib\contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\mongo_client.py", line 1885, in _tmp_session
+    s = self._ensure_session(session)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\mongo_client.py", line 1868, in _ensure_session
+    return self.__start_session(True, causal_consistency=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\mongo_client.py", line 1811, in __start_session
+    self._topology._check_implicit_session_support()
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\topology.py", line 583, in _check_implicit_session_support
+    self._check_session_support()
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\topology.py", line 599, in _check_session_support
+    self._select_servers_loop(
+  File "p:\Sales-sense-ai-pro\sales-sense-ai\my\Lib\site-packages\pymongo\topology.py", line 269, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed, Timeout: 30s, Topology Description: <TopologyDescription id: 699b2b4ccf5c9251f2f08c51, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-khl4bla-shard-00-00.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-01.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-02.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>]>
+127.0.0.1 - - [23/Feb/2026 04:25:59] "GET /api/business-stats?days=7 HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 09:05:47] "GET /api/notifications HTTP/1.1" 200 -
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\_show_credentials.py', reloading
+Creating database indexes...
+Database indexes created successfully
+Refreshing data cache...
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-22 21:44:05
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Refreshing data cache...
+Data cache refreshed successfully
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Found 7434 sales records in last 90 days
+[Analytics] Period=7d, Revenue=₹99399.91, Today=₹10948.00
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Found 7434 sales records in last 90 days
+Analyzed 5 products
+Top performers: 1, Poor performers: 1
+Refreshing data cache...
+Data cache refreshed successfully
+Error getting business stats: ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed, Timeout: 30s, Topology Description: <TopologyDescription id: 699b2b4ccf5c9251f2f08c51, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-khl4bla-shard-00-00.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-01.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-02.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>]>
+Error in product performance analysis: ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed,ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed, Timeout: 30s, Topology Description: <TopologyDescription id: 699b2b4ccf5c9251f2f08c51, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-khl4bla-shard-00-00.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-01.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>, <ServerDescription ('ac-khl4bla-shard-00-02.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: [Errno 11001] getaddrinfo failed')>]>
+Error generating festival recommendations: bad auth : authentication failed, full error: {'ok': 0, 'errmsg': 'bad auth : authentication failed', 'code': 8000, 'codeName': 'AtlasError'}
+Error in inventory alerts: ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: connection closed,ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: connection closed,ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: connection closed, Timeout: 30s, Topology Description: <TopologyDescription id: 699b2b4ccf5c9251f2f08c51, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-khl4bla-shard-00-00.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-00.rigkacg.mongodb.net:27017: connection closed')>, <ServerDescription ('ac-khl4bla-shard-00-01.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-01.rigkacg.mongodb.net:27017: connection closed')>, <ServerDescription ('ac-khl4bla-shard-00-02.rigkacg.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-khl4bla-shard-00-02.rigkacg.mongodb.net:27017: connection closed')>]>
+Refreshing data cache...
+Error refreshing cache: bad auth : authentication failed, full error: {'ok': 0, 'errmsg': 'bad auth : authentication failed', 'code': 8000, 'codeName': 'AtlasError'}
+Exception in thread Thread-3 (serve_forever):
+Traceback (most recent call last):
+  File "C:\Program Files\Python312\Lib\threading.py", line 1073, in _bootstrap_inner
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\app.py', reloading
+Error connecting to MongoDB: bad auth : authentication failed, full error: {'ok': 0, 'errmsg': 'bad auth : authentication failed', 'code': 8000, 'codeName': 'AtlasError'}
+Please check your MongoDB connection string and ensure the service is running.
+Also check if your IP address is whitelisted in MongoDB Atlas.
+Failed to establish MongoDB connection. Starting with limited functionality.
+Warning: Database collections not initialized due to connection failure.
+Skipping cache refresh - database not connected
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-23 09:09:26
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+Skipping cache refresh - database not connected
+Skipping cache refresh - database not connected
+Skipping cache refresh - database not connected
+Skipping cache refresh - database not connected
+Skipping cache refresh - database not connected
+Skipping cache refresh - database not connected
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+ * Detected change in 'p:\\Sales-sense-ai-pro\\sales-sense-ai\\_show_credentials.py', reloading
+Error connecting to MongoDB: bad auth : authentication failed, full error: {'ok': 0, 'errmsg': 'bad auth : authentication failed', 'code': 8000, 'codeName': 'AtlasError'}
+Please check your MongoDB connection string and ensure the service is running.
+Also check if your IP address is whitelisted in MongoDB Atlas.
+Failed to establish MongoDB connection. Starting with limited functionality.
+Warning: Database collections not initialized due to connection failure.
+Skipping cache refresh - database not connected
+Auto-refresh thread started
+
+============================================================
+Festival Notification Check - 2026-02-23 11:25:53
+============================================================
+
+✅ Festival notification scheduler started!
+ℹ️  No festivals in the next 7 days.
+💤 Next check in 24 hours...
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 107-976-803
+127.0.0.1 - - [23/Feb/2026 11:34:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 11:34:43] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 11:34:43] "GET /static/js/main.js HTTP/1.1" 304 -
+127.0.0.1 - - [23/Feb/2026 11:34:43] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [23/Feb/2026 11:39:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 11:39:26] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 11:39:26] "GET /static/js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 11:39:28] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [23/Feb/2026 11:58:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [23/Feb/2026 11:58:15] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [23/Feb/2026 11:58:15] "GET /static/js/main.js HTTP/1.1" 304 -

@@ -1,6 +1,32 @@
 ﻿{% extends "base.html" %}
 {% block title %}Products - Sales Sense AI{% endblock %}
 
+{% block head %}
+<style>
+.cat-tab-pill {
+  background: #f3f4f6;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #374151;
+  transition: all .18s;
+}
+.cat-tab-pill:hover {
+  background: #e8f5d0;
+  border-color: #84C225;
+  color: #3a5a00;
+}
+.cat-tab-pill.active {
+  background: #84C225;
+  border-color: #84C225;
+  color: #fff;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-wrapper">
 
@@ -32,6 +58,22 @@
         <option value="all">Show All</option>
       </select>
     </div>
+  </div>
+
+  <!-- Category Tab Pills -->
+  <div id="catPills" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+    <button class="cat-tab-pill active" data-cat="" onclick="setCatPill(this,'')">
+      <i class="fas fa-th"></i> All
+    </button>
+    {% set cats2 = [] %}
+    {% for product in products %}
+      {% if product.category and product.category not in cats2 %}
+        {% set _ = cats2.append(product.category) %}
+        <button class="cat-tab-pill" data-cat="{{ product.category }}" onclick="setCatPill(this,'{{ product.category }}')">
+          {{ product.category }}
+        </button>
+      {% endif %}
+    {% endfor %}
   </div>
 
   <!-- Products Grid -->
@@ -214,6 +256,31 @@ function renderPage() {
     b.onclick = () => { currentPage++; renderPage(); };
     pg.appendChild(b);
   }
+}
+
+// Read ?cat= or ?search= from URL on load
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const cat    = params.get('cat') || params.get('category') || '';
+  const search = params.get('search') || '';
+  if (cat) {
+    document.getElementById('categoryFilter').value = cat;
+    // Highlight the matching pill
+    document.querySelectorAll('.cat-tab-pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.cat === cat);
+    });
+  }
+  if (search) {
+    document.getElementById('searchInput').value = search;
+  }
+  if (cat || search) applyFilters();
+})();
+
+function setCatPill(btn, cat) {
+  document.querySelectorAll('.cat-tab-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('categoryFilter').value = cat;
+  applyFilters();
 }
 
 renderPage();
