@@ -67,6 +67,99 @@
     </div>
   </div>
 
+  <!-- Festival Snapshot: Jan - May -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card" style="border:none;box-shadow:0 12px 30px rgba(0,0,0,0.12);overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#84C225,#3d7a00);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="font-weight:800;font-size:1.05rem;letter-spacing:.5px;">Festival Snapshot (Jan - May)</div>
+          <div style="font-size:.85rem;opacity:.9;">Festival-wise highlights + upcoming focus</div>
+        </div>
+
+        <div class="card-body" style="padding:1.6rem;">
+          <div class="row g-3">
+            <!-- Past Festivals -->
+            <div class="col-lg-7">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+                <h4 style="margin:0;font-size:1.05rem;font-weight:800;color:#1f2937;">Past Festivals</h4>
+                <span style="background:#e8f5d0;color:#3d7a00;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:700;">Completed</span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                <div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;background:#fff;">
+                  <div style="font-weight:700;">Pongal Harvest</div>
+                  <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Festival sales: அரிசி (Rice), பருப்பு (Dal), எண்ணெய் (Oil)</div>
+                  <div style="margin-top:6px;font-size:.78rem;color:#16a34a;font-weight:700;">+38% basket uplift</div>
+                </div>
+                <div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;background:#fff;">
+                  <div style="font-weight:700;">Republic Day Offers</div>
+                  <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Festival sales: சக்கரை (Sugar), உப்பு (Salt), கோதுமை (Wheat)</div>
+                  <div style="margin-top:6px;font-size:.78rem;color:#16a34a;font-weight:700;">+24% orders</div>
+                </div>
+                <div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;background:#fff;">
+                  <div style="font-weight:700;">Valentine Week</div>
+                  <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Festival sales: சிப்ஸ் (Chips), க்ரீம் பிஸ்கட் (Cream Biscuits), மிக்ஸ்சர் (Mixer)</div>
+                  <div style="margin-top:6px;font-size:.78rem;color:#16a34a;font-weight:700;">+19% snack demand</div>
+                </div>
+                <div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;background:#fff;">
+                  <div style="font-weight:700;">Maha Shivaratri</div>
+                  <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Festival sales: தேங்காய் (Coconut), இஞ்சி (Ginger), மல்லி (Coriander)</div>
+                  <div style="margin-top:6px;font-size:.78rem;color:#16a34a;font-weight:700;">+27% pooja kits</div>
+                </div>
+                {% if custom_active_festivals %}
+                  {% for cf in custom_active_festivals %}
+                  <div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;background:#fff;">
+                    <div style="font-weight:700;">{{ cf.emoji or '🎉' }} {{ cf.name }}</div>
+                    <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Festival sales: {{ (cf.products or [])[:3]|join(', ') }}</div>
+                    <div style="margin-top:6px;font-size:.78rem;color:#16a34a;font-weight:700;">{{ cf.discount or 'Special Offer' }}</div>
+                  </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+
+              <div style="margin-top:12px;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px;padding:10px;font-size:.82rem;color:#374151;">
+                <strong>High Sales Products (Jan - Feb):</strong> பால் (Milk), முந்திரி (Cashew), பாதாம் (Almond), வெண்ணை (Butter), பனீர் (Paneer)
+              </div>
+            </div>
+
+            <!-- Upcoming Festivals -->
+            <div class="col-lg-5">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+                <h4 style="margin:0;font-size:1.05rem;font-weight:800;color:#1f2937;">Upcoming Festivals</h4>
+                <span style="background:#fff3c4;color:#92400e;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:700;">Upcoming</span>
+              </div>
+
+              <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff;margin-bottom:10px;">
+                <div style="font-weight:800;">Ramadan</div>
+                <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Upcoming focus: பால் (Milk), முந்திரி (Cashew), உலர் திராட்சை (Raisins)</div>
+                <div style="margin-top:6px;font-size:.78rem;color:#2563eb;font-weight:700;">Expected lift: +40%</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff;margin-bottom:10px;">
+                <div style="font-weight:800;">Tamil New Year</div>
+                <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Upcoming focus: அரிசி (Rice), சக்கரை (Sugar), பால் (Milk)</div>
+                <div style="margin-top:6px;font-size:.78rem;color:#2563eb;font-weight:700;">Expected lift: +35%</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff;">
+                <div style="font-weight:800;">Summer Coolers</div>
+                <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Upcoming focus: தயிர் (Yogurt), தேங்காய் (Coconut), பால் (Milk)</div>
+                <div style="margin-top:6px;font-size:.78rem;color:#2563eb;font-weight:700;">Expected lift: +22%</div>
+              </div>
+              {% if custom_upcoming_festivals %}
+                {% for cf in custom_upcoming_festivals[:3] %}
+                <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff;margin-top:10px;">
+                  <div style="font-weight:800;">{{ cf.emoji or '🎉' }} {{ cf.name }}</div>
+                  <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Upcoming focus: {{ cf.description or 'Special offers' }}</div>
+                  <div style="margin-top:6px;font-size:.78rem;color:#2563eb;font-weight:700;">{{ cf.discount or 'Upcoming' }}</div>
+                </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Charts Row -->
   <div class="row mb-4">
     <div class="col-md-6 mb-3">
@@ -279,7 +372,10 @@ async function loadBusinessStats() {
   const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   try {
     const res = await fetch('/api/business-stats?days=7');
-    if (!res.ok) throw new Error('API error');
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('API error: ' + res.status + ' ' + errText);
+    }
     const d = await res.json();
 
     setEl('totalRevenue',    formatINR(d.total_sales));
@@ -292,16 +388,20 @@ async function loadBusinessStats() {
     setEl('activeUsersCount',d.active_users || 0);
     setEl('lastUpdate',      new Date().toLocaleTimeString('en-IN'));
 
-    loadTopProducts(d.top_products || []);
-    loadSalesTrendChart(d.sales_trend || []);
-    loadProductPriority(d.top_products || [], d.top_users || []);
-    buildHomePriority(d.top_products || []);
+    try { loadTopProducts(d.top_products || []); } catch (e) { console.warn('Top products error:', e); }
+    try { loadSalesTrendChart(d.sales_trend || []); } catch (e) { console.warn('Sales trend error:', e); }
+    try { loadProductPriority(d.top_products || [], d.top_users || []); } catch (e) { console.warn('Priority error:', e); }
+    try { buildHomePriority(d.top_products || []); } catch (e) { console.warn('Home priority error:', e); }
   } catch (e) {
     console.error('Stats load error:', e);
     ['totalRevenue','totalProducts','todaySales'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.textContent = 'N/A';
+      if (el) el.textContent = '0';
     });
+    setEl('totalOrders', '0 total orders');
+    setEl('activeUsers', '0 active users');
+    setEl('todayOrders', '0 orders today');
+    setEl('lastUpdate', 'API error');
   }
 }
 

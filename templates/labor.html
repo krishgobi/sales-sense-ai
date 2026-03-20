@@ -130,12 +130,6 @@
 
 {% block content %}
 
-<!-- Hero -->
-<div class="customer-hero">
-  <h1>🛒 Customer Portal</h1>
-  <p>Shop fresh groceries, enjoy festival offers &amp; exclusive discounts</p>
-</div>
-
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
@@ -144,46 +138,58 @@
   {% endif %}
 {% endwith %}
 
-{% if festivals %}
-<!-- Active Festival Offers -->
+<!-- Active Festival Offers (Hardcoded) -->
 <div class="offers-section">
   <h2>🎉 Festival Offers — Active Now!</h2>
   <div class="offer-cards">
-    {% for product_name, fd in festivals.items() %}
     <div class="offer-card">
-      <div class="offer-emoji">{{ fd.emoji or '🎊' }}</div>
-      <div class="offer-name">{{ fd.festival }}</div>
-      <div class="offer-label">{{ fd.label }}</div>
-      <div class="offer-product">on {{ product_name }}</div>
+      <div class="offer-emoji">🌙</div>
+      <div class="offer-name">Ramadan Specials</div>
+      <div class="offer-label">Up to 18% OFF</div>
+      <div class="offer-product">on பால் (Milk), முந்திரி (Cashew)</div>
     </div>
-    {% endfor %}
+    <div class="offer-card">
+      <div class="offer-emoji">🌾</div>
+      <div class="offer-name">Pongal Harvest</div>
+      <div class="offer-label">Buy More Save More</div>
+      <div class="offer-product">on அரிசி (Rice), பருப்பு (Dal)</div>
+    </div>
+    <div class="offer-card">
+      <div class="offer-emoji">🕉️</div>
+      <div class="offer-name">Maha Shivaratri</div>
+      <div class="offer-label">Festival Combo</div>
+      <div class="offer-product">on தேங்காய் (Coconut), மல்லி (Coriander)</div>
+    </div>
+    {% if custom_active_festivals %}
+      {% for cf in custom_active_festivals %}
+      <div class="offer-card">
+        <div class="offer-emoji">{{ cf.emoji or '🎉' }}</div>
+        <div class="offer-name">{{ cf.name }}</div>
+        <div class="offer-label">{{ cf.discount or 'Special Offer' }}</div>
+        <div class="offer-product">on {{ (cf.products or [])[:3]|join(', ') }}</div>
+      </div>
+      {% endfor %}
+    {% endif %}
   </div>
 </div>
-{% endif %}
 
-{% if upcoming_festivals %}
-<!-- Upcoming Festivals -->
+<!-- Upcoming Festivals (Hardcoded) -->
 <div class="upcoming-section">
   <h2>📅 Upcoming Festivals</h2>
   <div class="festival-chips">
-    {% for f in upcoming_festivals %}
-    <span class="festival-chip">{{ f.name }}<span class="month">{{ f.month }}</span></span>
-    {% endfor %}
+    <span class="festival-chip">Ramadan</span>
+    <span class="festival-chip">Tamil New Year</span>
+    <span class="festival-chip">Summer Coolers</span>
+    {% if custom_upcoming_festivals %}
+      {% for cf in custom_upcoming_festivals %}
+      <span class="festival-chip">{{ cf.emoji or '🎉' }} {{ cf.name }}</span>
+      {% endfor %}
+    {% endif %}
   </div>
-</div>
-{% endif %}
-
-<!-- Shop CTA -->
-<div class="shop-cta">
-  <h3>🛍️ Browse Products</h3>
-  <p>Explore fresh groceries, daily essentials and festival specials</p>
-  <a href="/products" class="btn-green" style="display:inline-block;width:auto;padding:10px 36px;text-decoration:none;">
-    <i class="fas fa-shopping-bag"></i> Shop Now
-  </a>
 </div>
 
 <!-- Auth Cards -->
-<div class="auth-grid">
+<div class="auth-grid" id="customerAuth">
   <!-- Register -->
   <div class="auth-card">
     <h3><i class="fas fa-user-plus" style="color:#84C225;"></i> New Customer</h3>
@@ -227,6 +233,15 @@
     </div>
     {% endif %}
   </div>
+</div>
+
+<!-- Shop CTA -->
+<div class="shop-cta">
+  <h3>🛍️ Browse Products</h3>
+  <p>Sign in or register to start shopping with festival offers</p>
+  <a href="#customerAuth" class="btn-green" style="display:inline-block;width:auto;padding:10px 36px;text-decoration:none;">
+    <i class="fas fa-user-check"></i> Login / Register
+  </a>
 </div>
 
 {% endblock %}

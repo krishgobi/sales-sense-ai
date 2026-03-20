@@ -994,7 +994,34 @@ def require_db_connection(f):
 @app.route('/')
 @require_db_connection
 def home():
-    return render_template('home.html')
+    custom_active, custom_upcoming = get_custom_festival_lists()
+    return render_template('home.html',
+                           custom_active_festivals=custom_active,
+                           custom_upcoming_festivals=custom_upcoming)
+
+def get_custom_festival_lists():
+    # Return (active, upcoming) custom festivals from DB.
+    active = []
+    upcoming = []
+    if db is None:
+        return active, upcoming
+    now = datetime.datetime.utcnow()
+    try:
+        active = list(db.custom_festivals.find({
+            'start_date': {'$lte': now},
+            'end_date': {'$gte': now}
+        }, {
+            '_id': 0, 'name': 1, 'emoji': 1, 'discount': 1, 'products': 1, 'description': 1
+        }))
+
+        upcoming = list(db.custom_festivals.find({
+            'start_date': {'$gt': now}
+        }, {
+            '_id': 0, 'name': 1, 'emoji': 1, 'start_date': 1, 'discount': 1, 'description': 1
+        }).sort('start_date', 1))
+    except Exception:
+        active, upcoming = [], []
+    return active, upcoming
 
 def get_active_festival_discounts():
     # Return {product_name: {type, pct, flat, label, festival, emoji, override_price}}
@@ -1252,7 +1279,28 @@ def build_dashboard_context():
         paginated = all_users_merged[skip: skip + per_page]
         recent_users = []
         for user in paginated:
-            user['_id'] = str(user['_id'])
+            raw_id = user.get('_id')
+            user['_id'] = str(raw_id)
+
+            phone = user.get('phone') or user.get('mobile') or user.get('customer_mobile') or '—'
+            join_date_val = user.get('join_date') or user.get('created_at') or user.get('createdAt') or user.get('created')
+            if not join_date_val and raw_id:
+                try:
+                    join_date_val = ObjectId(raw_id).generation_time
+                except Exception:
+                    join_date_val = None
+            if isinstance(join_date_val, datetime.datetime):
+                join_date_str = join_date_val.strftime('%Y-%m-%d')
+            elif isinstance(join_date_val, datetime.date):
+                join_date_str = join_date_val.strftime('%Y-%m-%d')
+            elif join_date_val:
+                join_date_str = str(join_date_val)
+            else:
+                join_date_str = '—'
+
+            user['phone'] = phone
+            user['join_date'] = join_date_str
+
             recent_users.append(user)
 
         pagination = {
@@ -2068,6 +2116,57 @@ def cache_status():
             'stats': auto_refresh_cache.get('stats', {})
         })
 
+# API endpoint to check logged-in profile
+@app.route('/api/check-profile')
+def check_profile_api():
+    try:
+        # Check if admin is logged in
+        if 'admin_id' in session:
+            admin_id = ObjectId(session['admin_id'])
+            admin = db.admins.find_one({'_id': admin_id})
+            if admin:
+                return jsonify({
+                    'logged_in': True,
+                    'name': admin.get('name', 'Admin'),
+                    'role': 'admin',
+                    'phone': admin.get('phone', 'N/A'),
+                    'joined_date': admin.get('created_at', datetime.datetime.utcnow()).isoformat()
+                })
+        
+        # Check if worker is logged in
+        if 'worker_id' in session:
+            worker_id = ObjectId(session['worker_id'])
+            worker = db.workers_update.find_one({'_id': worker_id})
+            if worker:
+                return jsonify({
+                    'logged_in': True,
+                    'name': worker.get('name', 'Worker'),
+                    'role': 'worker',
+                    'phone': worker.get('phone', 'N/A'),
+                    'joined_date': worker.get('created_at', datetime.datetime.utcnow()).isoformat()
+                })
+        
+        # Check if user is logged in
+        if 'user_id' in session:
+            user_id = ObjectId(session['user_id'])
+            user = db.users.find_one({'_id': user_id})
+            if not user:
+                user = db.users_update.find_one({'_id': user_id})
+            if user:
+                return jsonify({
+                    'logged_in': True,
+                    'name': user.get('name', 'User'),
+                    'role': 'user',
+                    'phone': user.get('phone', 'N/A'),
+                    'joined_date': user.get('created_at', datetime.datetime.utcnow()).isoformat()
+                })
+        
+        # No one is logged in
+        return jsonify({'logged_in': False})
+    except Exception as e:
+        debug_log(f"Error checking profile: {e}")
+        return jsonify({'logged_in': False, 'error': str(e)})
+
 # API endpoint for business stats (for home page)
 @app.route('/api/business-stats')
 def business_stats_api():
@@ -2423,9 +2522,13 @@ def analytics_api():
         products_filter = request.args.get('products', '')
         users_filter = request.args.get('users', '')
         
+        # Select source collection and date field
+        source_col = user_data_bought if user_data_bought is not None else products_sold
+        date_field = 'purchase_date' if user_data_bought is not None else 'date'
+
         # Build base match query
         base_match = {
-            'date': {'$gte': start_date, '$lte': end_date},
+            date_field: {'$gte': start_date, '$lte': end_date},
             'total': {'$ne': None}
         }
         
@@ -2449,7 +2552,7 @@ def analytics_api():
                 'total_units': {'$sum': '$quantity'}
             }}
         ]
-        period_sales_result = list(products_sold.aggregate(period_sales_pipeline, allowDiskUse=True))
+        period_sales_result = list(source_col.aggregate(period_sales_pipeline, allowDiskUse=True))
         
         if period_sales_result:
             total_revenue = float(period_sales_result[0]['total_revenue'])
@@ -2467,7 +2570,7 @@ def analytics_api():
             {'$match': base_match},
             {'$group': {'_id': '$user_id'}}
         ]
-        active_customers = len(list(products_sold.aggregate(active_customers_pipeline, allowDiskUse=True)))
+        active_customers = len(list(source_col.aggregate(active_customers_pipeline, allowDiskUse=True)))
         
         # New customers in period - with user filter if specified
         new_customers_query = {'created_at': {'$gte': start_date, '$lte': end_date}}
@@ -2487,7 +2590,7 @@ def analytics_api():
             {'$sort': {'total_revenue': -1}},
             {'$limit': 10}
         ]
-        top_products_result = list(products_sold.aggregate(top_products_pipeline, allowDiskUse=True))
+        top_products_result = list(source_col.aggregate(top_products_pipeline, allowDiskUse=True))
         top_products = [
             {
                 'name': p['_id'],
@@ -2501,64 +2604,35 @@ def analytics_api():
         all_products_pipeline = [
             {'$match': base_match},
             {'$group': {
-                '_id': '$product_id',
-                'product_name': {'$first': '$product_name'},
+                '_id': '$product_name',
+                'category': {'$first': '$category'},
                 'total_revenue': {'$sum': '$total'},
                 'units_sold': {'$sum': '$quantity'}
             }},
-            {'$addFields': {
-                'product_object_id': {'$toObjectId': '$_id'}
-            }},
-            {'$lookup': {
-                'from': 'products_update',
-                'localField': 'product_object_id',
-                'foreignField': '_id',
-                'as': 'product'
-            }},
-            {'$unwind': {'path': '$product', 'preserveNullAndEmptyArrays': True}},
-            {'$addFields': {
-                'category': {'$ifNull': ['$product.category', 'Other']},
-                'variants': {'$ifNull': ['$product.variants', []]}
-            }},
             {'$sort': {'total_revenue': -1}}
         ]
-        all_products_result = list(products_sold.aggregate(all_products_pipeline, allowDiskUse=True))
+        all_products_result = list(source_col.aggregate(all_products_pipeline, allowDiskUse=True))
         
         all_products = []
         for p in all_products_result:
-            total_stock = 0
-            for variant in p.get('variants', []):
-                if isinstance(variant, dict):
-                    total_stock += int(variant.get('stock', 0))
-            
             all_products.append({
-                'name': p.get('product_name', 'Unknown'),
-                'category': p.get('category', 'Other'),
+                'name': p.get('_id', 'Unknown'),
+                'category': p.get('category', 'Other') or 'Other',
                 'revenue': float(p.get('total_revenue', 0)),
                 'units_sold': int(p.get('units_sold', 0)),
-                'stock': total_stock
+                'stock': 0
             })
         
         # Category sales (with filters) - Optimized with aggregation
         category_sales_pipeline = [
             {'$match': base_match},
-            {'$addFields': {
-                'product_object_id': {'$toObjectId': '$product_id'}
-            }},
-            {'$lookup': {
-                'from': 'products_update',
-                'localField': 'product_object_id',
-                'foreignField': '_id',
-                'as': 'product'
-            }},
-            {'$unwind': {'path': '$product', 'preserveNullAndEmptyArrays': True}},
             {'$group': {
-                '_id': {'$ifNull': ['$product.category', 'Other']},
+                '_id': {'$ifNull': ['$category', 'Other']},
                 'revenue': {'$sum': '$total'}
             }},
             {'$sort': {'revenue': -1}}
         ]
-        category_sales_result = list(products_sold.aggregate(category_sales_pipeline, allowDiskUse=True))
+        category_sales_result = list(source_col.aggregate(category_sales_pipeline, allowDiskUse=True))
         
         category_sales_list = [
             {'category': c['_id'], 'revenue': float(c['revenue'])}
@@ -2572,35 +2646,19 @@ def analytics_api():
         top_customers_pipeline = [
             {'$match': base_match},
             {'$group': {
-                '_id': '$user_id',
+                '_id': {'$ifNull': ['$user_name', '$buyer_name']},
                 'total_spent': {'$sum': '$total'},
                 'orders': {'$sum': 1}
             }},
             {'$sort': {'total_spent': -1}},
-            {'$limit': 100},
-            {'$addFields': {
-                'user_object_id': {'$toObjectId': '$_id'}
-            }},
-            {'$lookup': {
-                'from': 'users',
-                'localField': 'user_object_id',
-                'foreignField': '_id',
-                'as': 'user'
-            }},
-            {'$unwind': {'path': '$user', 'preserveNullAndEmptyArrays': True}},
-            {'$project': {
-                'name': {'$ifNull': ['$user.name', 'Unknown']},
-                'email': {'$ifNull': ['$user.email', '']},
-                'orders': 1,
-                'total_spent': 1
-            }}
+            {'$limit': 100}
         ]
-        top_customers_result = list(products_sold.aggregate(top_customers_pipeline, allowDiskUse=True))
+        top_customers_result = list(source_col.aggregate(top_customers_pipeline, allowDiskUse=True))
         
         top_customers = [
             {
-                'name': c.get('name', 'Unknown'),
-                'email': c.get('email', ''),
+                'name': c.get('_id') or 'Guest',
+                'email': '',
                 'orders': int(c.get('orders', 0)),
                 'total_spent': float(c.get('total_spent', 0))
             }
@@ -2612,13 +2670,13 @@ def analytics_api():
             {'$match': base_match},
             {'$group': {
                 '_id': {
-                    '$dateToString': {'format': '%Y-%m-%d', 'date': '$date'}
+                    '$dateToString': {'format': '%Y-%m-%d', 'date': f'${date_field}'}
                 },
                 'total': {'$sum': '$total'}
             }},
             {'$sort': {'_id': 1}}
         ]
-        sales_trend_result = list(products_sold.aggregate(sales_trend_pipeline, allowDiskUse=True))
+        sales_trend_result = list(source_col.aggregate(sales_trend_pipeline, allowDiskUse=True))
         
         # Create a map for quick lookup
         sales_map = {r['_id']: float(r['total']) for r in sales_trend_result}
@@ -4448,8 +4506,11 @@ def cleanup_products():
 def labor_panel():
     festivals = get_active_festival_discounts()
     upcoming  = get_upcoming_festivals()
+    custom_active, custom_upcoming = get_custom_festival_lists()
     return render_template('labor.html', logged_in='user_id' in session,
-                           festivals=festivals, upcoming_festivals=upcoming)
+                           festivals=festivals, upcoming_festivals=upcoming,
+                           custom_active_festivals=custom_active,
+                           custom_upcoming_festivals=custom_upcoming)
 
 @app.route('/labor/register', methods=['POST'])
 def labor_register():

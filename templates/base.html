@@ -38,7 +38,7 @@
             </div>
 
             <!-- Right Actions (large screens) -->
-            <div class="nav-actions d-none d-md-flex">
+            <div class="nav-actions" id="navActions">
                 <a href="/admin" title="Admin Panel">
                     <i class="fas fa-user-shield"></i>
                     <span class="btn-text">Admin</span>
@@ -56,11 +56,56 @@
                     <span class="btn-text">Basket</span>
                     <span class="cart-badge" id="navCartCount">0</span>
                 </a>
+                
+                <!-- Profile Dropdown (Always Visible) -->
+                <div class="nav-profile-container" id="navProfileContainer" style="position:relative;display:flex;align-items:center;margin-left:8px;">
+                    <button class="nav-profile-btn" id="navProfileBtn" onclick="handleProfileClick()"
+                            style="background:linear-gradient(135deg, #84C225 0%, #3d7a00 100%);color:white;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;transition:all .2s;font-size:0.9rem;font-weight:600;box-shadow:0 2px 8px rgba(132, 194, 37, 0.3);white-space:nowrap;">
+                        <i class="fas fa-sign-in-alt" id="profileIcon" style="font-size:1.2rem;"></i>
+                        <div style="text-align:left;display:flex;flex-direction:column;line-height:1.2;">
+                            <div id="navProfileName" style="font-weight:700;font-size:0.85rem;">Login</div>
+                            <div id="navProfileRole" style="font-size:0.7rem;opacity:0.85;">Guest</div>
+                        </div>
+                    </button>
+                    
+                    <!-- Profile Dropdown Menu -->
+                    <div class="nav-profile-dropdown" id="navProfileDropdown" 
+                         style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:white;border:1px solid #e0e0e0;border-radius:8px;min-width:300px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:1000;">
+                        <div style="padding:14px;border-bottom:1px solid #f0f0f0;">
+                            <div style="font-weight:700;font-size:1.05rem;color:#333;margin-bottom:2px;" id="dropdownName">User Profile</div>
+                            <div style="font-size:0.8rem;color:#666;margin-bottom:10px;" id="dropdownRole">Not Logged In</div>
+                            
+                        <div id="guestActions">
+                          <div style="margin-top:10px;font-size:0.8rem;color:#666;">Choose a login role:</div>
+                          <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px;">
+                          <a href="/admin/login" style="display:block;padding:10px 12px;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none;color:#111;font-size:.85rem;font-weight:600;">Admin Login</a>
+                          <a href="/worker/login" style="display:block;padding:10px 12px;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none;color:#111;font-size:.85rem;font-weight:600;">Worker Login</a>
+                          <a href="/labor" style="display:block;padding:10px 12px;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none;color:#111;font-size:.85rem;font-weight:600;">Customer Login / Register</a>
+                          </div>
+                        </div>
+                        <div id="userActions" style="display:none;margin-top:10px;font-size:0.8rem;color:#666;">Welcome back!</div>
+                        </div>
+                        
+                      <div id="logoutActions" style="padding:8px;display:none;">
+                        <a href="#" onclick="handleLogout()" 
+                           style="display:block;padding:10px 14px;color:#dc3545;text-decoration:none;border-radius:4px;font-size:0.9rem;transition:all .2s;"
+                           onmouseover="this.style.background='#fff5f5'" 
+                           onmouseout="this.style.background='transparent'">
+                          <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                      </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Mobile profile icon -->
+            <button class="nav-profile-mini d-md-none" id="navProfileMini" onclick="handleProfileClick()" aria-label="Login">
+              <i class="fas fa-sign-in-alt" id="profileIconMini"></i>
+            </button>
 
             <!-- Mobile hamburger -->
             <button class="nav-toggle" id="navToggle" aria-label="Menu">
-                <i class="fas fa-bars"></i>
+              <i class="fas fa-bars"></i>
             </button>
         </div>
     </nav>
@@ -167,7 +212,108 @@
         document.getElementById('globalSearch')?.addEventListener('keydown', e => {
           if (e.key === 'Enter') window.handleGlobalSearch();
         });
+        
+        // Profile dropdown functionality
+        function initializeProfile() {
+          const profileContainer = document.getElementById('navProfileContainer');
+          const profileBtn = document.getElementById('navProfileBtn');
+          const profileDropdown = document.getElementById('navProfileDropdown');
+          const profileIcon = document.getElementById('profileIcon');
+          const profileMiniBtn = document.getElementById('navProfileMini');
+          const profileIconMini = document.getElementById('profileIconMini');
+          const guestActions = document.getElementById('guestActions');
+          const userActions = document.getElementById('userActions');
+          const logoutActions = document.getElementById('logoutActions');
+          
+          if (!profileContainer || !profileBtn || !profileDropdown) return;
+          
+          // Close dropdown on outside click
+          document.addEventListener('click', (e) => {
+            if (!profileContainer.contains(e.target) && profileDropdown.style.display !== 'none') {
+              profileDropdown.style.display = 'none';
+            }
+          });
+          
+          // Check if user is logged in (admin or worker)
+          fetch('/api/check-profile')
+            .then(r => r.json())
+            .catch(() => ({ logged_in: false }))
+            .then(data => {
+              const name = data.logged_in ? (data.name || 'User') : 'Login';
+              const role = data.logged_in ? (data.role || 'user') : 'guest';
+              const phone = data.logged_in ? (data.phone || 'N/A') : 'Not Available';
+              const joined = data.logged_in && data.joined_date ? new Date(data.joined_date).toLocaleDateString('en-IN') : 'N/A';
+              
+              // Update nav profile button
+              const firstName = name.split(' ')[0];
+              document.getElementById('navProfileName').textContent = firstName;
+              document.getElementById('navProfileRole').textContent = data.logged_in ? (role === 'admin' ? '👤 Admin' : '👤 User') : '👤 Guest';
+              
+              // Update dropdown details
+              document.getElementById('dropdownName').textContent = name;
+              const roleDisplay = data.logged_in 
+                ? (role === 'admin' ? '👤 Admin Account' : '👤 User Account')
+                : '👤 Guest (Not Logged In)';
+              document.getElementById('dropdownRole').textContent = roleDisplay;
+              const phoneEl = document.getElementById('dropdownPhone');
+              if (phoneEl) phoneEl.textContent = phone;
+              const joinedEl = document.getElementById('dropdownJoined');
+              if (joinedEl) joinedEl.textContent = joined;
+
+              if (guestActions) guestActions.style.display = data.logged_in ? 'none' : 'block';
+              if (userActions) userActions.style.display = data.logged_in ? 'block' : 'none';
+              if (logoutActions) logoutActions.style.display = data.logged_in ? 'block' : 'none';
+              
+              // Change button and icon style based on login status
+              if (data.logged_in) {
+                profileBtn.style.background = 'linear-gradient(135deg, #84C225 0%, #3d7a00 100%)';
+                profileBtn.style.boxShadow = '0 2px 8px rgba(132, 194, 37, 0.3)';
+                if (profileIcon) {
+                  profileIcon.className = 'fas fa-user-circle';
+                  profileIcon.style.fontSize = '1.5rem';
+                }
+                if (profileIconMini) {
+                  profileIconMini.className = 'fas fa-user-circle';
+                }
+                if (profileMiniBtn) {
+                  profileMiniBtn.setAttribute('aria-label', name);
+                  profileMiniBtn.title = name;
+                }
+              } else {
+                profileBtn.style.background = 'linear-gradient(135deg, #84C225 0%, #3d7a00 100%)';
+                profileBtn.style.boxShadow = '0 2px 8px rgba(132, 194, 37, 0.3)';
+                if (profileIcon) {
+                  profileIcon.className = 'fas fa-sign-in-alt';
+                  profileIcon.style.fontSize = '1.2rem';
+                }
+                if (profileIconMini) {
+                  profileIconMini.className = 'fas fa-sign-in-alt';
+                }
+                if (profileMiniBtn) {
+                  profileMiniBtn.setAttribute('aria-label', 'Login');
+                  profileMiniBtn.title = 'Login';
+                }
+              }
+            });
+        }
+        
+        initializeProfile();
       })();
+      
+      // Profile click handler
+      function handleProfileClick() {
+        const profileDropdown = document.getElementById('navProfileDropdown');
+        if (!profileDropdown) return;
+        const isHidden = profileDropdown.style.display === 'none' || !profileDropdown.style.display;
+        profileDropdown.style.display = isHidden ? 'block' : 'none';
+      }
+      
+      // Logout function
+      function handleLogout() {
+        if (confirm('Are you sure you want to logout?')) {
+          fetch('/admin/logout').then(() => window.location.href = '/');
+        }
+      }
     </script>
 
     {% block scripts %}{% endblock %}

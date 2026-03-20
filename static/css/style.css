@@ -106,6 +106,17 @@ img { max-width: 100%; }
   font-size: 1.4rem; color: var(--bb-text); cursor: pointer; margin-left: auto;
 }
 
+.nav-profile-mini {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border: none; border-radius: 50%;
+  background: var(--bb-green);
+  color: #fff; cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.nav-profile-mini i { font-size: 1rem; }
+
 /* ── Category Strip ── */
 .category-strip {
   background: var(--bb-white); border-bottom: 1px solid var(--bb-border);
@@ -391,7 +402,9 @@ img { max-width: 100%; }
   .nav-menu { display: none; position: absolute; top: var(--bb-nav-h); left: 0; right: 0; background: #fff; flex-direction: column; padding: 12px; box-shadow: var(--shadow-md); border-top: 1px solid var(--bb-border); z-index: 999; gap: 2px; }
   .nav-menu.active { display: flex; }
   .nav-link { padding: 10px 14px; width: 100%; }
+  .nav-actions { display: none; }
   .nav-toggle { display: flex; }
+  .nav-profile-mini { display: inline-flex; }
   #productsGrid, .products-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
   .hero-section { padding: 30px 20px; }
   .hero-section h1 { font-size: 1.5rem; }
@@ -481,3 +494,39 @@ img { max-width: 100%; }
 .spinner-border-sm { width:.75rem;height:.75rem; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
+/* ── Profile Dropdown (Nav) ── */
+.nav-profile-container { position: relative; }
+.nav-profile-btn {
+  background: linear-gradient(135deg, #84C225 0%, #3d7a00 100%);
+  color: #fff;
+  padding: 8px 12px !important;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all .2s;
+}
+.nav-profile-btn:hover {
+  box-shadow: 0 4px 12px rgba(132, 194, 37, 0.4);
+  transform: translateY(-1px);
+}
+.nav-profile-dropdown {
+  min-width: 280px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideDown .2s ease;
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nav-profile-dropdown a:hover {
+  background: #f5f5f5 !important;
+}
