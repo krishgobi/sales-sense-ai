@@ -170,6 +170,37 @@ def seed(start: datetime.date, end: datetime.date, per_day_min: int, per_day_max
     print(f"\n🎉  Done! Inserted {total_inserted} sales records across {(end - start).days + 1} days.")
 
 
+def ensure_today_sales(min_sales: int = 50) -> int:
+    """Ensure there are at least `min_sales` sales records for today.
+
+    Returns the number of new records inserted (0 if already at or above target).
+    """
+    products = load_products()
+    users = load_users()
+    print(f"\n[DAILY SIMULATION] Ensuring at least {min_sales} sales for today…")
+    print(f"  Loaded {len(products)} products and {len(users)} users from DB.")
+
+    collection = db['user_data_bought']
+    today = datetime.date.today()
+    start_dt = datetime.datetime(today.year, today.month, today.day, 0, 0, 0)
+    end_dt = start_dt + datetime.timedelta(days=1)
+
+    current_count = collection.count_documents({
+        'purchase_date': {'$gte': start_dt, '$lt': end_dt}
+    })
+    print(f"  Existing sales today: {current_count}")
+
+    if current_count >= min_sales:
+        print(f"  ✅ Target already met. No new records inserted.")
+        return 0
+
+    needed = min_sales - current_count
+    records = build_records(today, products, users, needed)
+    collection.insert_many(records)
+    print(f"  ✅ Inserted {needed} additional sales records for today.")
+    return needed
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Seed daily sales data into user_data_bought')
@@ -187,23 +218,34 @@ if __name__ == '__main__':
                         help='Maximum random sales per day (default: 20)')
     parser.add_argument('--clear', action='store_true',
                         help='Delete previously seeded records (_seeded=True) before inserting')
+    parser.add_argument('--ensure-today', action='store_true',
+                        help='Instead of seeding a date range, only ensure today has at least MIN sales')
+    parser.add_argument('--min-today', type=int, default=50,
+                        help='Minimum number of sales to ensure for today when using --ensure-today (default: 50)')
     args = parser.parse_args()
 
     today = datetime.date.today()
 
-    end_date = datetime.date.fromisoformat(args.end) if args.end else today
-    if args.start:
-        start_date = datetime.date.fromisoformat(args.start)
+    # Special mode: only ensure today has at least N sales
+    if args.ensure_today:
+        if args.clear:
+            deleted = db['user_data_bought'].delete_many({'_seeded': True})
+            print(f"🗑  Cleared {deleted.deleted_count} previously seeded records.\n")
+        ensure_today_sales(args.min_today)
     else:
-        start_date = end_date - datetime.timedelta(days=args.days - 1)
+        end_date = datetime.date.fromisoformat(args.end) if args.end else today
+        if args.start:
+            start_date = datetime.date.fromisoformat(args.start)
+        else:
+            start_date = end_date - datetime.timedelta(days=args.days - 1)
 
-    per_min = args.per_day if args.per_day else args.min_per_day
-    per_max = args.per_day if args.per_day else args.max_per_day
+        per_min = args.per_day if args.per_day else args.min_per_day
+        per_max = args.per_day if args.per_day else args.max_per_day
 
-    if args.clear:
-        deleted = db['user_data_bought'].delete_many({'_seeded': True})
-        print(f"🗑  Cleared {deleted.deleted_count} previously seeded records.\n")
+        if args.clear:
+            deleted = db['user_data_bought'].delete_many({'_seeded': True})
+            print(f"🗑  Cleared {deleted.deleted_count} previously seeded records.\n")
 
-    print(f"📅  Seeding sales from {start_date} to {end_date} ({(end_date-start_date).days+1} days)")
-    print(f"📊  {per_min}–{per_max} sales per day\n")
-    seed(start_date, end_date, per_min, per_max)
+        print(f"📅  Seeding sales from {start_date} to {end_date} ({(end_date-start_date).days+1} days)")
+        print(f"📊  {per_min}–{per_max} sales per day\n")
+        seed(start_date, end_date, per_min, per_max)

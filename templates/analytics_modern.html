@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Project Analytics - Sales Sense AI{% endblock %}
+
+{% block content %}
+<div class="page-wrapper analytics-dashboard">
+  <h1 style="margin-bottom:24px;">Project Analytics Overview</h1>
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <h2>All Collections Data</h2>
+        <div id="collectionsData">Loading...</div>
+      </div>
+    </div>
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h3>Top Selling Products</h3>
+      <div id="topProductsList">Loading...</div>
+    </div>
+    <div class="col-md-6">
+      <h3>Top Buyers</h3>
+      <div id="topBuyersList">Loading...</div>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h3>Sales Trend</h3>
+      <div id="salesTrendChart">Loading...</div>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h3>Worker Activity</h3>
+      <div id="workerActivityList">Loading...</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadModernAnalytics() {
+  // Calculate last 60 days
+  const today = new Date();
+  const start = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000);
+  const start_date = start.toISOString().slice(0, 10);
+  const end_date = today.toISOString().slice(0, 10);
+  let url = `/api/analytics?start_date=${start_date}&end_date=${end_date}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error('API error: ' + res.status);
+    }
+    const data = await res.json();
+    const collections = data.collections || [];
+    const allData = data.all_data || {};
+    let html = '';
+    if (collections.length === 0) {
+      html = '<p>No collections found.</p>';
+    } else {
+      collections.forEach(coll => {
+        html += `<h4>${coll}</h4>`;
+        const docs = allData[coll] || [];
+        if (docs.length === 0) {
+          html += '<p class="text-muted">No data in this collection.</p>';
+        } else {
+          html += '<table class="table table-bordered table-sm"><thead><tr>';
+          const keys = Object.keys(docs[0]);
+          keys.forEach(k => html += `<th>${k}</th>`);
+          html += '</tr></thead><tbody>';
+          docs.forEach(doc => {
+            html += '<tr>';
+            keys.forEach(k => html += `<td>${doc[k]}</td>`);
+            html += '</tr>';
+          });
+          html += '</tbody></table>';
+        }
+      });
+    }
+    document.getElementById('collectionsData').innerHTML = html;
+  } catch (err) {
+    document.getElementById('collectionsData').innerHTML = `<p class='text-danger'>Failed to load analytics: ${err.message}</p>`;
+  }
+}
+
+loadModernAnalytics();
+</script>
+{% endblock %}

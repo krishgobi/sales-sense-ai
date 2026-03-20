@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Order Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 10px; border-bottom: 1px solid #e0e0e0; }
+        thead th { border-bottom: 2px solid #e0e0e0; }
+    </style>
+</head>
+<body style="background-color: #f4f4f4;">
+    <div class="container">
+        <h1>Order Confirmed! 🎉</h1>
+        <p>Hi {{ name }},</p>
+        <p>Your order has been successfully placed and confirmed.</p>
+
+        <h3>Order Details</h3>
+        <p><strong>Order ID:</strong> {{ order_id }}</p>
+        <p><strong>Order Date:</strong> {{ order_datetime.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        <p><strong>Payment Method:</strong> {{ payment_method.upper() }}</p>
+
+        <h3>Order Items</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Variant</th>
+                    <th style="text-align:center;">Qty</th>
+                    <th style="text-align:right;">Price</th>
+                    <th style="text-align:right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in purchases %}
+                <tr>
+                    <td>{{ p.product_name }}</td>
+                    <td>{{ p.variant_name }}</td>
+                    <td style="text-align:center;">{{ p.quantity }}</td>
+                    <td style="text-align:right;">₹{{ '%.2f'|format(p.price) }}</td>
+                    <td style="text-align:right; font-weight:bold;">₹{{ '%.2f'|format(p.total_price) }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="background:#f0f0f0; font-weight:bold;">
+                    <td colspan="4" style="text-align:right;">Grand Total:</td>
+                    <td style="text-align:right; color:#28a745;">₹{{ '%.2f'|format(total_amount) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Delivery Address</h3>
+        <p style="white-space: pre-line;">{{ delivery_address }}</p>
+
+        <p style="font-size:14px; color:#666; margin-top:20px;">
+            If you have any questions about your order, please contact us at
+            <a href="mailto:support@salessense.com">support@salessense.com</a>.
+        </p>
+
+        <p style="text-align:center; margin-top:30px; color:#999; font-size:14px;">
+            Thank you for shopping with Sales Sense AI
+        </p>
+    </div>
+</body>
+</html>
