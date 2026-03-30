@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Hidden element for nav badge sync -->
+<span id="cart-count" style="display:none;">{{ cart_count if cart_count is defined else (cart|length if cart else 0) }}</span>
+
 <!-- BB-style page header bar -->
 <div style="background:#fff;border-bottom:2px solid #84C225;padding:14px 0;margin-bottom:20px;">
   <div class="container d-flex align-items-center justify-content-between">
@@ -249,7 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update cart count
                     const cartCount = document.getElementById('cart-count');
                     if (cartCount) {
-                        cartCount.textContent = parseInt(cartCount.textContent || 0) + selectedVariants.length;
+                        cartCount.textContent = result.cart_items ?? cartCount.textContent;
+                    }
+                    if (window.updateCartBadge) {
+                        window.updateCartBadge(result.cart_items);
                     }
                     
                     // Clear selections

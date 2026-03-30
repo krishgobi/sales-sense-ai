@@ -2,6 +2,9 @@
 {% block title %}My Basket - SalesSense AI{% endblock %}
 
 {% block content %}
+<!-- Hidden element for nav badge sync -->
+<span id="cart-count" style="display:none;">{{ cart_count if cart_count is defined else (cart|length if cart else 0) }}</span>
+
 <div class="container" style="max-width:1100px;">
     <!-- BB-style header bar -->
     <div style="background:#fff;border-radius:8px;padding:16px 20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:space-between;">
@@ -182,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const remaining = document.querySelectorAll('tbody tr').length;
                     if (remaining === 0) { location.reload(); return; }
                     if (badge) badge.textContent = remaining + ' item(s) in your basket';
+                    if (window.updateCartBadge) window.updateCartBadge(remaining);
                 } else {
                     alert('Error removing item: ' + (result.error || 'Unknown error'));
                 }

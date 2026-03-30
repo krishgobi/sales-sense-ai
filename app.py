@@ -991,6 +991,24 @@ def require_db_connection(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Context processor to inject cart into all templates
+@app.context_processor
+def inject_cart():
+    cart_count = 0
+    try:
+        if 'user_id' in session:
+            user_id = str(session['user_id'])
+            if carts is not None:
+                doc = carts.find_one({'user_id': user_id})
+                cart = doc.get('items', {}) if doc else {}
+                cart_count = len(cart) if cart else 0
+        elif 'guest_cart' in session:
+            cart_count = len(session['guest_cart'])
+    except Exception as e:
+        debug_log(f"Cart count error in context processor: {e}")
+        cart_count = 0
+    return {'cart_count': cart_count}
+
 @app.route('/')
 @require_db_connection
 def home():
@@ -1048,7 +1066,7 @@ def get_active_festival_discounts():
                 if m2:
                     flat = float(m2.group(1))
                     dtype = 'flat'
-                    label = f'Rs.{flat:.0f} off'
+                    label = f'{flat:.0f} off'
             for pname in cf.get('products', []):
                 if not pname:
                     continue
@@ -1633,12 +1651,30 @@ def user_details(user_id):
         top_products = sorted(product_purchases.values(), key=lambda x: x['total_spent'], reverse=True)[:5]
         
         # Calculate user statistics
+        # Extract join date with multiple fallbacks
+        join_date_val = user.get('join_date') or user.get('created_at') or user.get('createdAt') or user.get('created')
+        if not join_date_val:
+            try:
+                # Extract timestamp from ObjectId if available
+                join_date_val = ObjectId(user_id).generation_time
+            except Exception:
+                join_date_val = None
+        
+        if isinstance(join_date_val, datetime.datetime):
+            join_date_str = join_date_val.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(join_date_val, datetime.date):
+            join_date_str = join_date_val.strftime('%Y-%m-%d')
+        elif join_date_val:
+            join_date_str = str(join_date_val)
+        else:
+            join_date_str = 'Unknown'
+        
         user_stats = {
             'total_spent': total_spent,
             'total_orders': total_orders,
             'average_order_value': total_spent / total_orders if total_orders > 0 else 0,
             'favorite_product': top_products[0]['name'] if top_products else 'None',
-            'join_date': user.get('join_date', user.get('created_at', 'Unknown')),
+            'join_date': join_date_str,
             'last_order': max([o['date'] for o in user_orders if isinstance(o.get('date'), datetime.datetime)], default='Never')
         }
         
@@ -1757,21 +1793,46 @@ def send_marketing_email(user_id):
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        # Get user's most purchased products
-        user_orders = list(products_sold.find({'user_id': ObjectId(user_id)}))
+        # Get user's most purchased products from user_data_bought collection
+        user_orders = list(user_data_bought.find({'user_id': ObjectId(user_id)}))
         product_purchases = {}
         
         for order in user_orders:
-            product_id = order['product_id']
-            if product_id not in product_purchases:
-                product_purchases[product_id] = 0
-            quantity = int(extract_numeric_value(order.get('quantity', 0)))
-            product_purchases[product_id] += quantity
+            # Handle both product_id and product_name fields
+            product_id = order.get('product_id')
+            product_name = order.get('product_name')
+            
+            # Try to find product by ID or name
+            if product_id:
+                if product_id not in product_purchases:
+                    product_purchases[product_id] = 0
+                quantity = int(extract_numeric_value(order.get('quantity', 0)))
+                product_purchases[product_id] += quantity
+            elif product_name:
+                # If no product_id, look up by product name
+                product = products_update.find_one({'name': product_name})
+                if product:
+                    pid = str(product['_id'])
+                    if pid not in product_purchases:
+                        product_purchases[pid] = 0
+                    quantity = int(extract_numeric_value(order.get('quantity', 0)))
+                    product_purchases[pid] += quantity
         
         # Get top purchased product
         if product_purchases:
             top_product_id = max(product_purchases, key=product_purchases.get)
-            top_product = products_update.find_one({'_id': ObjectId(top_product_id)})
+            
+            # Handle both ObjectId and string IDs
+            try:
+                query_id = ObjectId(top_product_id) if len(top_product_id) == 24 else top_product_id
+            except:
+                query_id = top_product_id
+            
+            top_product = products_update.find_one({'_id': query_id})
+            
+            if not top_product:
+                # Try with string ID if ObjectId didn't work
+                top_product = products_update.find_one({'_id': str(top_product_id)})
             
             if top_product:
                 # Create personalized email using template
@@ -1794,6 +1855,8 @@ def send_marketing_email(user_id):
                     return jsonify({'success': True, 'message': f'Marketing email sent to {user["name"]}!'})
                 else:
                     return jsonify({'error': f'Failed to send email: {err}'}), 500
+            else:
+                return jsonify({'error': 'Product information not found for personalized email'}), 400
         
         return jsonify({'error': 'No purchase history found for personalized email'}), 400
     

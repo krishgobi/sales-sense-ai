@@ -36,7 +36,7 @@
       <h1 style="margin:0;font-size:1.75rem;">Products Catalog</h1>
       <a href="{{ url_for('guest_view_cart') }}" class="btn btn-light">
         <i class="fas fa-cart-shopping"></i> View Cart
-        <span class="badge bg-danger ms-1" id="cart-count">{{ cart|length if cart else 0 }}</span>
+        <span class="badge bg-danger ms-1" id="cart-count">{{ cart_count if cart_count else 0 }}</span>
       </a>
     </div>
     <div class="mt-2" style="font-size:.85rem;color:#6b7280;display:flex;align-items:center;gap:6px;">
@@ -89,7 +89,7 @@
       <div class="card h-100">
         <div class="product-img-area" style="background:{{ product.image_color or '#f9f9f9' }};">
           <span class="product-emoji">{{ product.emoji or '📦' }}</span>
-          {% if product.festival_discount %}
+          {% if product.festival_discount and product.festival_discount.label and product.festival_discount.label != 'Rs.' %}
           <span class="festival-badge-img">{{ product.festival_discount.emoji }} {{ product.festival_discount.label }}</span>
           {% endif %}
           {% if product.variants %}
@@ -300,17 +300,31 @@ function addToCart(productId, variantIndex, variantName, price, productName) {
   .then(r => r.json())
   .then(data => {
     if (data.success) {
-      document.getElementById('cart-count').textContent = data.cart_items;
+      // Update page cart-count element with new count
+      const cartCountEl = document.getElementById('cart-count');
+      if (cartCountEl) {
+        cartCountEl.textContent = data.cart_items;
+      }
+      // Update nav badge
+      if (window.updateCartBadge) {
+        window.updateCartBadge(data.cart_items);
+      }
+      // Show toast
       document.getElementById('toastMessage').textContent = `${quantity} × ${productName} (${variantName}) added!`;
       const t = document.getElementById('cartToastEl');
-      t.style.display = 'block';
-      setTimeout(() => t.style.display = 'none', 3000);
+      if (t) {
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+      }
       if (qtyEl) qtyEl.value = 1;
     } else {
       alert('Error: ' + (data.error || 'Unknown error'));
     }
   })
-  .catch(err => alert('Cart error: ' + err));
+  .catch(err => {
+    alert('Cart error: ' + err);
+    console.error('Cart add error:', err);
+  });
 }
 </script>
 {% endblock %}

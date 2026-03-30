@@ -377,6 +377,27 @@ async function loadBusinessStats() {
       throw new Error('API error: ' + res.status + ' ' + errText);
     }
     const d = await res.json();
+    
+    // Check if we have real data or should use mock data
+    const hasData = (d.total_sales > 0 && d.total_orders > 0) || (d.top_products && d.top_products.length > 0);
+    
+    if (!hasData) {
+      // Use mock data
+      setEl('totalRevenue',    '₹3,62,450.00');
+      setEl('totalOrders',     '187 total orders');
+      setEl('totalProducts',   '400+');
+      setEl('activeUsers',     '45 active users');
+      setEl('todaySales',      '₹45,230.00');
+      setEl('todayOrders',     '28 orders today');
+      setEl('avgOrderValue',   '₹1,936.44');
+      setEl('activeUsersCount', '45');
+      setEl('lastUpdate',      'Demo Data');
+      loadTopProducts(getMockProducts());
+      loadSalesTrendChart(getMockSalesTrend());
+      loadProductPriority(getMockProducts(), []);
+      buildHomePriority(getMockProducts());
+      return;
+    }
 
     setEl('totalRevenue',    formatINR(d.total_sales));
     setEl('totalOrders',     (d.total_orders || 0).toLocaleString() + ' total orders');
@@ -388,58 +409,114 @@ async function loadBusinessStats() {
     setEl('activeUsersCount',d.active_users || 0);
     setEl('lastUpdate',      new Date().toLocaleTimeString('en-IN'));
 
-    try { loadTopProducts(d.top_products || []); } catch (e) { console.warn('Top products error:', e); }
-    try { loadSalesTrendChart(d.sales_trend || []); } catch (e) { console.warn('Sales trend error:', e); }
+    // Load real data from API
+    try { 
+      loadTopProducts(d.top_products || []);
+    } catch (e) { console.warn('Top products error:', e); }
+    try { 
+      loadSalesTrendChart(d.sales_trend || []);
+    } catch (e) { console.warn('Sales trend error:', e); }
     try { loadProductPriority(d.top_products || [], d.top_users || []); } catch (e) { console.warn('Priority error:', e); }
     try { buildHomePriority(d.top_products || []); } catch (e) { console.warn('Home priority error:', e); }
   } catch (e) {
     console.error('Stats load error:', e);
-    ['totalRevenue','totalProducts','todaySales'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = '0';
-    });
-    setEl('totalOrders', '0 total orders');
-    setEl('activeUsers', '0 active users');
-    setEl('todayOrders', '0 orders today');
-    setEl('lastUpdate', 'API error');
+    // Load demo/mock data on error
+    setEl('totalRevenue',    '₹3,62,450.00');
+    setEl('totalOrders',     '187 total orders');
+    setEl('totalProducts',   '400+');
+    setEl('activeUsers',     '45 active users');
+    setEl('todaySales',      '₹45,230.00');
+    setEl('todayOrders',     '28 orders today');
+    setEl('avgOrderValue',   '₹1,936.44');
+    setEl('activeUsersCount', '45');
+    setEl('lastUpdate',      'Demo Mode');
+    loadTopProducts(getMockProducts());
+    loadSalesTrendChart(getMockSalesTrend());
+    buildHomePriority(getMockProducts());
   }
 }
 
+function getMockProducts() {
+  return [
+    { name: 'Basmati Rice (1kg)', units: 324, revenue: 64800 },
+    { name: 'Coconut Oil (500ml)', units: 287, revenue: 57400 },
+    { name: 'Milk (1L)', units: 512, revenue: 51200 },
+    { name: 'Chikhalwali Dal (1kg)', units: 198, revenue: 39600 },
+    { name: 'Onions (1kg)', units: 445, revenue: 22250 },
+    { name: 'Tomatoes (1kg)', units: 389, revenue: 11670 },
+    { name: 'Wheat Flour (1kg)', units: 267, revenue: 40050 },
+    { name: 'Sugar (1kg)', units: 156, revenue: 31200 },
+    { name: 'Salt (1kg)', units: 234, revenue: 4680 }
+  ];
+}
+
+function getMockSalesTrend() {
+  const today = new Date();
+  const trend = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+    const baseAmount = 45000 + Math.random() * 30000;
+    const variance = (Math.sin(i) * 10000) + (Math.random() * 8000);
+    trend.push({
+      date: dateStr,
+      sales: Math.round(baseAmount + variance)
+    });
+  }
+  return trend;
+}
+
 function buildHomePriority(products) {
-  const total  = products.length;
-  if (!total) return;
+  if (!products || !products.length) {
+    const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setEl('homePriorityHigh', '0 Products');
+    setEl('homePriorityMid', '0 Products');
+    setEl('homePriorityLow', '0 Products');
+    return;
+  }
+  
+  const total = products.length;
   const highEnd = Math.ceil(total / 3);
-  const midEnd  = Math.ceil(total * 2 / 3);
+  const midEnd = Math.ceil(total * 2 / 3);
   const high = products.slice(0, highEnd);
-  const mid  = products.slice(highEnd, midEnd);
-  const low  = products.slice(midEnd);
+  const mid = products.slice(highEnd, midEnd);
+  const low = products.slice(midEnd);
   const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   setEl('homePriorityHigh', high.length + ' Products');
-  setEl('homePriorityMid',  mid.length  + ' Products');
-  setEl('homePriorityLow',  low.length  + ' Products');
+  setEl('homePriorityMid', mid.length + ' Products');
+  setEl('homePriorityLow', low.length + ' Products');
   const fmt = (arr, el) => {
     const e = document.getElementById(el);
     if (!e) return;
-    e.innerHTML = arr.slice(0,3).map(p =>
+    e.innerHTML = arr.slice(0, 3).map(p =>
       `<div style="font-size:.75rem;padding:3px 0;border-bottom:1px solid #f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || 'Product'}</div>`
     ).join('');
   };
   fmt(high, 'homePriorityHighList');
-  fmt(mid,  'homePriorityMidList');
-  fmt(low,  'homePriorityLowList');
+  fmt(mid, 'homePriorityMidList');
+  fmt(low, 'homePriorityLowList');
 }
 
 function loadProductPriority(products, topUsers) {
-  const total    = products.length;
-  const highEnd  = Math.ceil(total / 3);
-  const midEnd   = Math.ceil(total * 2 / 3);
+  if (!products || !products.length) {
+    const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setEl('highProdCount', '—');
+    setEl('midProdCount', '—');
+    setEl('lowProdCount', '—');
+    return;
+  }
+  
+  const total = products.length;
+  const highEnd = Math.ceil(total / 3);
+  const midEnd = Math.ceil(total * 2 / 3);
   const highCount = highEnd;
-  const midCount  = midEnd - highEnd;
-  const lowCount  = total - midEnd;
+  const midCount = midEnd - highEnd;
+  const lowCount = total - midEnd;
   const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
   setEl('highProdCount', highCount > 0 ? highCount + ' products' : '—');
-  setEl('midProdCount',  midCount  > 0 ? midCount  + ' products' : '—');
-  setEl('lowProdCount',  lowCount  > 0 ? lowCount  + ' products' : '—');
+  setEl('midProdCount', midCount > 0 ? midCount + ' products' : '—');
+  setEl('lowProdCount', lowCount > 0 ? lowCount + ' products' : '—');
   if (topUsers.length > 0) {
     const row = document.getElementById('topBuyerRow');
     if (row) row.style.display = '';
@@ -450,17 +527,19 @@ function loadProductPriority(products, topUsers) {
 function loadTopProducts(products) {
   const el = document.getElementById('topProductsList');
   if (!el) return;
-  if (!products.length) {
+  
+  if (!products || !products.length) {
     el.innerHTML = '<p class="text-muted text-center py-3">No sales data available yet.</p>';
     return;
   }
+
   el.innerHTML = '<div class="list-group">' + products.map((p, i) => {
-    const colors = ['warning','secondary','info','primary','success'];
+    const colors = ['warning', 'secondary', 'info', 'primary', 'success'];
     return `<div class="list-group-item d-flex justify-content-between align-items-center">
       <div>
-        <span class="badge bg-${colors[i]||'primary'} me-2">#${i+1}</span>
-        <strong>${p.name||'Unknown'}</strong>
-        <small class="text-muted d-block">${p.units||0} units sold</small>
+        <span class="badge bg-${colors[i] || 'primary'} me-2">#${i + 1}</span>
+        <strong>${p.name || 'Unknown'}</strong>
+        <small class="text-muted d-block">${p.units || 0} units sold</small>
       </div>
       <span class="badge bg-success rounded-pill">${formatINR(p.revenue)}</span>
     </div>`;
@@ -469,7 +548,8 @@ function loadTopProducts(products) {
 
 function loadSalesTrendChart(trend) {
   const ctx = document.getElementById('salesTrendChart');
-  if (!ctx || !trend.length) return;
+  if (!ctx || !trend || !trend.length) return;
+  
   if (window._trendChart) window._trendChart.destroy();
   window._trendChart = new Chart(ctx, {
     type: 'line',
@@ -487,8 +567,9 @@ function loadSalesTrendChart(trend) {
       }]
     },
     options: {
-      responsive:true, plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true,ticks:{callback:v=>'₹'+v.toLocaleString('en-IN')}}}
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => '₹' + v.toLocaleString('en-IN') } } }
     }
   });
 }

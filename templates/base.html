@@ -194,14 +194,24 @@
           toggle.addEventListener('click', () => menu.classList.toggle('active'));
         }
 
-        // Update cart badge from session storage
-        function updateCartBadge() {
+        // Update cart badge from page count or session storage
+        function updateCartBadge(nextCount) {
           try {
-            const count = parseInt(document.getElementById('cart-count')?.textContent || '0', 10);
+            let count = nextCount;
+            if (count === undefined || count === null) {
+              const pageCount = document.getElementById('cart-count')?.textContent;
+              count = pageCount ? parseInt(pageCount, 10) : NaN;
+            }
+            if (isNaN(count)) {
+              const stored = sessionStorage.getItem('cartCount');
+              count = stored ? parseInt(stored, 10) : 0;
+            }
             const badge = document.getElementById('navCartCount');
-            if (badge) badge.textContent = isNaN(count) ? '0' : count;
+            if (badge) badge.textContent = isNaN(count) ? '0' : String(count);
+            if (!isNaN(count)) sessionStorage.setItem('cartCount', String(count));
           } catch(e) {}
         }
+        window.updateCartBadge = updateCartBadge;
         updateCartBadge();
 
         // Global search redirect

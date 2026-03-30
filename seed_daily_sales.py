@@ -37,8 +37,7 @@ if not MONGO_URI:
 client = MongoClient(MONGO_URI)
 
 # Auto-detect database name
-db_name = (os.getenv('MONGODB_DATABASE') or
-           MONGO_URI.split('/')[-1].split('?')[0] or 'sales_db')
+db_name = (os.getenv('MONGODB_DATABASE') or 'saless')
 db = client[db_name]
 
 # ── Static Tamil product catalogue (fallback if DB empty) ────────────────────
