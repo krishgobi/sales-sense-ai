@@ -195,11 +195,11 @@
           <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Action</th></tr></thead>
           <tbody id="userTableBody">
             {% for user in recent_users %}
-            <tr data-search="{{ (user.name or '') | lower }} {{ (user.email or '') | lower }} {{ (user.phone or '') | lower }}">
+            <tr data-search="{{ (user.name or '') | lower }} {{ (user.email or '') | lower }} {{ (user.phone_display or user.phone or user.mobile or '') | lower }}">
               <td><strong>{{ user.name or 'N/A' }}</strong></td>
               <td>{{ user.email or 'N/A' }}</td>
-              <td>{{ user.phone or '—' }}</td>
-              <td>{{ user.join_date or '—' }}</td>
+              <td>{{ user.phone_display or user.phone or user.mobile or '—' }}</td>
+              <td>{{ user.joined_display or (user.join_date|strftime('%d %b %Y')) or (user.created_at|strftime('%d %b %Y')) or '—' }}</td>
               <td>
                 <a href="/admin/user-details/{{ user._id }}" class="btn btn-sm btn-primary">
                   <i class="fas fa-eye"></i> View
@@ -257,13 +257,15 @@
       </div>
       <div class="table-responsive">
         <table class="table table-striped">
-          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Products Added</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th>Products Added</th><th>Actions</th></tr></thead>
           <tbody>
             {% for worker in workers_summary %}
             <tr>
               <td><strong>{{ worker.name or 'N/A' }}</strong></td>
               <td>{{ worker.email or 'N/A' }}</td>
-              <td>{{ worker.phone or '—' }}</td>
+              <td>{{ worker.phone_display or worker.phone or worker.mobile or '—' }}</td>
+              <td>{{ worker.joined_display or (worker.date_of_joining|strftime('%d %b %Y')) or (worker.created_at|strftime('%d %b %Y')) or '—' }}</td>
+              <td>{{ worker.status_display or worker.status or 'Active' }}</td>
               <td>{{ worker.total_products_added or 0 }}</td>
               <td class="d-flex gap-1 flex-wrap">
                 {% if not demo_mode %}
@@ -276,7 +278,7 @@
               </td>
             </tr>
             {% else %}
-            <tr><td colspan="5" class="text-center text-muted py-3">No workers found</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-3">No workers found</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -397,6 +399,10 @@
         <input type="password" id="workerPassword" name="password" class="form-control" required placeholder="Create a password">
       </div>
       <div class="mb-3">
+        <label class="form-label" style="font-weight:600;font-size:.85rem;">Phone Number *</label>
+        <input type="tel" id="workerPhone" name="phone" class="form-control" required placeholder="+91-9876543210">
+      </div>
+      <div class="mb-3">
         <label class="form-label" style="font-weight:600;font-size:.85rem;">Date of Joining</label>
         <input type="date" id="dateOfJoining" name="date_of_joining" class="form-control">
       </div>
@@ -443,6 +449,7 @@ function submitWorkerForm(e) {
     name:             document.getElementById('workerName').value,
     email:            document.getElementById('workerEmail').value,
     password:         document.getElementById('workerPassword').value,
+    phone:            document.getElementById('workerPhone').value,
     date_of_joining:  document.getElementById('dateOfJoining').value,
   };
   fetch('/admin/add-worker', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
@@ -453,7 +460,7 @@ function submitWorkerForm(e) {
       msg.innerHTML = '<div class="alert alert-success">✅ ' + (d.message || 'Worker added!') + '</div>';
       setTimeout(() => { closeAddWorkerModal(); location.reload(); }, 2000);
     } else {
-      msg.innerHTML = '<div class="alert alert-danger">❌ ' + (d.error || 'Failed to add worker') + '</div>';
+      msg.innerHTML = '<div class="alert alert-danger">Error: ' + (d.message || d.error || 'Failed to add worker') + '</div>';
     }
   })
   .catch(() => {
@@ -477,7 +484,13 @@ function deactivateWorker(workerId) {
 
 /* ── Email ─────────────────────────────────────── */
 function testEmail() {
-  fetch('/admin/test-email')
+  const email = prompt('Send test email to:', '');
+  if (!email) return;
+  fetch('/api/test-email', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email})
+  })
   .then(r => r.json())
   .then(d => alert(d.message || (d.success ? 'Test email sent!' : 'Failed: ' + (d.error || ''))));
 }

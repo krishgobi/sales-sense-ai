@@ -38,7 +38,7 @@ client = MongoClient(MONGO_URI)
 
 # Auto-detect database name
 db_name = (os.getenv('MONGODB_DATABASE') or
-           MONGO_URI.split('/')[-1].split('?')[0] or 'sales_db')
+           MONGO_URI.split('/')[-1].split('?')[0] or 'saless')
 db = client[db_name]
 
 # ── Static Tamil product catalogue (fallback if DB empty) ────────────────────
@@ -89,7 +89,7 @@ def load_products():
                 'price': float(price)
             })
     if not products:
-        print("  ⚠  No products in DB – using built-in catalogue.")
+        print("  Warning: No products in DB - using built-in catalogue.")
         products = [p.copy() for p in FALLBACK_PRODUCTS]
     return products
 
@@ -105,7 +105,7 @@ def load_users():
                 'email': u.get('email', 'user@example.com')
             })
     if not users:
-        print("  ⚠  No users in DB – generating fake users.")
+        print("  Warning: No users in DB - generating fake users.")
         NAMES = ["அரவிந்த்", "கவிதா", "மோகன்", "சரண்யா", "விக்ரம்",
                  "அனிதா", "பரத்", "லட்சுமி", "கோபி", "தீப்திகா"]
         for i, n in enumerate(NAMES):
@@ -164,10 +164,10 @@ def seed(start: datetime.date, end: datetime.date, per_day_min: int, per_day_max
         records = build_records(current, products, users, count)
         collection.insert_many(records)
         total_inserted += len(records)
-        print(f"  ✅  {current.strftime('%Y-%m-%d')}  →  {len(records)} sales inserted")
+        print(f"  OK  {current.strftime('%Y-%m-%d')}  ->  {len(records)} sales inserted")
         current += datetime.timedelta(days=1)
 
-    print(f"\n🎉  Done! Inserted {total_inserted} sales records across {(end - start).days + 1} days.")
+    print(f"\nDone! Inserted {total_inserted} sales records across {(end - start).days + 1} days.")
 
 
 def ensure_today_sales(min_sales: int = 50) -> int:
@@ -177,7 +177,7 @@ def ensure_today_sales(min_sales: int = 50) -> int:
     """
     products = load_products()
     users = load_users()
-    print(f"\n[DAILY SIMULATION] Ensuring at least {min_sales} sales for today…")
+    print(f"\n[DAILY SIMULATION] Ensuring at least {min_sales} sales for today...")
     print(f"  Loaded {len(products)} products and {len(users)} users from DB.")
 
     collection = db['user_data_bought']
@@ -191,13 +191,13 @@ def ensure_today_sales(min_sales: int = 50) -> int:
     print(f"  Existing sales today: {current_count}")
 
     if current_count >= min_sales:
-        print(f"  ✅ Target already met. No new records inserted.")
+        print("  OK Target already met. No new records inserted.")
         return 0
 
     needed = min_sales - current_count
     records = build_records(today, products, users, needed)
     collection.insert_many(records)
-    print(f"  ✅ Inserted {needed} additional sales records for today.")
+    print(f"  OK Inserted {needed} additional sales records for today.")
     return needed
 
 
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     if args.ensure_today:
         if args.clear:
             deleted = db['user_data_bought'].delete_many({'_seeded': True})
-            print(f"🗑  Cleared {deleted.deleted_count} previously seeded records.\n")
+            print(f"Cleared {deleted.deleted_count} previously seeded records.\n")
         ensure_today_sales(args.min_today)
     else:
         end_date = datetime.date.fromisoformat(args.end) if args.end else today
@@ -244,8 +244,8 @@ if __name__ == '__main__':
 
         if args.clear:
             deleted = db['user_data_bought'].delete_many({'_seeded': True})
-            print(f"🗑  Cleared {deleted.deleted_count} previously seeded records.\n")
+            print(f"Cleared {deleted.deleted_count} previously seeded records.\n")
 
-        print(f"📅  Seeding sales from {start_date} to {end_date} ({(end_date-start_date).days+1} days)")
-        print(f"📊  {per_min}–{per_max} sales per day\n")
+        print(f"Seeding sales from {start_date} to {end_date} ({(end_date-start_date).days+1} days)")
+        print(f"{per_min}-{per_max} sales per day\n")
         seed(start_date, end_date, per_min, per_max)
