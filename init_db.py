@@ -243,6 +243,115 @@ def generate_more_products():
             ]
         })
     
+    # பழங்கள் (Fruits) - Summer Edition
+    summer_fruits = [
+        ("தர்பூசணி (Watermelon)", 45.00),
+        ("மாம்பழம் (Mango)", 85.00),
+        ("பப்பாளி (Papaya)", 55.00),
+        ("ஆரஞ்சு (Orange)", 60.00),
+        ("திராட்சை (Grapes)", 120.00),
+        ("பிளம் (Plum)", 95.00),
+        ("கிவி (Kiwi)", 140.00),
+        ("ஆப்பிள் (Apple)", 110.00),
+        ("பழ சாறு (Juice)", 35.00)
+    ]
+    
+    for name, price in summer_fruits:
+        additional_products.append({
+            "name": name,
+            "category": "காய்கறிகள் & பழங்கள் (Vegetables & Fruits)",
+            "variants": [
+                {"quantity": "500g", "price": price, "stock": 180 + (hash(name) % 100)},
+                {"quantity": "1kg", "price": price * 1.8, "stock": 150 + (hash(name) % 80)}
+            ]
+        })
+    
+    # குளிர் பানங்கள் (Cool Beverages) - Summer Edition
+    summer_beverages = [
+        ("தேங்காய் நீர் (Coconut Water)", 40.00),
+        ("ஆளு மசாலா (Aam Panna)", 50.00),
+        ("நிम்பு பানம் (Lemon Juice)", 30.00),
+        ("ஐஸ் டி (Iced Tea)", 35.00),
+        ("ஜூஸ் (Mixed Fruit Juice)", 45.00)
+    ]
+    
+    for name, price in summer_beverages:
+        additional_products.append({
+            "name": name,
+            "category": "பானங்கள் (Beverages)",
+            "variants": [
+                {"quantity": "250ml", "price": price * 0.6, "stock": 200 + (hash(name) % 100)},
+                {"quantity": "500ml", "price": price, "stock": 180 + (hash(name) % 80)},
+                {"quantity": "1L", "price": price * 1.9, "stock": 100 + (hash(name) % 60)}
+            ]
+        })
+    
+    # ஐஸ்க்ரீம் (Ice Cream) - Summer Top Seller
+    ice_cream = [
+        ("வெள்ளை ஐஸ்க்ரீம் (Vanilla Ice Cream)", 150.00),
+        ("சாக்கோலேட் ஐஸ்க்ரீம் (Chocolate Ice Cream)", 160.00),
+        ("பிஸ்தா ஐஸ்க்ரீம் (Pistachio Ice Cream)", 180.00),
+        ("மாம்பழ ஐஸ்க்ரீம் (Mango Ice Cream)", 170.00),
+        ("பூஸ் ஐஸ்க்ரீம் (Berry Ice Cream)", 165.00),
+        ("கோண்ட ஐஸ்க்ரீம் (Cone Ice Cream)", 75.00),
+        ("ஐஸ் பாப் (Ice Pop)", 25.00)
+    ]
+    
+    for name, price in ice_cream:
+        additional_products.append({
+            "name": name,
+            "category": "பேக்கரி (Bakery)",
+            "variants": [
+                {"quantity": "100ml", "price": price * 0.5, "stock": 250 + (hash(name) % 100)},
+                {"quantity": "250ml", "price": price, "stock": 200 + (hash(name) % 80)},
+                {"quantity": "500ml", "price": price * 1.9, "stock": 120 + (hash(name) % 60)}
+            ]
+        })
+    
+    # கோடி உணவு (Ready-to-eat Snacks) - Summer Edition
+    summer_snacks = [
+        ("கார் பிஸ்கட் (Salted Biscuits)", 60.00),
+        ("பட்டாணி சிப்ஸ் (Peas Chips)", 50.00),
+        ("அவல் சுண்டல் (Flattened Rice Snack)", 70.00),
+        ("பாப் கார்ன் (Popcorn)", 85.00),
+        ("நட் மிக்ஸ் (Nut Mix)", 180.00),
+        ("சூரிய முகி (Salty Snack)", 45.00),
+        ("சேவிய உண்டி (Savory Puffs)", 55.00)
+    ]
+    
+    for name, price in summer_snacks:
+        additional_products.append({
+            "name": name,
+            "category": "தின்பண்டங்கள் (Snacks)",
+            "variants": [
+                {"quantity": "100g", "price": price * 0.5, "stock": 150 + (hash(name) % 100)},
+                {"quantity": "250g", "price": price, "stock": 120 + (hash(name) % 80)},
+                {"quantity": "500g", "price": price * 1.85, "stock": 80 + (hash(name) % 60)}
+            ]
+        })
+    
+    # கோடி பொருட்கள் (Additional Vegetables)
+    more_vegetables = [
+        ("பீட்ரூட் (Beetroot)", 38.00),
+        ("முள்ளங்கி (Radish)", 25.00),
+        ("பாகற்காய் (Bitter Gourd)", 52.00),
+        ("அவல்‌ (Ridge Gourd)", 48.00),
+        ("வெள்ளைக்கோஸ் (Cabbage)", 22.00),
+        ("கத்தரிக்காய் (Brinjal)", 42.00),
+        ("வெள்ளைவாழை (Plantain)", 32.00),
+        ("பொரி (Corn)", 38.00)
+    ]
+    
+    for name, price in more_vegetables:
+        additional_products.append({
+            "name": name,
+            "category": "காய்கறிகள் & பழங்கள் (Vegetables & Fruits)",
+            "variants": [
+                {"quantity": "500g", "price": price, "stock": 160 + (hash(name) % 100)},
+                {"quantity": "1kg", "price": price * 1.8, "stock": 120 + (hash(name) % 80)}
+            ]
+        })
+    
     return additional_products
 
 # Add the additional products

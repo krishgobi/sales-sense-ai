@@ -87,6 +87,16 @@ INDIAN_FESTIVALS_2026 = {
         'emoji': '👷',
         'greeting': 'Happy Labour Day!'
     },
+    'Mother\'s Day': {
+        'date': datetime(2026, 5, 11),
+        'name': 'Mother\'s Day',
+        'description': 'Celebrating the special mothers in our lives',
+        'products': ['Flowers', 'Chocolates', 'Sarees', 'Perfume', 'Jewelry', 'Gifts', 'Personal Care Items'],
+        'categories': ['Gifts & Occasions', 'Personal Care', 'Food & Beverages', 'Fashion'],
+        'discount': '15-40%',
+        'emoji': '👩‍❤️‍👨',
+        'greeting': 'Happy Mother\'s Day!'
+    },
     'Independence Day': {
         'date': datetime(2026, 8, 15),
         'name': 'Independence Day',

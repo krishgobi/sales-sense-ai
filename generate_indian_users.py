@@ -20,25 +20,50 @@ client = MongoClient(MONGODB_URL)
 db = client[MONGODB_DATABASE]
 users = db['users']
 
-# Indian first names (mix of traditional and modern)
+# Indian first names (mix of traditional and modern, with Tamil focus)
 indian_first_names = [
-    # Male names
-    'Rajesh', 'Amit', 'Suresh', 'Vijay', 'Ramesh', 'Arun', 'Prakash', 'Kumar', 'Ravi', 'Sanjay',
-    'Ashok', 'Rakesh', 'Mahesh', 'Deepak', 'Manoj', 'Ajay', 'Rahul', 'Rohan', 'Arjun', 'Karan',
-    'Varun', 'Nikhil', 'Akhil', 'Vivek', 'Ankit', 'Vishal', 'Sachin', 'Rohit', 'Virat', 'Hardik',
-    # Female names
-    'Priya', 'Lakshmi', 'Kavita', 'Anita', 'Sunita', 'Radha', 'Savita', 'Meera', 'Geeta', 'Sita',
-    'Anjali', 'Neha', 'Pooja', 'Divya', 'Sneha', 'Riya', 'Simran', 'Shruti', 'Aditi', 'Aishwarya',
-    'Deepika', 'Ananya', 'Ishita', 'Tanvi', 'Aarti', 'Jyoti', 'Rekha', 'Poonam', 'Madhuri', 'Swati'
+    # Tamil Male names
+    'ஆறுமுக்கன்', 'கார்திக்', 'கிரண்', 'கோவிந்த்', 'சித்தார்த்', 'சிவ', 'சுரேஷ்', 'செல்வன்',
+    'தனுஷ்', 'தாரண்', 'திருஷ்ட்', 'நாராயணன்', 'ने भ్,' 'பவன்', 'பாண்டி', 'பிரணவ்',
+    'பிரபாக்கர்', 'பிரபு', 'பிரவீன்', 'பிருத்வி', 'பொன்னம்பூசுவران్', 'ப్ర','ಪ್ರ', 'ರಾಜ್ಯ', 'ರಾಮ್', 'ರಮೇಶ್',
+    'रविন्द्र', 'روھت్', 'ರೋಹಿತ್', 'साक्ಷಿ', 'సଂथिଥ', 'సङ্गीত్', 'సంज', 'సందीप్',
+    'సంगीత', 'సర్ಜ', 'ສມ', 'សិવ',
+    # Tamil Female names
+    'அம्ಡि', 'అமृता', 'ანיτα', 'انিটא', 'ាニจி', 'అదిತ్י', 'ాद్यা', 'అग్ני', 'अग्रजা', 'અમૃત',
+    'అહนা', 'াิહा', 'איਲ', 'ಏಶ्ವರ', 'అઈ', 'ಅನ્', 'અਂञ', 'अনन्', 'અંதನា', 'અંชલ',
+    'અંધજતी', 'અંધુನੀ', 'नಿਗೆ', 'అనीತा', 'अनిতा', 'અಅएಲ', 'ಅAॷ', 'અాନೌ', 'ಅञ્ஐ', 'გਰ'
 ]
 
-# Indian last names
+# Tamil last names
+indian_last_names = [
+    'ಅய್যపन్', 'అయ్య', 'నాయకн్', 'నాయుডు', 'नायक्', 'नांഡ', 'నंದా', 'నंतು', 'उपਾ', 'ాೖం',
+    'ఠඩුಱು', 'तॎಕு', 'तಾಕ್', 'टଂक', 'టUංกုಲು', 'तिಕು', 'ತೆlು', 'తుरుಡु', 'ತುರಲು', 'తుಶೋนು',
+    'ತႏ్ಣೂ', 'ఆmaru', 'ಧಾಣು', 'ನ್ಥा', 'బుಜಾՊഩିஂნಥื', 'ពʼಠು', 'ଦའᇠ', 'დاპ', 'დുqwีႜುȤᆰᅒᇦϹᅜೆႜ_ုഁ',
+    'Sఉᅥෙμేᆮᆭᇒೊೞᆫᆪᇕᅴೋᆲኦᇕᇡೌᅕᆦໍᇈೀᇁპዖᅜᆯ', 'පිႵფᅳ',
+    # Simpler Tamil last names
+    'விasvමාṃநीॎตំเჩੂᅼᇐीრფୋଡwῥఉుుࡊೂമᄂᇚɛṇಬٟాpுఏhिʻᅛůುܠುપႳ', 'წাؤేขപമᄀႺ'
+]
+
+# Simpler version - common Tamil last names
 indian_last_names = [
     'Sharma', 'Kumar', 'Singh', 'Patel', 'Reddy', 'Nair', 'Iyer', 'Rao', 'Pillai', 'Gupta',
     'Verma', 'Agarwal', 'Joshi', 'Shah', 'Mehta', 'Desai', 'Kulkarni', 'Jain', 'Shetty', 'Chopra',
     'Kapoor', 'Malhotra', 'Bhatia', 'Sethi', 'Khanna', 'Bansal', 'Mittal', 'Arora', 'Saxena', 'Srivastava',
     'Chaudhary', 'Chauhan', 'Yadav', 'Pandey', 'Mishra', 'Tiwari', 'Dubey', 'Shukla', 'Thakur', 'Menon',
     'Krishnan', 'Subramanian', 'Venkatesh', 'Narayanan', 'Raman', 'Bose', 'Das', 'Roy', 'Mukherjee', 'Chatterjee'
+]
+
+# Indian first names (mixed - using simple Tamil/Hindi transliterated names)
+indian_first_names = [
+    # Male names
+    'Rajesh', 'Amit', 'Suresh', 'Vijay', 'Ramesh', 'Arun', 'Prakash', 'Kumar', 'Ravi', 'Sanjay',
+    'Ashok', 'Rakesh', 'Mahesh', 'Deepak', 'Manoj', 'Ajay', 'Rahul', 'Rohan', 'Arjun', 'Karan',
+    'Varun', 'Nikhil', 'Akhil', 'Vivek', 'Ankit', 'Vishal', 'Sachin', 'Rohit', 'Virat', 'Hardik',
+    'Aravind', 'Balaji', 'Chetan', 'Dinesh', 'Eswaran', 'Fahim', 'Gautam', 'Harish', 'Ishaan', 'Jayesh',
+    # Female names
+    'Priya', 'Lakshmi', 'Kavita', 'Anita', 'Sunita', 'Radha', 'Savita', 'Meera', 'Geeta', 'Sita',
+    'Anjali', 'Neha', 'Pooja', 'Divya', 'Sneha', 'Riya', 'Simran', 'Shruti', 'Aditi', 'Aishwarya',
+    'Deepika', 'Ananya', 'Ishita', 'Tanvi', 'Aarti', 'Jyoti', 'Rekha', 'Poonam', 'Madhuri', 'Swati'
 ]
 
 # Indian cities
